@@ -7,6 +7,8 @@ const createContext = async () => await context({
     'servers/**/*.jsx',
     'servers/**/*.ts',
     'servers/**/*.tsx',
+    //Each rust project should be added to the entryPoints individually
+    'servers/home/hello_world/src/lib.rs'
   ],
   outbase: "./servers",
   outdir: "./build",

@@ -1,0 +1,10 @@
+[package]
+name = "hello_world"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bitburner_bindings = { git = "https://github.com/shyguy1412/bitburner-rust-bindings"}
+
+[lib]
+crate-type = ["cdylib"]
