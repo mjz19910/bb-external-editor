@@ -4,7 +4,7 @@
   "description": "template for external editors for the game bitburner",
   "main": "index.js",
   "scripts": {
-    "start": "deno -A --watch ./build.ts",
+    "start": "deno -A --watch ./config.ts",
     "typecheck": "tsc --noEmit"
   },
   "repository": {
