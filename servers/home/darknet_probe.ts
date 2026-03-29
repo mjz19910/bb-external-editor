@@ -161,7 +161,7 @@ class AuthManager {
 
 		for (;;) {
 			let next_factor = null;
-			outer: for (let i = 0; i < 999; i++) {
+			outer: for (let i = 2; i < 999; i++) {
 				for (const f of factors) {
 					if (i % f != 0) continue outer;
 				}
