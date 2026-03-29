@@ -173,6 +173,7 @@ class AuthManager {
 				next_factor = i;
 				break;
 			}
+			debugger;
 			const cur_num = next_factor!;
 			const pw = cur_num.toString();
 			ns.tprint(`authenticate(Factorios) for ${host} with "${pw}"`);
@@ -180,7 +181,10 @@ class AuthManager {
 			const auth = await ns.dnet.authenticate(host, pw);
 			ns.tprint("Factorios auth result:", auth);
 
-			if (this.submit_auth_result(opts, auth, pw)) break;
+			if (auth.success) {
+				this.submit_auth_result(opts, auth, pw);
+				break;
+			}
 
 			ns.tprint(`heartbleed(Factorios) for ${host}`);
 			const bleed_res = await ns.dnet.heartbleed(host);
