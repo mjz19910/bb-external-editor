@@ -454,11 +454,29 @@ class AuthManager {
 		this.ns.tprint("  data ", ad.data);
 		this.ns.tprint("  pkt ", pkt);
 	}
-	async Laika(opts: AuthFlowState, num: number) {
+	async Laika4(opts: AuthFlowState) {
+		const ad = opts.info.authDetails;
+		const hint = ad.passwordHint;
 		this.ns.tprint("dog hint: ", opts.info.authDetails.passwordHint);
 		this.ns.tprint(opts.info.authDetails);
-		await this.doAuth(opts, dog_names[num - 1]);
+		for (const dog_name of dog_names) {
+			const pw = dog_name;
+			if (pw.length != opts.info.authDetails.passwordLength) continue;
+			const auth = await this.ns.dnet.authenticate(opts.host, pw);
+			if (this.submit_auth_result(opts, auth, pw)) {
+				this.dog_hint_map2[hint] ??= [];
+				this.dog_hint_map[hint] ??= new Set();
+				if (!this.dog_hint_map[hint].has(pw)) {
+					this.dog_hint_map[hint].add(pw);
+					this.dog_hint_map2[hint].push(pw);
+				}
+				break;
+			}
+		}
+		this.ns.tprint("hint to res map ", this.dog_hint_map2);
 	}
+	dog_hint_map: Record<string, Set<string>> = {};
+	dog_hint_map2: Record<string, string[]> = {};
 }
 function decode_model_id(id: string) {
 	switch (id) {
@@ -584,7 +602,7 @@ export async function main(ns: NS) {
 					await am.FreshInstall(opts);
 					break;
 				case "Laika4":
-					await am.Laika(opts, 4);
+					await am.Laika4(opts);
 					break;
 				case "PHP 5.4":
 					await am.Php(opts);
