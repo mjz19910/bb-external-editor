@@ -116,6 +116,7 @@ function handle_object_message(
 		}
 		case "found_password": {
 			ns.tprint("found server password ", msg);
+			return true;
 		}
 		default: {
 			ns.tprint(
