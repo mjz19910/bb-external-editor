@@ -7,6 +7,7 @@ import { isDarknetServer2 } from "./darknet/misc";
 import { DarknetServerInfo } from "./darknet/types";
 import { Darknet, WithPort } from "./darknet_paths";
 import {
+	DarknetAuthenticateMessage,
 	DarknetFoundPassProbeMessage,
 	DarkNetProbeMessage,
 } from "./type/helper";
@@ -119,12 +120,12 @@ class AuthManager {
 		}
 		info.password = password;
 		ns.writePort(port, {
-			type: "dnet.authenticate",
+			type: "darknet.authenticate",
 			by: runner,
 			for: host,
 			auth,
-			key: password,
-		});
+			password,
+		} as DarknetAuthenticateMessage);
 		return false;
 	}
 	async doAuth(opts: AuthFlowState, password: string) {

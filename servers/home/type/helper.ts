@@ -11,7 +11,7 @@ export type DarknetAuthenticateMessage = {
 	by: string;
 	for: string;
 	auth: DarknetResult;
-	key: string;
+	password: string;
 };
 export type QuitMessage = { type: "quit" };
 export type DarkNetProbeMessage = {

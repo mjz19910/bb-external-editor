@@ -93,7 +93,7 @@ function handle_object_message(
 			return true;
 		}
 		case "darknet.authenticate": {
-			pw_db.set(msg.for, msg.key);
+			pw_db.set(msg.for, msg.password);
 			return true;
 		}
 		case "new_words": {
