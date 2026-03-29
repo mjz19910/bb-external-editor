@@ -394,5 +394,6 @@ export async function main(ns: NS) {
 	}
 
 	ns.ui.openTail();
+
 	await run_forever(ns, target);
 }
