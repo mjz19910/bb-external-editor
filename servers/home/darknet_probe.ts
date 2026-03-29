@@ -151,19 +151,29 @@ class AuthManager {
 	async Factori_0s(opts: AuthFlowState) {
 		const ns = this.ns;
 		const factors: number[] = []; // confirmed valid factors >= 100
-		const invalidFactors: Set<number> = new Set(); // numbers ruled out by data === "false"
+		const invalidFactors: number[] = []; // numbers ruled out by data === "false"
 		let cur_num = 2; // start at 100 to satisfy min factor constraint
 		const { info } = opts;
 		const { server: srv } = info;
 		const { hostname: host } = srv;
 
 		ns.tprint(`Starting Factorios auth flow for ${host}`);
+		const pw_len = info.authDetails.passwordLength;
 
 		for (;;) {
-			// Skip numbers that are invalid or less than 100
-			while (invalidFactors.has(cur_num)) {
-				cur_num++;
+			let next_factor = null;
+			outer: for (let i = 0; i < 999; i++) {
+				for (const f of factors) {
+					if (i % f != 0) continue outer;
+				}
+				for (const f of invalidFactors) {
+					if (i % f == 0) continue outer;
+				}
+				if (pw_len == 2 && i >= 100) break;
+				if (pw_len == 3 && i >= 1000) break;
+				next_factor = i;
 			}
+			const cur_num = next_factor!;
 
 			// Compute remainders modulo known factors
 			const fac_res = [1];
@@ -209,7 +219,7 @@ class AuthManager {
 					`pw=${data.passwordAttempted} num=${cur_num}`,
 				);
 
-				const candidate = cur_num;
+				let candidate = cur_num;
 				const { data: feedback_raw } = data;
 				const feedback = feedback_raw === "true";
 
@@ -218,10 +228,13 @@ class AuthManager {
 					factors.push(candidate);
 					ns.tprint(`New valid factor discovered: ${candidate}`);
 				} else {
-					invalidFactors.add(candidate);
-					invalidFactors.add(candidate * 2);
-					invalidFactors.add(candidate * 3);
-					ns.tprint(`Number ruled out as factor: ${candidate}`);
+					for (const f of factors) {
+						if (candidate % f == 0) candidate /= f;
+					}
+					invalidFactors.push(candidate);
+					ns.tprint(
+						`Number ruled out as factor: ${candidate}, from ${cur_num}`,
+					);
 				}
 			}
 		}
@@ -442,6 +455,7 @@ class AuthManager {
 	}
 	async OpenWebAccessPoint(opts: AuthFlowState) {
 		const ad = opts.info.authDetails!;
+		const pkt = await this.ns.dnet.packetCapture(opts.host);
 		this.ns.tprint(
 			"new OpenWeb auth flow for ",
 			JSON.stringify(opts.info.server.hostname),
@@ -450,7 +464,7 @@ class AuthManager {
 		);
 		this.ns.tprint("  hint ", JSON.stringify(ad.passwordHint));
 		this.ns.tprint("  data ", ad.data);
-		throw new Error("Incomplete auth");
+		this.ns.tprint("  pkt ", pkt);
 	}
 	async Laika(opts: AuthFlowState, num: number) {
 		await this.doAuth(opts, dog_names[num - 1]);
