@@ -5,6 +5,10 @@ import {
 } from "./NetscriptDefinitions.d";
 import { DarknetServer, isDarknetServer2 } from "./darknet/misc";
 import { Darknet, WithPort } from "./darknet_paths";
+import {
+	DarknetFoundPassProbeMessage,
+	DarkNetProbeMessage,
+} from "./type/helper";
 
 type ServerAuthDetails2 = {
 	isOnline: boolean;
@@ -621,11 +625,11 @@ export async function main(ns: NS) {
 			}
 			if (info.password === null) continue;
 			ns.writePort(port, {
-				type: "dnet_probe",
+				type: "found_password",
 				by: runner,
 				for: host,
 				password: info.password,
-			});
+			} as DarknetFoundPassProbeMessage);
 		}
 		if (infos.length === 0) {
 			ns.tprint("no results");

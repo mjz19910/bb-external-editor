@@ -19,6 +19,10 @@ export type DarkNetProbeMessage = {
 	by: string;
 	infos: DarknetServerInfo[];
 };
+export type DarknetFoundPassProbeMessage = {
+	type: "found_password";
+	by: string;
+};
 export type NewWordsMessage = {
 	type: "new_words";
 	from_dict: "commonPasswordDictionary";

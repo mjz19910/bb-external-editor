@@ -1,6 +1,7 @@
 import { TypedNSP } from "./old/TypedNetScriptPort";
 import {
 	DarknetAuthenticateMessage,
+	DarknetFoundPassProbeMessage,
 	DarkNetProbeMessage,
 	NewWordsMessage,
 	QuitMessage,
@@ -60,7 +61,8 @@ type PortMessage =
 	| WaitMessage
 	| QuitMessage
 	| NewWordsMessage
-	| DarkNetProbeMessage;
+	| DarkNetProbeMessage
+	| DarknetFoundPassProbeMessage;
 const pw_db = new Map<string, string>();
 const commonPasswordDictionary: string[] = [];
 const common_pw_dict_parts: string[][] = [commonPasswordDictionary];
@@ -107,10 +109,13 @@ function handle_object_message(
 		case "darknet.probe": {
 			for (const info of msg.infos) {
 				if (info.password === void 0) {
-					console.log("unauth server " + info.server!.hostname);
+					ns.tprint("unauth server " + info.server!.hostname);
 				}
 			}
 			return true;
+		}
+		case "found_password": {
+			ns.tprint("found server password ", msg);
 		}
 		default: {
 			ns.tprint(
