@@ -1,4 +1,4 @@
-import { ScriptArg } from "../NetscriptDefinitions";
+import { ScriptArg } from "../NetscriptDefinitions.d";
 import { TypedNSP } from "../old/TypedNetScriptPort";
 
 export async function main(ns: NS) {

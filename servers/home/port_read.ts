@@ -84,7 +84,7 @@ const commonPasswordDictionary: string[] = [];
 const common_pw_dict_parts: string[][] = [commonPasswordDictionary];
 function handle_wait_request(ns: NS, msg: WaitMessage) {
 	if (msg.on === "darknet.nextMutation") {
-		ns.run("api/darknet/nextMutation.ts", 1, "--port", msg.reply_port);
+		ns.run("darknet/nextMutation.ts", 1, "--port", msg.reply_port);
 	}
 }
 function handle_object_message(
@@ -150,10 +150,13 @@ export async function main(ns: NS) {
 	const port2 = new TypedNSP(ns, REPLY_PORT);
 	const port3 = new TypedNSP(ns, API_PORT);
 	port3.clear("empty before use");
-	ns.run("api/getHostname.ts", 1);
+	ns.run("src/getHostname.ts", 1);
 	await port3.nextWrite("wait for hostname");
 	const v = port3.readOpt<string>("read hostname");
 	if (v.type === "None") return ns.tprint("missing port(3).getHostname()");
+	if (typeof v.value != "string") {
+		return ns.tprint("port(3).getHostname() not a string");
+	}
 	const s = {
 		running: true,
 		runner: v.value,
