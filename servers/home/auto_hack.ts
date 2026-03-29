@@ -3,7 +3,7 @@ export async function main(ns: NS) {
 
 	const hackScript = "src/hack.ts";
 	const growScript = "src/grow2.ts";
-	const weakenScript = "src/weaken.ts";
+	const weakenScript = "tmp/weak.ts";
 
 	while (true) {
 		const target = findBestTarget(ns);
