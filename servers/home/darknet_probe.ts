@@ -460,6 +460,8 @@ class AuthManager {
 		this.ns.tprint("  pkt ", pkt);
 	}
 	async Laika(opts: AuthFlowState, num: number) {
+		this.ns.tprint("dog hint: ", opts.info.authDetails.passwordHint);
+		this.ns.tprint(opts.info.authDetails);
 		await this.doAuth(opts, dog_names[num - 1]);
 	}
 }
