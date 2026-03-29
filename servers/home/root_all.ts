@@ -7,16 +7,8 @@ export async function main(ns: NS) {
 		if (host === "home") continue;
 		if (ns.hasRootAccess(host)) continue;
 
-		const reqHack = ns.getServerRequiredHackingLevel(host);
 		const reqPorts = ns.getServerNumPortsRequired(host);
-
-		const myHack = ns.getHackingLevel();
 		const myPorts = countPortOpeners(ns);
-
-		if (reqHack > myHack) {
-			skipped.push(`${host} (hack ${reqHack})`);
-			continue;
-		}
 
 		if (reqPorts > myPorts) {
 			skipped.push(`${host} (ports ${reqPorts})`);
