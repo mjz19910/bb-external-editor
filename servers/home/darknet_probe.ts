@@ -134,7 +134,7 @@ class AuthManager {
 		);
 		c.info.password = password;
 		ns.writePort(c.port, {
-			type: "dnet_authenticate",
+			type: "dnet.authenticate",
 			by: c.runner,
 			for: c.host,
 			auth,
