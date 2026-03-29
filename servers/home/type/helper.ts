@@ -22,6 +22,8 @@ export type DarkNetProbeMessage = {
 export type DarknetFoundPassProbeMessage = {
 	type: "found_password";
 	by: string;
+	for: string;
+	password: string;
 };
 export type NewWordsMessage = {
 	type: "new_words";

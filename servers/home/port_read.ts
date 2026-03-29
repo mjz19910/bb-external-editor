@@ -115,7 +115,8 @@ function handle_object_message(
 			return true;
 		}
 		case "found_password": {
-			ns.tprint("found server password ", msg);
+			const t: DarknetFoundPassProbeMessage = msg;
+			ns.tprintRaw(`[${t.for}] pw='${t.password}'`);
 			return true;
 		}
 		default: {
