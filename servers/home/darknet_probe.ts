@@ -499,7 +499,7 @@ function decode_model_id(id: string) {
 			return null;
 	}
 }
-async function post_dnet_probe(
+function post_dnet_probe(
 	ns: NS,
 	infos: DarknetServerInfo[],
 	infos_idx_map: Map<string, number>,
@@ -511,7 +511,6 @@ async function post_dnet_probe(
 	}
 	const targets = ns.dnet.probe();
 	for (const trg of targets) {
-		await ns.sleep(25);
 		const srv = ns.getServer(trg);
 		if (!isDarknetServer2(srv)) continue;
 		const ad = ns.dnet.getServerAuthDetails(trg);
@@ -569,7 +568,7 @@ export async function main(ns: NS) {
 	}
 	const am = new AuthManager(ns);
 	for (;;) {
-		await post_dnet_probe(ns, infos, infos_idx_map, runner);
+		post_dnet_probe(ns, infos, infos_idx_map, runner);
 		ns.writePort(port, {
 			type: "dnet_probe",
 			by: runner,
@@ -636,6 +635,6 @@ export async function main(ns: NS) {
 			ns.tprint("no results");
 			break;
 		}
-		await ns.sleep(25);
+		await ns.sleep(1000);
 	}
 }
