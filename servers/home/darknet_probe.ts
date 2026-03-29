@@ -3,7 +3,7 @@ import {
 	DarknetResult,
 	ScriptArg,
 } from "./NetscriptDefinitions.d";
-import { DarknetServer, isDarknetServer } from "./darknet/misc";
+import { DarknetServer, isDarknetServer2 } from "./darknet/misc";
 import { Darknet, WithPort } from "./darknet_paths";
 
 type ServerAuthDetails2 = {
@@ -503,7 +503,7 @@ async function post_dnet_probe(
 	for (const trg of targets) {
 		await ns.sleep(0);
 		const srv = ns.getServer(trg);
-		if (!isDarknetServer(srv)) continue;
+		if (!isDarknetServer2(srv)) continue;
 		const ad = ns.dnet.getServerAuthDetails(trg);
 		const info: DarknetServerInfo = {
 			parent: runner,

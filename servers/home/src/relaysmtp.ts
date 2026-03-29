@@ -1,5 +1,4 @@
 import { isNormalServer } from "../lib/helper";
-import { isDarknetServer } from "../old/helpers";
 import { HostInfoDB } from "./HostInfoDB";
 
 // api/all_hosts/relaysmtp.ts

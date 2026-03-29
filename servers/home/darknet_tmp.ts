@@ -1,4 +1,4 @@
-import { DarknetServer, isDarknetServer } from "./darknet/misc";
+import { DarknetServer, isDarknetServer2 } from "./darknet/misc";
 import { Darknet, WithPort } from "./darknet_paths";
 import { isNormalServer } from "./lib/helper";
 import { Server } from "./NetscriptDefinitions";
@@ -40,7 +40,7 @@ export function tmp_data(ns: NS, host: string, srv: Server | DarknetServer) {
 		unk_files.push(fileName);
 	}
 	if (isNormalServer(srv)) return;
-	if (!isDarknetServer(srv)) return;
+	if (!isDarknetServer2(srv)) return;
 	if (srv.blockedRam > 0) {
 		ns.tprint("blockedRam ", [
 			srv.ramUsed,
