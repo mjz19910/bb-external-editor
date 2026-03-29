@@ -1,0 +1,18 @@
+/** prep_grow.js */
+export async function main(ns: NS) {
+	const f = ns.flags([["v", false]])
+	const verbose = !!f.v;
+	const target = ns.args[0]
+	const threads = ns.args[1]
+	if (typeof target !== "string") return
+	if (typeof threads != "number") return
+	if (verbose) {
+		const start = Date.now()
+		await ns.grow(target, { threads })
+		const end = Date.now()
+
+		ns.tprint(`[grow] target=${target} threads=${threads} ${ns.format.time(end - start)}`)
+	} else {
+		await ns.grow(target)
+	}
+}
