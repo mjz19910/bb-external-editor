@@ -1,32 +1,11 @@
-const script_paths = {
-	hack: "src/hack2.ts",
-	grow: "src/grow2.ts",
-	weaken: "tmp/weak.ts",
-} as const;
-const alt_script_paths = {
-	hack: "_/hack.ts",
-	grow: "_/grow.ts",
-	weaken: "_/weak.ts",
-} as const;
-type Get<T> = T[keyof T];
-type C<T, U> = (Get<T> | Get<U>) & {};
-type AnyScriptPath = C<typeof script_paths, typeof alt_script_paths>;
 export async function main(ns: NS) {
 	ns.disableLog("ALL");
 	ns.clearLog();
 
 	const host = ns.getHostname();
-	let target_paths = null;
-
-	if (ns.fileExists("_/hack.ts", host)) {
-		target_paths = alt_script_paths;
-	} else {
-		target_paths = script_paths;
-	}
-
-	const hackScript = target_paths.hack;
-	const growScript = target_paths.grow;
-	const weakenScript = target_paths.weaken;
+	const hackScript = "_/hack.ts"
+	const growScript = "_/grow.ts";
+	const weakenScript = "_/weak.ts";
 	let time_offset = 1.5;
 	let did_launch = false;
 	let cur_pid = -1;
@@ -48,9 +27,12 @@ export async function main(ns: NS) {
 		const sec = ns.getServerSecurityLevel(target);
 		const minSec = ns.getServerMinSecurityLevel(target);
 
-		const freeRam = ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
+		let freeRam = ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
+		if (host === "home") {
+			freeRam -= 32;
+		}
 
-		let script: AnyScriptPath = weakenScript;
+		let script = weakenScript;
 		let threads = 1;
 		let wait_ms = 500;
 
@@ -103,8 +85,10 @@ function findBestTarget(ns: NS) {
 		const maxMoney = ns.getServerMaxMoney(s);
 		if (maxMoney <= 0) continue;
 
+		const reqHack = ns.getServerRequiredHackingLevel(s);
 		const minSec = ns.getServerMinSecurityLevel(s);
-		const score = maxMoney / minSec;
+		const growth = ns.getServerGrowth(s);
+		const score = (maxMoney * growth) / Math.max(1, minSec * reqHack);
 
 		if (score > bestValue) {
 			bestValue = score;

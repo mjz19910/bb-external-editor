@@ -1,9 +1,11 @@
+import { buildNetworkMap } from "./lib/network_map";
+
 export async function main(ns: NS) {
-	const servers = scanAll(ns);
+	const map = buildNetworkMap(ns);
 	const rooted = [];
 	const skipped = [];
 
-	for (const host of servers) {
+	for (const host of map.hosts) {
 		if (host === "home") continue;
 		if (ns.hasRootAccess(host)) continue;
 
@@ -55,22 +57,4 @@ function countPortOpeners(ns: NS) {
 	if (ns.fileExists("HTTPWorm.exe", "home")) count++;
 	if (ns.fileExists("SQLInject.exe", "home")) count++;
 	return count;
-}
-
-function scanAll(ns: NS) {
-	const seen = new Set<string>();
-	const queue: string[] = ["home"];
-
-	while (queue.length > 0) {
-		const host = queue.shift()!;
-		if (seen.has(host)) continue;
-
-		seen.add(host);
-
-		for (const next of ns.scan(host)) {
-			if (!seen.has(next)) queue.push(next);
-		}
-	}
-
-	return [...seen];
 }
