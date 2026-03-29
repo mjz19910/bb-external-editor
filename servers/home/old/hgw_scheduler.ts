@@ -299,9 +299,9 @@ export async function run_forever(ns: NS, target: string, hackPct = 0.05) {
 	}
 
 	const files = [
-		`tmp/hwgw_hack.ts`,
-		`tmp/hwgw_grow.ts`,
-		`tmp/hwgw_weak.ts`,
+		`tmp/hgw_hack.ts`,
+		`tmp/hgw_grow.ts`,
+		`tmp/hgw_weak.ts`,
 	];
 
 	const activeScripts = new Map<string, WorkerScript[]>();
