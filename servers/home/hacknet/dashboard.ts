@@ -64,9 +64,7 @@ export function dashboard(ns: NS) {
 	);
 
 	// ROI
-	ns.print(
-		`--- Estimated ROI (Production Gain / Cost) (scale is 1 / 1000) ---`,
-	);
+	ns.print(`--- Estimated ROI (Production Gain / Cost) ---`);
 	ns.print(
 		`Level +1 ROI: ${ns.format.number(estimateLevelROI(ns, 1) * 1000)}`,
 	);
