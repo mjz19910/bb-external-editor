@@ -6,7 +6,10 @@ import {
 import { isDarknetServer2 } from "./darknet/misc";
 import { DarknetServerInfo } from "./darknet/types";
 import { Darknet, WithPort } from "./darknet_paths";
-import { DarknetFoundPassProbeMessage } from "./type/helper";
+import {
+	DarknetFoundPassProbeMessage,
+	DarkNetProbeMessage,
+} from "./type/helper";
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,
@@ -543,10 +546,10 @@ export async function main(ns: NS) {
 	for (;;) {
 		post_dnet_probe(ns, infos, infos_idx_map, runner);
 		ns.writePort(port, {
-			type: "dnet_probe",
+			type: "darknet.probe",
 			by: runner,
 			infos,
-		});
+		} as DarkNetProbeMessage);
 		for (let i = 0; i < infos.length; i++) {
 			let info = infos[i];
 			if (!info.connectedToParent) continue;
