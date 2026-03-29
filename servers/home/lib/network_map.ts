@@ -62,21 +62,23 @@ export function pathTo(map: NetworkMap, target: string): string[] {
 export function connectString(map: NetworkMap, target: string): string {
 	return pathTo(map, target)
 		.slice(1)
-		.map(h => `connect ${h}`)
+		.map((h) => `connect ${h}`)
 		.join("; ");
 }
 
 export function childrenOf(map: NetworkMap, host: string): string[] {
-	return map.hosts.filter(h => map.nodes[h].parent === host);
+	return map.hosts.filter((h) => map.nodes[h].parent === host);
 }
 
 export function leafHosts(map: NetworkMap): string[] {
-	return map.hosts.filter(h => h !== "home" && map.nodes[h].neighbors.length === 1);
+	return map.hosts.filter((h) =>
+		h !== "home" && map.nodes[h].neighbors.length === 1
+	);
 }
 
 export function hubHosts(map: NetworkMap): { host: string; degree: number }[] {
 	return map.hosts
-		.map(host => ({ host, degree: map.nodes[host].neighbors.length }))
+		.map((host) => ({ host, degree: map.nodes[host].neighbors.length }))
 		.sort((a, b) => b.degree - a.degree);
 }
 

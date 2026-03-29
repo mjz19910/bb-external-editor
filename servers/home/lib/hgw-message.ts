@@ -1,5 +1,6 @@
 // hgw-message.ts
-import { Arg, parseInteger, parseNumber, parseString } from "lib/arg-codec";
+import { ScriptArg } from "../NetscriptDefinitions.d";
+import { Arg } from "./arg-codec";
 
 export type HgwType = "hack" | "grow" | "weaken";
 
@@ -45,7 +46,9 @@ export function hgwRequestToArgs(req: HgwRequest): HgwRequestArgs {
 }
 
 function parseHgwType(value: unknown): HgwType {
-	if (value === "hack" || value === "grow" || value === "weaken") return value;
+	if (value === "hack" || value === "grow" || value === "weaken") {
+		return value;
+	}
 	throw new Error(`Invalid HgwRequest.type: ${String(value)}`);
 }
 
@@ -67,11 +70,14 @@ export const HgwRequestCodec = {
 	fromArgs(args: ScriptArg[]): HgwRequest {
 		if (args.length < this.MIN_ARG_COUNT) {
 			throw new Error(
-				`HgwRequestCodec.fromArgs expected at least ${this.MIN_ARG_COUNT} args, got ${args.length}: ${JSON.stringify(args)}`
+				`HgwRequestCodec.fromArgs expected at least ${this.MIN_ARG_COUNT} args, got ${args.length}: ${
+					JSON.stringify(args)
+				}`,
 			);
 		}
 
-		const [type, server, target, batchId, offset, replyPort, requestedAt] = args;
+		const [type, server, target, batchId, offset, replyPort, requestedAt] =
+			args;
 
 		if (type !== "hack" && type !== "grow" && type !== "weaken") {
 			throw new Error(`Invalid HgwRequest.type: ${type}`);
@@ -90,7 +96,7 @@ export const HgwRequestCodec = {
 };
 
 export function parseHgwRequest(ns: NS): HgwRequest | null {
-	return HgwRequestCodec.fromArgs(ns.args)
+	return HgwRequestCodec.fromArgs(ns.args);
 }
 
 export function makeHgwReply(req: HgwRequest, result: number): HgwReply {

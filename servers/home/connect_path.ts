@@ -1,4 +1,4 @@
-import { buildNetworkMap, connectString, pathTo } from "lib/network_map";
+import { buildNetworkMap, connectString, pathTo } from "./lib/network_map";
 
 export async function main(ns: NS) {
 	const target = String(ns.args[0] ?? "");
