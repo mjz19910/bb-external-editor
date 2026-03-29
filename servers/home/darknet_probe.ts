@@ -101,9 +101,6 @@ interface FactorsBleedResult extends DarknetResult {
 	passwordAttempted: string;
 }
 class AuthManager {
-	async OctantVoxel(opts: AuthFlowState) {
-		throw new Error("Method not implemented.");
-	}
 	constructor(public ns: NS) {}
 	extract_info(opts: AuthFlowState) {
 		const { info } = opts;
@@ -133,11 +130,13 @@ class AuthManager {
 			}
 			return true;
 		}
-		ns.tprint(
-			`Authentication succeeded for ${host} password="`,
-			password,
-			'"',
-		);
+		if (info.password !== password) {
+			ns.tprint(
+				`Authentication succeeded for ${host} password="`,
+				password,
+				'"',
+			);
+		}
 		info.password = password;
 		ns.writePort(port, {
 			type: "dnet.authenticate",
@@ -159,6 +158,9 @@ class AuthManager {
 	// password=""
 	async ZeroLogon(opts: AuthFlowState) {
 		await this.doAuth(opts, "");
+	}
+	async OctantVoxel(opts: AuthFlowState) {
+		throw new Error("Method not implemented.");
 	}
 	// cspell:words Factori_0s Factori-0s Factorios
 	/** Solve a Factori-0s Darknet auth flow, using both valid factor sieve and invalid factor filtering */
