@@ -34,7 +34,7 @@ type DarknetServerInfo = {
 class WithPort {
 	static Read = "with_port/read.ts" as const;
 }
-class DNet {
+class Darknet {
 	static OpenCache = "darknet/openCache.ts" as const;
 	static MemoryReallocation = "darknet/memoryReallocation.ts" as const;
 }
@@ -44,11 +44,11 @@ class PortApi {
 		return this.ns.exec(WithPort.Read, host, 1, host, path, port);
 	}
 	darknet_open_cache(host: string, path: string, port: number = 1) {
-		return this.ns.exec(DNet.OpenCache, host, 1, host, path, port);
+		return this.ns.exec(Darknet.OpenCache, host, 1, host, path, port);
 	}
 	darknet_memory_reallocation(host: string, threads: number, port = 1) {
 		return this.ns.exec(
-			DNet.MemoryReallocation,
+			Darknet.MemoryReallocation,
 			host,
 			threads,
 			host,
@@ -556,16 +556,10 @@ async function post_dnet_probe(
 	}
 }
 
+const SELF = "darknet_probe.ts";
+
 export async function main(ns: NS) {
 	ns.ui.openTail();
-	ns.disableLog("disableLog");
-	ns.disableLog("rm");
-	ns.disableLog("scp");
-	ns.disableLog("exec");
-	ns.disableLog("dnet.probe");
-	ns.disableLog("dnet.heartbleed");
-	ns.disableLog("dnet.authenticate");
-
 	const infos: DarknetServerInfo[] = [];
 	const infos_idx_map = new Map<string, number>();
 
@@ -583,12 +577,13 @@ export async function main(ns: NS) {
 	const port = f.port;
 	const local_probe = ns.dnet.probe();
 	const dnet_files_dyn: string[] = [];
-	dnet_files_dyn.push(DNet.MemoryReallocation);
+	dnet_files_dyn.push(SELF);
+	dnet_files_dyn.push(Darknet.MemoryReallocation);
 	dnet_files_dyn.push(WithPort.Read);
 	if (local_probe.length == 1 && local_probe[0] == "darkweb") {
 		ns.scp(dnet_files_dyn, "darkweb", "home");
 		const pid = ns.exec(
-			"api/dnet/probe.ts",
+			SELF,
 			"darkweb",
 			2,
 			"--port",
@@ -599,7 +594,6 @@ export async function main(ns: NS) {
 			"darkweb",
 		);
 		ns.tprint("start probe pid=", pid);
-		ns.ui.closeTail();
 		return;
 	}
 	const port_api = new PortApi(ns);
