@@ -1,8 +1,9 @@
+import { AutocompleteData } from "../NetscriptDefinitions.d";
+
 export async function main(ns: NS) {
-	ns.ui.openTail()
-	await ns.grow(ns.args[0] as string)
+	await ns.grow(ns.args[0] as string);
 }
 
 export function autocomplete(data: AutocompleteData) {
-	return data.servers
+	return data.servers;
 }
