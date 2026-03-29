@@ -152,7 +152,6 @@ class AuthManager {
 		const ns = this.ns;
 		const factors: number[] = []; // confirmed valid factors >= 100
 		const invalidFactors: number[] = []; // numbers ruled out by data === "false"
-		let cur_num = 2; // start at 100 to satisfy min factor constraint
 		const { info } = opts;
 		const { server: srv } = info;
 		const { hostname: host } = srv;
@@ -172,21 +171,11 @@ class AuthManager {
 				if (pw_len == 2 && i >= 100) break;
 				if (pw_len == 3 && i >= 1000) break;
 				next_factor = i;
+				break;
 			}
 			const cur_num = next_factor!;
-
-			// Compute remainders modulo known factors
-			const fac_res = [1];
-			for (const fac of factors) {
-				if (fac === 1) continue;
-				fac_res.push(cur_num % fac);
-			}
-			ns.tprint(`factor_remainders = ${fac_res}`);
-
 			const pw = cur_num.toString();
-			ns.tprint(
-				`authenticate(Factorios) for ${host} with "${pw}"`,
-			);
+			ns.tprint(`authenticate(Factorios) for ${host} with "${pw}"`);
 
 			const auth = await ns.dnet.authenticate(host, pw);
 			ns.tprint("Factorios auth result:", auth);
