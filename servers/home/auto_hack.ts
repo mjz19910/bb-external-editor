@@ -1,4 +1,6 @@
 export async function main(ns: NS) {
+	ns.disableLog("ALL");
+
 	const host = ns.getHostname();
 
 	const hackScript = "src/hack.ts";
