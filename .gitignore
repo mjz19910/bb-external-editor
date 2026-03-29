@@ -141,3 +141,4 @@ build/
 !.vscode/launch.json
 
 servers/*/src/*.json
+servers/*/*.json
