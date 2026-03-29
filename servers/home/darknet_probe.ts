@@ -234,7 +234,7 @@ class AuthManager {
 		const { server: srv } = info;
 		const { hostname: host } = srv;
 		if (!ad) return ns.tprint("No authDetails for ", host);
-		const digits: string[] = ad.passwordHint.split("");
+		const digits: string[] = ad.data.split("");
 		ns.tprint("Trying all permutations of digits: ", digits.join(","));
 		const calc_results: string[] = permute(digits).map((arr) =>
 			arr.join("")
