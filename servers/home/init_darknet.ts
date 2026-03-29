@@ -1,6 +1,10 @@
 import { Darknet, WithPort } from "./darknet_paths";
 
 export function main(ns: NS) {
+	const f = ns.flags([["threads", 2], ["port", 1]]) as {
+		threads: number;
+		port: number;
+	};
 	const dnet_files_dyn: string[] = [];
 	dnet_files_dyn.push("darknet_probe.ts");
 	dnet_files_dyn.push("darknet_paths.ts");
@@ -14,11 +18,11 @@ export function main(ns: NS) {
 		const pid = ns.exec(
 			"darknet_probe.ts",
 			"darkweb",
-			1,
+			f.threads,
 			"--port",
-			1,
+			f.port,
 			"--threads",
-			1,
+			f.threads,
 			"--runner",
 			"darkweb",
 		);

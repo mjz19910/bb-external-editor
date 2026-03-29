@@ -635,6 +635,6 @@ export async function main(ns: NS) {
 			ns.tprint("no results");
 			break;
 		}
-		await ns.sleep(1000);
+		await ns.dnet.nextMutation();
 	}
 }
