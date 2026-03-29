@@ -6,6 +6,13 @@ export async function main(ns: NS) {
 	const hackScript = "src/hack2.ts";
 	const growScript = "src/grow2.ts";
 	const weakenScript = "tmp/weak.ts";
+	let time_offset = 1;
+	let did_launch = false;
+	let cur_pid = -1;
+
+	ns.atExit(() => {
+		ns.kill(cur_pid);
+	});
 
 	while (true) {
 		const target = findBestTarget(ns);
@@ -24,28 +31,39 @@ export async function main(ns: NS) {
 
 		let script = weakenScript;
 		let threads = 1;
+		let wait_ms = 500;
 
 		if (sec > minSec + 5) {
 			script = weakenScript;
 			threads = Math.floor(freeRam / ns.getScriptRam(weakenScript));
+			wait_ms = ns.getWeakenTime(target) + time_offset;
 		} else if (money < maxMoney * 0.75) {
 			script = growScript;
 			threads = Math.floor(freeRam / ns.getScriptRam(growScript));
+			wait_ms = ns.getGrowTime(target) + time_offset;
 		} else {
 			script = hackScript;
 			threads = Math.floor(freeRam / ns.getScriptRam(hackScript));
+			wait_ms = ns.getHackTime(target) + time_offset;
 		}
 
 		if (threads < 1) {
-			ns.print(`Not enough RAM to run ${script}`);
+			if (did_launch) time_offset += 0.5;
+			ns.print(
+				`Not enough RAM to run ${script}; increase time offset to ${time_offset}`,
+			);
 			await ns.sleep(5000);
 			continue;
 		}
 
 		ns.print(`Target=${target} | Script=${script} | Threads=${threads}`);
-		ns.exec(script, host, threads, target);
+		const pid = ns.exec(script, host, threads, target);
+		if (pid) {
+			cur_pid = pid;
+		}
+		did_launch = true;
 
-		await ns.sleep(1000);
+		await ns.sleep(wait_ms);
 	}
 }
 
