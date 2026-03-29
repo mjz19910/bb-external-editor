@@ -1,9 +1,10 @@
-import { ScriptArg, Server } from "../NetscriptDefinitions";
+import { ScriptArg, Server } from "../NetscriptDefinitions.d";
 import { HostInfoDB } from "./HostInfoDB";
 
 function resize_tail_with_char_size(ns: NS, width: number, height: number) {
 	ns.ui.resizeTail(width * 9.64, 34 + height * 24);
 }
+
 export async function main(ns: NS) {
 	const db = new HostInfoDB(ns);
 	const f = ns.flags([
