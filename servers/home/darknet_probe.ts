@@ -16,11 +16,11 @@ type ServerAuthDetails2 = {
 	logTrafficInterval: number;
 	passwordLength: number;
 	passwordFormat:
-	| "numeric"
-	| "alphabetic"
-	| "alphanumeric"
-	| "ASCII"
-	| "unicode";
+		| "numeric"
+		| "alphabetic"
+		| "alphanumeric"
+		| "ASCII"
+		| "unicode";
 };
 
 type DarknetServerInfo = {
@@ -101,7 +101,7 @@ interface FactorsBleedResult extends DarknetResult {
 	passwordAttempted: string;
 }
 class AuthManager {
-	constructor(public ns: NS) { }
+	constructor(public ns: NS) {}
 	extract_info(opts: AuthFlowState) {
 		const { info } = opts;
 		const { server: srv } = info;
@@ -167,7 +167,7 @@ class AuthManager {
 
 		ns.tprint(`Starting Factorios auth flow for ${host}`);
 
-		for (; ;) {
+		for (;;) {
 			// Skip numbers that are invalid or less than 100
 			while (invalidFactors.has(cur_num)) {
 				cur_num++;
@@ -501,7 +501,7 @@ async function post_dnet_probe(
 	}
 	const targets = ns.dnet.probe();
 	for (const trg of targets) {
-		await ns.sleep(0);
+		await ns.sleep(25);
 		const srv = ns.getServer(trg);
 		if (!isDarknetServer2(srv)) continue;
 		const ad = ns.dnet.getServerAuthDetails(trg);
@@ -554,12 +554,12 @@ export async function main(ns: NS) {
 	dnet_files_dyn.push(Darknet.MemoryReallocation);
 	dnet_files_dyn.push(WithPort.Read);
 	if (local_probe.length == 1 && local_probe[0] == "darkweb") {
+		ns.ui.closeTail();
 		return ns.tprint("unable to start on home");
 	}
 	const am = new AuthManager(ns);
-	for (; ;) {
-		await ns.sleep(100);
-		post_dnet_probe(ns, infos, infos_idx_map, runner);
+	for (;;) {
+		await post_dnet_probe(ns, infos, infos_idx_map, runner);
 		ns.writePort(port, {
 			type: "dnet_probe",
 			by: runner,
@@ -622,5 +622,6 @@ export async function main(ns: NS) {
 			ns.tprint("no results");
 			break;
 		}
+		await ns.sleep(25);
 	}
 }
