@@ -4,8 +4,7 @@ import {
 	DarknetResult,
 	ScriptArg,
 } from "./NetscriptDefinitions.d";
-import { isDarknetServer } from "./old/helpers";
-import { DarknetServer } from "./type/helper";
+import { DarknetServer, isDarknetServer } from "./darknet/misc";
 
 type ServerAuthDetails2 = {
 	isOnline: boolean;
@@ -578,6 +577,9 @@ export async function main(ns: NS) {
 	const local_probe = ns.dnet.probe();
 	const dnet_files_dyn: string[] = [];
 	dnet_files_dyn.push(SELF);
+	dnet_files_dyn.push("lib/helper.ts");
+	dnet_files_dyn.push("darknet/misc.ts");
+	dnet_files_dyn.push("NetscriptDefinitions.d.ts");
 	dnet_files_dyn.push(Darknet.MemoryReallocation);
 	dnet_files_dyn.push(WithPort.Read);
 	if (local_probe.length == 1 && local_probe[0] == "darkweb") {
@@ -585,11 +587,11 @@ export async function main(ns: NS) {
 		const pid = ns.exec(
 			SELF,
 			"darkweb",
-			2,
+			1,
 			"--port",
 			port,
 			"--threads",
-			2,
+			1,
 			"--runner",
 			"darkweb",
 		);

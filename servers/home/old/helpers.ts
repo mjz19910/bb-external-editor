@@ -1,6 +1,3 @@
-import { Server } from "../NetscriptDefinitions.d";
-import { DarknetServer } from "../type/helper";
-
 const EmptyOptStr = "None";
 const ValueOptStr = "Some";
 
@@ -28,10 +25,4 @@ export function assign_opt<T>(opt: Optional<T>, val: T) {
 	opt.type = ValueOptStr;
 	if (isNone(opt)) return;
 	opt.value = val;
-}
-
-export function isDarknetServer(
-	s: { hostname: string } | Server | DarknetServer,
-): s is DarknetServer {
-	return "blockedRam" in s;
 }
