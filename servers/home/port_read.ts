@@ -153,6 +153,7 @@ export async function main(ns: NS) {
 	ns.run("src/getHostname.ts", 1);
 	await port3.nextWrite("wait for hostname");
 	const v = port3.readOpt<string>("read hostname");
+	ns.tprint(v);
 	if (v.type === "None") return ns.tprint("missing port(3).getHostname()");
 	if (typeof v.value != "string") {
 		return ns.tprint("port(3).getHostname() not a string");
