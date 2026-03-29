@@ -144,11 +144,7 @@ export async function main(ns: NS) {
 	ns.run("src/getHostname.ts", 1);
 	await port3.nextWrite("wait for hostname");
 	const v = port3.readOpt<string>("read hostname");
-	ns.tprint(v);
 	if (v.type === "None") return ns.tprint("missing port(3).getHostname()");
-	if (typeof v.value != "string") {
-		return ns.tprint("port(3).getHostname() not a string");
-	}
 	const s = {
 		running: true,
 		runner: v.value,
@@ -156,7 +152,7 @@ export async function main(ns: NS) {
 		port2,
 	};
 	port.config({ logging: false });
-	ns.tprint("enter read loop");
+	ns.print("enter read loop");
 	for (; s.running;) {
 		for (; !port.empty("run until empty");) {
 			const res = port.read<PortMessage | {} | null>("read message");
