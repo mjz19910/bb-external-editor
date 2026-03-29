@@ -160,7 +160,9 @@ class AuthManager {
 		await this.doAuth(opts, "");
 	}
 	async OctantVoxel(opts: AuthFlowState) {
-		throw new Error("Method not implemented.");
+		const data = opts.info.authDetails.data;
+		const [base, num] = data.split(",");
+		await this.doAuth(opts, "" + Number.parseInt(num, +base));
 	}
 	// cspell:words Factori_0s Factori-0s Factorios
 	/** Solve a Factori-0s Darknet auth flow, using both valid factor sieve and invalid factor filtering */
@@ -578,6 +580,7 @@ export async function main(ns: NS) {
 			if (!info.connectedToParent) continue;
 			const ad = info.authDetails;
 			if (!ad) continue;
+			if (ad.hasSession && info.password !== null) continue;
 			const srv = info.server;
 			const host = srv.hostname;
 			const opts: AuthFlowState = { info, host, runner, port };
