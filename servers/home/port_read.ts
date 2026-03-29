@@ -1,6 +1,11 @@
 import { TypedNSP } from "./old/TypedNetScriptPort";
-import { DarknetServerInfo } from "./darknet/types";
-import { DarknetResult } from "./NetscriptDefinitions.d";
+import {
+	DarknetAuthenticateMessage,
+	DarkNetProbeMessage,
+	NewWordsMessage,
+	QuitMessage,
+	WaitMessage,
+} from "./type/helper";
 
 export function hasTypeField<T extends { type: string }>(x: unknown): x is T {
 	return (
@@ -50,29 +55,6 @@ export function mergeSequencesInPlace(parts: string[][], minOverlap = 4) {
 	}
 }
 
-type WaitMessage = {
-	type: "wait";
-	on: "darknet.nextMutation";
-	reply_port: number;
-};
-type DarknetAuthenticateMessage = {
-	type: "darknet.authenticate";
-	by: string;
-	for: string;
-	auth: DarknetResult;
-	key: string;
-};
-type QuitMessage = { type: "quit" };
-type DarkNetProbeMessage = {
-	type: "darknet.probe";
-	by: string;
-	infos: DarknetServerInfo[];
-};
-type NewWordsMessage = {
-	type: "new_words";
-	from_dict: "commonPasswordDictionary";
-	list: string[];
-};
 type PortMessage =
 	| DarknetAuthenticateMessage
 	| WaitMessage
