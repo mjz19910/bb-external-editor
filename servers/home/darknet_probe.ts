@@ -101,6 +101,9 @@ interface FactorsBleedResult extends DarknetResult {
 	passwordAttempted: string;
 }
 class AuthManager {
+	async OctantVoxel(opts: AuthFlowState) {
+		throw new Error("Method not implemented.");
+	}
 	constructor(public ns: NS) {}
 	extract_info(opts: AuthFlowState) {
 		const { info } = opts;
@@ -109,16 +112,19 @@ class AuthManager {
 		return { opts, srv, host, authDetails: info.authDetails };
 	}
 	submit_auth_result(
-		c: AuthFlowState,
+		opts: AuthFlowState,
 		auth: DarknetResult,
 		password: string,
 	) {
+		const { info, port, runner } = opts;
+		const { server: srv } = info;
+		const { hostname: host } = srv;
 		const ns = this.ns;
 		if (!auth.success) {
 			if (logging) {
 				ns.tprint(
 					"auth failed for ",
-					JSON.stringify(c.host),
+					JSON.stringify(host),
 					" code=",
 					auth.code,
 					" ",
@@ -128,15 +134,15 @@ class AuthManager {
 			return true;
 		}
 		ns.tprint(
-			`Authentication succeeded for ${c.host} password="`,
+			`Authentication succeeded for ${host} password="`,
 			password,
 			'"',
 		);
-		c.info.password = password;
-		ns.writePort(c.port, {
+		info.password = password;
+		ns.writePort(port, {
 			type: "dnet.authenticate",
-			by: c.runner,
-			for: c.host,
+			by: runner,
+			for: host,
 			auth,
 			key: password,
 		});
@@ -156,14 +162,14 @@ class AuthManager {
 	}
 	// cspell:words Factori_0s Factori-0s Factorios
 	/** Solve a Factori-0s Darknet auth flow, using both valid factor sieve and invalid factor filtering */
-	async Factori_0s(c: AuthFlowState) {
+	async Factori_0s(opts: AuthFlowState) {
 		const ns = this.ns;
 		const factors: number[] = []; // confirmed valid factors >= 100
 		const invalidFactors: Set<number> = new Set(); // numbers ruled out by data === "false"
 		let cur_num = 2; // start at 100 to satisfy min factor constraint
-		const info = c.info;
-		const srv = info.server;
-		const host = srv.hostname;
+		const { info } = opts;
+		const { server: srv } = info;
+		const { hostname: host } = srv;
 
 		ns.tprint(`Starting Factorios auth flow for ${host}`);
 
@@ -189,7 +195,7 @@ class AuthManager {
 			const auth = await ns.dnet.authenticate(host, pw);
 			ns.tprint("Factorios auth result:", auth);
 
-			if (this.submit_auth_result(c, auth, pw)) break;
+			if (this.submit_auth_result(opts, auth, pw)) break;
 
 			ns.tprint(`heartbleed(Factorios) for ${host}`);
 			const bleed_res = await ns.dnet.heartbleed(host);
@@ -257,9 +263,9 @@ class AuthManager {
 			if (this.submit_auth_result(opts, auth, pw)) break;
 		}
 	}
-	async FreshInstall(c: AuthFlowState) {
+	async FreshInstall(opts: AuthFlowState) {
 		const ns = this.ns;
-		const { host, authDetails } = this.extract_info(c);
+		const { host, authDetails } = this.extract_info(opts);
 		if (!authDetails) return;
 		const {
 			passwordFormat: format,
@@ -281,32 +287,31 @@ class AuthManager {
 		for (const pw_attempt of pw_tries) {
 			if (pw_length != pw_attempt.length) continue;
 			const auth = await ns.dnet.authenticate(host, pw_attempt);
-			if (this.submit_auth_result(c, auth, pw_attempt)) break;
+			if (this.submit_auth_result(opts, auth, pw_attempt)) break;
 		}
 	}
-	async DeepGreen(c: AuthFlowState) {
+	async DeepGreen(opts: AuthFlowState) {
 		const ns = this.ns;
+		const { info } = opts;
+		const { server: srv } = info;
 		type DeepGreenBleedData = {
 			code: 401;
 			message: string;
 			passwordAttempted: string;
 		};
-		const authDetails = c.info.authDetails;
-		if (!authDetails) return;
-		const {
-			passwordFormat: _format,
-			passwordLength: _pw_length,
-			passwordHint: _hint,
-		} = authDetails;
+		const { authDetails: ad } = info;
+		if (!ad) return;
+		const { passwordLength: len } = ad;
+		const { hostname: host } = srv;
 		const chars = "0123456789".split("");
-		const pw_arr = Array.from<string | null>({ length: _pw_length }).fill(
+		const pw_arr = Array.from<string | null>({ length: len }).fill(
 			null,
 		);
 		for (const char of chars) {
 			const pw = pw_arr.map((v) => v === null ? char : v).join("");
-			const auth: DarknetResult = await ns.dnet.authenticate(c.host, pw);
-			if (this.submit_auth_result(c, auth, pw)) break;
-			const bleed_res = await ns.dnet.heartbleed(c.host);
+			const auth: DarknetResult = await ns.dnet.authenticate(host, pw);
+			if (this.submit_auth_result(opts, auth, pw)) break;
+			const bleed_res = await ns.dnet.heartbleed(host);
 			if (!bleed_res.success) {
 				ns.tprint("heartbleed failed:", bleed_res);
 				break;
@@ -337,12 +342,12 @@ class AuthManager {
 		}
 		await this.doAuth(opts, pw);
 	}
-	async DeskMemo(c: AuthFlowState) {
-		const pw = c.info.authDetails!.passwordHint.match(/\d+/)![0];
-		await this.doAuth(c, pw);
+	async DeskMemo(opts: AuthFlowState) {
+		const pw = opts.info.authDetails!.passwordHint.match(/\d+/)![0];
+		await this.doAuth(opts, pw);
 	}
 	// "The password is a number between 0 and 10"
-	async AccountsManager(c: AuthFlowState) {
+	async AccountsManager(opts: AuthFlowState) {
 		const ns = this.ns;
 		type AccMgrBleedData = {
 			code: 401;
@@ -352,7 +357,7 @@ class AuthManager {
 		} | {
 			code: 200;
 		};
-		const { host, authDetails } = this.extract_info(c);
+		const { host, authDetails } = this.extract_info(opts);
 		const ad = authDetails;
 		let match = ad.passwordHint.match(ac_mgr_regexp);
 		if (!match) {
@@ -365,7 +370,7 @@ class AuthManager {
 		for (let i = min; i < max; i++) {
 			const pw = "" + i;
 			const auth = await ns.dnet.authenticate(host, pw);
-			if (this.submit_auth_result(c, auth, pw)) break;
+			if (this.submit_auth_result(opts, auth, pw)) break;
 			const bleed_res = await ns.dnet.heartbleed(host);
 			if (!bleed_res.success) {
 				ns.tprint("heartbleed failed:", bleed_res);
@@ -393,14 +398,14 @@ class AuthManager {
 			}
 		}
 	}
-	async NIL(c: AuthFlowState) {
+	async NIL(opts: AuthFlowState) {
 		const ns = this.ns;
 		type HeartbleedPasswordAttempt = {
 			code: 401;
 			message: string;
 			passwordAttempted: string;
 		};
-		const info = c.info;
+		const info = opts.info;
 		const { authDetails } = info;
 		const chars = "0123456789".split("");
 		const { passwordLength: len } = authDetails;
@@ -410,7 +415,7 @@ class AuthManager {
 		for (const char of chars) {
 			const pw = pw_arr.map((v) => v === null ? char : v).join("");
 			const auth = await ns.dnet.authenticate(host, pw);
-			if (this.submit_auth_result(c, auth, pw)) break;
+			if (this.submit_auth_result(opts, auth, pw)) break;
 			const bleed_res = await ns.dnet.heartbleed(host);
 			if (!bleed_res.success) {
 				ns.tprint("heartbleed failed:", bleed_res);
@@ -436,14 +441,14 @@ class AuthManager {
 			}
 		}
 	}
-	async BellaCuore(c: AuthFlowState) {
-		const ad = c.info.authDetails!;
+	async BellaCuore(opts: AuthFlowState) {
+		const ad = opts.info.authDetails!;
 		const num = decode_roman_num(this.ns, ad.data);
 		const pw = "" + num;
-		await this.doAuth(c, pw);
+		await this.doAuth(opts, pw);
 	}
-	async Pr0verFl0(c: AuthFlowState) {
-		const { info } = c;
+	async Pr0verFl0(opts: AuthFlowState) {
+		const { info } = opts;
 		const { authDetails: ad, server: srv } = info;
 		const { passwordFormat, passwordHint, passwordLength: len, data } = ad;
 		const { hostname: host } = srv;
@@ -453,11 +458,11 @@ class AuthManager {
 		this.ns.tprint("  fmt ", passwordFormat);
 		throw new Error("Incomplete auth");
 	}
-	async OpenWebAccessPoint(c: AuthFlowState) {
-		const ad = c.info.authDetails!;
+	async OpenWebAccessPoint(opts: AuthFlowState) {
+		const ad = opts.info.authDetails!;
 		this.ns.tprint(
 			"new OpenWeb auth flow for ",
-			JSON.stringify(c.info.server.hostname),
+			JSON.stringify(opts.info.server.hostname),
 			" len=",
 			ad.passwordLength,
 		);
@@ -465,25 +470,26 @@ class AuthManager {
 		this.ns.tprint("  data ", ad.data);
 		throw new Error("Incomplete auth");
 	}
-	async Laika(c: AuthFlowState, num: number) {
-		await this.doAuth(c, dog_names[num - 1]);
+	async Laika(opts: AuthFlowState, num: number) {
+		await this.doAuth(opts, dog_names[num - 1]);
 	}
 }
 function decode_model_id(id: string) {
 	switch (id) {
-		case "FreshInstall_1.0":
-		case "DeskMemo_3.1":
-		case "CloudBlare(tm)":
 		case "AccountsManager_4.2":
-		case "Pr0verFl0":
+		case "BellaCuore":
+		case "CloudBlare(tm)":
+		case "DeepGreen":
+		case "DeskMemo_3.1":
+		case "Factori-Os":
+		case "FreshInstall_1.0":
+		case "Laika4":
 		case "NIL":
+		case "OctantVoxel":
 		case "OpenWebAccessPoint":
 		case "PHP 5.4":
+		case "Pr0verFl0":
 		case "ZeroLogon":
-		case "BellaCuore":
-		case "DeepGreen":
-		case "Laika4":
-		case "Factori-Os":
 			return id;
 		default:
 			return null;
@@ -572,30 +578,33 @@ export async function main(ns: NS) {
 			if (!ad) continue;
 			const srv = info.server;
 			const host = srv.hostname;
-			const c: AuthFlowState = { info, host, runner, port };
+			const opts: AuthFlowState = { info, host, runner, port };
 			const handler_id = decode_model_id(ad.modelId);
 			// spell:words Factori-Os BellaCuore
 			switch (handler_id) {
 				case "Factori-Os":
-					await am.Factori_0s(c);
+					await am.Factori_0s(opts);
 					break;
 				case "AccountsManager_4.2":
-					await am.AccountsManager(c);
+					await am.AccountsManager(opts);
 					break;
 				case "CloudBlare(tm)":
-					await am.CloudBlare(c);
+					await am.CloudBlare(opts);
 					break;
 				case "DeskMemo_3.1":
-					await am.DeskMemo(c);
+					await am.DeskMemo(opts);
 					break;
 				case "FreshInstall_1.0":
-					await am.FreshInstall(c);
+					await am.FreshInstall(opts);
 					break;
 				case "Laika4":
-					await am.Laika(c, 4);
+					await am.Laika(opts, 4);
 					break;
 				case "PHP 5.4":
-					await am.Php(c);
+					await am.Php(opts);
+					break;
+				case "OctantVoxel":
+					await am.OctantVoxel(opts);
 					break;
 				default: {
 					if (handler_id) {
