@@ -1,5 +1,6 @@
 export async function main(ns: NS) {
 	ns.disableLog("ALL");
+	ns.clearLog()
 
 	const host = ns.getHostname();
 
