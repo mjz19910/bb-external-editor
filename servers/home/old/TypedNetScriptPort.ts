@@ -1,4 +1,3 @@
-import { NetscriptPort } from "../NetscriptDefinitions.d";
 import { assign_opt, empty_opt, Optional, some_opt } from "./helpers";
 
 export const Null = "NULL PORT DATA" as const;
