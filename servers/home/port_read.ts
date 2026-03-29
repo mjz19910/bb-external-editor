@@ -129,6 +129,7 @@ function handle_object_message(
 const REPLY_PORT = 2;
 const API_PORT = 3;
 export async function main(ns: NS) {
+	ns.disableLog("");
 	const { port: requestPort } = ns.flags([["port", 1]]) as { port: number };
 	if (requestPort > 1 && requestPort < 4) {
 		return ns.tprint("port conflict requestPort=", requestPort);

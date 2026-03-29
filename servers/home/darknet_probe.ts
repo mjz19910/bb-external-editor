@@ -81,6 +81,7 @@ interface FactorsBleedResult extends DarknetResult {
 	data: `${boolean}`;
 	passwordAttempted: string;
 }
+const verbose = false;
 class AuthManager {
 	constructor(public ns: NS) {}
 	extract_info(opts: AuthFlowState) {
@@ -111,7 +112,7 @@ class AuthManager {
 			}
 			return true;
 		}
-		if (info.password !== password) {
+		if (info.password !== password && verbose) {
 			ns.tprint(
 				`Authentication succeeded for ${host} password="`,
 				password,
