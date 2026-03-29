@@ -10,13 +10,15 @@ dnet_files_dyn.push(Darknet.MemoryReallocation);
 dnet_files_dyn.push(WithPort.Read);
 dnet_files_dyn.push("type/helper.ts");
 
-export function main(ns: NS) {
+export async function main(ns: NS) {
 	const f = ns.flags([["threads", 2], ["port", 1]]) as {
 		threads: number;
 		port: number;
 	};
 	const local_probe = ns.dnet.probe();
 	if (local_probe.length == 1 && local_probe[0] == "darkweb") {
+		ns.run("port_read.ts");
+		await ns.sleep(300);
 		ns.scp(dnet_files_dyn, "darkweb", "home");
 		const pid = ns.exec(
 			"darknet_probe.ts",
