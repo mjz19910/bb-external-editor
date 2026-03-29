@@ -16,11 +16,11 @@ type ServerAuthDetails2 = {
 	logTrafficInterval: number;
 	passwordLength: number;
 	passwordFormat:
-		| "numeric"
-		| "alphabetic"
-		| "alphanumeric"
-		| "ASCII"
-		| "unicode";
+	| "numeric"
+	| "alphabetic"
+	| "alphanumeric"
+	| "ASCII"
+	| "unicode";
 };
 
 type DarknetServerInfo = {
@@ -101,7 +101,7 @@ interface FactorsBleedResult extends DarknetResult {
 	passwordAttempted: string;
 }
 class AuthManager {
-	constructor(public ns: NS) {}
+	constructor(public ns: NS) { }
 	extract_info(opts: AuthFlowState) {
 		const { info } = opts;
 		const { server: srv } = info;
@@ -167,7 +167,7 @@ class AuthManager {
 
 		ns.tprint(`Starting Factorios auth flow for ${host}`);
 
-		for (;;) {
+		for (; ;) {
 			// Skip numbers that are invalid or less than 100
 			while (invalidFactors.has(cur_num)) {
 				cur_num++;
@@ -278,10 +278,10 @@ class AuthManager {
 				pw_tries.push(pw);
 			}
 		}
-		for (const attempt of pw_tries) {
-			if (pw_length != attempt.length) continue;
-			const auth = await ns.dnet.authenticate(host, attempt);
-			if (this.submit_auth_result(c, auth, attempt)) break;
+		for (const pw_attempt of pw_tries) {
+			if (pw_length != pw_attempt.length) continue;
+			const auth = await ns.dnet.authenticate(host, pw_attempt);
+			if (this.submit_auth_result(c, auth, pw_attempt)) break;
 		}
 	}
 	async DeepGreen(c: AuthFlowState) {
@@ -444,11 +444,8 @@ class AuthManager {
 	}
 	async Pr0verFl0(c: AuthFlowState) {
 		const { info } = c;
-		const { authDetails, server: srv } = info;
-		if (!authDetails) return;
-		const { passwordFormat, passwordHint, passwordLength: len, data } =
-			authDetails;
-		const ad = authDetails;
+		const { authDetails: ad, server: srv } = info;
+		const { passwordFormat, passwordHint, passwordLength: len, data } = ad;
 		const { hostname: host } = srv;
 		this.ns.tprint("new ProverFlo auth flow for ", host, " len=", len);
 		this.ns.tprint("  hint ", passwordHint);
@@ -560,7 +557,7 @@ export async function main(ns: NS) {
 		return ns.tprint("unable to start on home");
 	}
 	const am = new AuthManager(ns);
-	for (;;) {
+	for (; ;) {
 		await ns.sleep(100);
 		post_dnet_probe(ns, infos, infos_idx_map, runner);
 		ns.writePort(port, {
