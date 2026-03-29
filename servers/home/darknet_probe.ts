@@ -110,7 +110,7 @@ class AuthManager {
 					JSON.stringify(auth.message),
 				);
 			}
-			return true;
+			return auth.success;
 		}
 		if (info.password !== password && verbose) {
 			ns.tprint(
@@ -127,7 +127,7 @@ class AuthManager {
 			auth,
 			password,
 		} as DarknetAuthenticateMessage);
-		return false;
+		return auth.success;
 	}
 	async doAuth(opts: AuthFlowState, password: string) {
 		const { host } = opts;
