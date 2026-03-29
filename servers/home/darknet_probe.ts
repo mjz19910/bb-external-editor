@@ -1,10 +1,10 @@
-import { isNormalServer } from "./lib/helper";
 import {
 	DarknetResponseCode,
 	DarknetResult,
 	ScriptArg,
 } from "./NetscriptDefinitions.d";
 import { DarknetServer, isDarknetServer } from "./darknet/misc";
+import { Darknet, WithPort } from "./darknet_paths";
 
 type ServerAuthDetails2 = {
 	isOnline: boolean;
@@ -30,32 +30,6 @@ type DarknetServerInfo = {
 	parent: string | null;
 	password: string | null;
 };
-class WithPort {
-	static Read = "with_port/read.ts" as const;
-}
-class Darknet {
-	static OpenCache = "darknet/openCache.ts" as const;
-	static MemoryReallocation = "darknet/memoryReallocation.ts" as const;
-}
-class PortApi {
-	constructor(public ns: NS) {}
-	with_port_read(host: string, path: string, port: number = 1) {
-		return this.ns.exec(WithPort.Read, host, 1, host, path, port);
-	}
-	darknet_open_cache(host: string, path: string, port: number = 1) {
-		return this.ns.exec(Darknet.OpenCache, host, 1, host, path, port);
-	}
-	darknet_memory_reallocation(host: string, threads: number, port = 1) {
-		return this.ns.exec(
-			Darknet.MemoryReallocation,
-			host,
-			threads,
-			host,
-			threads,
-			port,
-		);
-	}
-}
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,
@@ -583,22 +557,8 @@ export async function main(ns: NS) {
 	dnet_files_dyn.push(Darknet.MemoryReallocation);
 	dnet_files_dyn.push(WithPort.Read);
 	if (local_probe.length == 1 && local_probe[0] == "darkweb") {
-		ns.scp(dnet_files_dyn, "darkweb", "home");
-		const pid = ns.exec(
-			SELF,
-			"darkweb",
-			1,
-			"--port",
-			port,
-			"--threads",
-			1,
-			"--runner",
-			"darkweb",
-		);
-		ns.tprint("start probe pid=", pid);
-		return;
+		return ns.tprint("unable to start on home");
 	}
-	const port_api = new PortApi(ns);
 	const am = new AuthManager(ns);
 	for (;;) {
 		await ns.sleep(100);
@@ -654,36 +614,12 @@ export async function main(ns: NS) {
 				}
 			}
 			if (info.password === null) continue;
-			ns.scp(dnet_files_dyn, host, "home");
-			const unk_files = [];
-			const files = ns.ls(host);
-			for (const fileName of files) {
-				if (fileName.endsWith(".ts")) continue;
-				if (fileName.endsWith(".cache")) {
-					port_api.darknet_open_cache(host, fileName);
-					continue;
-				}
-				if (fileName.endsWith(".data.txt")) {
-					port_api.with_port_read(host, fileName);
-					continue;
-				}
-				unk_files.push(fileName);
-			}
-			if (isNormalServer(srv)) continue;
-			if (!isDarknetServer(srv)) continue;
-			if (srv.blockedRam > 0) {
-				ns.tprint("blockedRam ", [
-					srv.ramUsed,
-					srv.blockedRam,
-					srv.maxRam,
-				]);
-				const ram_left = srv.maxRam - srv.ramUsed - srv.blockedRam;
-				if (ram_left > 2.6) {
-					const tc = Math.floor(ram_left / 2.6);
-					port_api.darknet_memory_reallocation(host, tc);
-					srv.ramUsed += tc * 2.6;
-				}
-			}
+			ns.writePort(port, {
+				type: "dnet_probe",
+				by: runner,
+				for: host,
+				password: info.password,
+			});
 		}
 		if (infos.length === 0) {
 			ns.tprint("no results");
