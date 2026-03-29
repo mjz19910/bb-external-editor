@@ -517,6 +517,7 @@ const SELF = "darknet_probe.ts";
 
 export async function main(ns: NS) {
 	ns.ui.openTail();
+	ns.disableLog("dnet.probe");
 	const infos: DarknetServerInfo[] = [];
 	const infos_idx_map = new Map<string, number>();
 
