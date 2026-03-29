@@ -3,7 +3,16 @@ import { assign_opt, empty_opt, Optional, some_opt } from "./helpers";
 
 export const Null = "NULL PORT DATA" as const;
 export type Null = typeof Null;
-export type NS_Port = NetscriptPort;
+export type NS_Port = {
+	read(): unknown;
+	peek(): unknown;
+	write(value: unknown): unknown;
+	full(): boolean;
+	tryWrite(value: unknown): boolean;
+	nextWrite(): Promise<void>;
+	empty(): boolean;
+	clear(): void;
+};
 
 export class PortEmptyError extends Error {
 	constructor(portId: number) {
@@ -20,18 +29,18 @@ export class PortFullError extends Error {
 }
 
 export function peek<T>(port: NS_Port): T | Null {
-	return port.peek();
+	return port.peek() as T | Null;
 }
 
 export function readPort<T>(port: NS_Port): T | Null {
-	return port.read();
+	return port.read() as T | Null;
 }
 
 export function writePort<TIn, TOut = TIn>(
 	port: NS_Port,
 	input: TIn,
 ): TOut | Null {
-	return port.write(input);
+	return port.write(input) as TOut | Null;
 }
 
 export function optFromRaw<U>(value: U | Null): Optional<U> {
@@ -187,7 +196,7 @@ export class TypedNSP {
 	}
 
 	writePrevOpt<T>(data: T, log_msg?: string): Optional<T> {
-		const prev = rawReadOpt<T>(this.#port.write(data));
+		const prev = rawWriteOpt<T>(this.#port, data);
 		this.log(log_msg, "writePrevOpt", some_opt(data), "prev", prev);
 		return prev;
 	}
