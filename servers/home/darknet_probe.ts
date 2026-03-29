@@ -451,16 +451,12 @@ class AuthManager {
 		const pw = "" + num;
 		await this.doAuth(opts, pw);
 	}
+	// overflow the buffer!
 	async Pr0verFl0(opts: AuthFlowState) {
 		const { info } = opts;
-		const { authDetails: ad, server: srv } = info;
-		const { passwordFormat, passwordHint, passwordLength: len, data } = ad;
-		const { hostname: host } = srv;
-		this.ns.tprint("new ProverFlo auth flow for ", host, " len=", len);
-		this.ns.tprint("  hint ", passwordHint);
-		this.ns.tprint("  data ", data);
-		this.ns.tprint("  fmt ", passwordFormat);
-		throw new Error("Incomplete auth");
+		const { authDetails: ad } = info;
+		const { passwordLength: len } = ad;
+		await this.doAuth(opts, "A".repeat(len * 2));
 	}
 	async OpenWebAccessPoint(opts: AuthFlowState) {
 		const ad = opts.info.authDetails!;
