@@ -180,12 +180,7 @@ class AuthManager {
 
 			const auth = await ns.dnet.authenticate(host, pw);
 			ns.tprint("Factorios auth result:", auth);
-
-			if (auth.success) {
-				this.submit_auth_result(opts, auth, pw);
-				break;
-			}
-
+			if (this.submit_auth_result(opts, auth, pw)) break;
 			ns.tprint(`heartbleed(Factorios) for ${host}`);
 			const bleed_res = await ns.dnet.heartbleed(host);
 			if (!bleed_res.success) {
