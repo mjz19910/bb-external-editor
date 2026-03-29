@@ -64,11 +64,17 @@ export function dashboard(ns: NS) {
 	);
 
 	// ROI
-	ns.print(`--- Estimated ROI (Production Gain / Cost) ---`);
-	ns.print(`Level +1 ROI: ${ns.format.number(estimateLevelROI(ns, 1))}`);
-	ns.print(`RAM +1 ROI: ${ns.format.number(estimateRamROI(ns, 1))}`);
-	ns.print(`Core +1 ROI: ${ns.format.number(estimateCoreROI(ns, 1))}`);
 	ns.print(
-		`New Node ROI: ${ns.format.number(estimateNewNodeROI(ns, fleet))}`,
+		`--- Estimated ROI (Production Gain / Cost) (scale is 1 / 1000) ---`,
+	);
+	ns.print(
+		`Level +1 ROI: ${ns.format.number(estimateLevelROI(ns, 1) * 1000)}`,
+	);
+	ns.print(`RAM +1 ROI: ${ns.format.number(estimateRamROI(ns, 1) * 1000)}`);
+	ns.print(`Core +1 ROI: ${ns.format.number(estimateCoreROI(ns, 1) * 1000)}`);
+	ns.print(
+		`New Node ROI: ${
+			ns.format.number(estimateNewNodeROI(ns, fleet) * 1000)
+		}`,
 	);
 }
