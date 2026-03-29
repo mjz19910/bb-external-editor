@@ -109,10 +109,10 @@ export class TypedNSP {
 	readonly #port: NS_Port;
 	private logging = false;
 
-	constructor(ns: NS, port_id: number, port = ns.getPortHandle(port_id)) {
+	constructor(ns: NS, port_id: number) {
 		this.ns = ns;
 		this.#port_id = port_id;
-		this.#port = port;
+		this.#port = ns.getPortHandle(port_id);
 	}
 
 	get port_id() {
