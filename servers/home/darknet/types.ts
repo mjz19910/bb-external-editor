@@ -1,3 +1,5 @@
+import { DarknetServer } from "./misc";
+
 export type ServerAuthDetails2 = {
 	isOnline: boolean;
 	isConnectedToCurrentServer: boolean;
@@ -14,13 +16,15 @@ export type ServerAuthDetails2 = {
 		| "ASCII"
 		| "unicode";
 };
+
 export type DarknetServerInfo = {
 	connectedToParent: boolean;
-	authDetails: ServerAuthDetails2 | null;
-	server: { hostname: string } | null;
+	authDetails: ServerAuthDetails2;
+	server: DarknetServer;
 	parent: string | null;
 	password: string | null;
 };
+
 export const darknet_files = [
 	"api/darknet/probe.ts",
 	"api/darknet/stasis.ts",

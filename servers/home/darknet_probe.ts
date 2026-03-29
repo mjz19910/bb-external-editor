@@ -3,34 +3,10 @@ import {
 	DarknetResult,
 	ScriptArg,
 } from "./NetscriptDefinitions.d";
-import { DarknetServer, isDarknetServer2 } from "./darknet/misc";
+import { isDarknetServer2 } from "./darknet/misc";
+import { DarknetServerInfo } from "./darknet/types";
 import { Darknet, WithPort } from "./darknet_paths";
 import { DarknetFoundPassProbeMessage } from "./type/helper";
-
-type ServerAuthDetails2 = {
-	isOnline: boolean;
-	isConnectedToCurrentServer: boolean;
-	hasSession: boolean;
-	modelId: string;
-	passwordHint: string;
-	data: string;
-	logTrafficInterval: number;
-	passwordLength: number;
-	passwordFormat:
-		| "numeric"
-		| "alphabetic"
-		| "alphanumeric"
-		| "ASCII"
-		| "unicode";
-};
-
-type DarknetServerInfo = {
-	connectedToParent: boolean;
-	authDetails: ServerAuthDetails2;
-	server: DarknetServer;
-	parent: string | null;
-	password: string | null;
-};
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,

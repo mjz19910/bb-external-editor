@@ -4,6 +4,7 @@ const dnet_files_dyn: string[] = [];
 dnet_files_dyn.push("darknet_probe.ts");
 dnet_files_dyn.push("darknet_paths.ts");
 dnet_files_dyn.push("darknet/misc.ts");
+dnet_files_dyn.push("darknet/types.ts");
 dnet_files_dyn.push("NetscriptDefinitions.d.ts");
 dnet_files_dyn.push(Darknet.MemoryReallocation);
 dnet_files_dyn.push(WithPort.Read);
