@@ -1,6 +1,6 @@
-import { TypedNSP } from "./TypedNetScriptPort";
-import { DarknetServerInfo } from "../dnet/types2";
-import { DarknetResult } from "../NetscriptDefinitions.d";
+import { TypedNSP } from "./old/TypedNetScriptPort";
+import { DarknetServerInfo } from "./darknet/types";
+import { DarknetResult } from "./NetscriptDefinitions";
 
 export function hasTypeField<T extends { type: string }>(x: unknown): x is T {
 	return (
