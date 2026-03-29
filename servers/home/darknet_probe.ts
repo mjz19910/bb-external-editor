@@ -530,7 +530,6 @@ function post_dnet_probe(
 const SELF = "darknet_probe.ts";
 
 export async function main(ns: NS) {
-	ns.ui.openTail();
 	ns.disableLog("dnet.probe");
 	const infos: DarknetServerInfo[] = [];
 	const infos_idx_map = new Map<string, number>();
@@ -556,7 +555,6 @@ export async function main(ns: NS) {
 	dnet_files_dyn.push(Darknet.MemoryReallocation);
 	dnet_files_dyn.push(WithPort.Read);
 	if (local_probe.length == 1 && local_probe[0] == "darkweb") {
-		ns.ui.closeTail();
 		return ns.tprint("unable to start on home");
 	}
 	const am = new AuthManager(ns);
