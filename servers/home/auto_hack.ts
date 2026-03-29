@@ -3,7 +3,7 @@ export async function main(ns: NS) {
 
 	const host = ns.getHostname();
 
-	const hackScript = "src/hack.ts";
+	const hackScript = "src/hack2.ts";
 	const growScript = "src/grow2.ts";
 	const weakenScript = "tmp/weak.ts";
 
