@@ -1,13 +1,33 @@
+const script_paths = {
+	hack: "src/hack2.ts",
+	grow: "src/grow2.ts",
+	weaken: "tmp/weak.ts",
+} as const;
+const alt_script_paths = {
+	hack: "_/hack.ts",
+	grow: "_/grow.ts",
+	weaken: "_/weak.ts",
+} as const;
+type Get<T> = T[keyof T];
+type C<T, U> = (Get<T> | Get<U>) & {};
+type AnyScriptPath = C<typeof script_paths, typeof alt_script_paths>;
 export async function main(ns: NS) {
 	ns.disableLog("ALL");
-	ns.clearLog()
+	ns.clearLog();
 
 	const host = ns.getHostname();
+	let target_paths = null;
 
-	const hackScript = "src/hack2.ts";
-	const growScript = "src/grow2.ts";
-	const weakenScript = "tmp/weak.ts";
-	let time_offset = 1;
+	if (ns.fileExists("_/hack.ts", host)) {
+		target_paths = alt_script_paths;
+	} else {
+		target_paths = script_paths;
+	}
+
+	const hackScript = target_paths.hack;
+	const growScript = target_paths.grow;
+	const weakenScript = target_paths.weaken;
+	let time_offset = 1.5;
 	let did_launch = false;
 	let cur_pid = -1;
 
@@ -30,7 +50,7 @@ export async function main(ns: NS) {
 
 		const freeRam = ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
 
-		let script = weakenScript;
+		let script: AnyScriptPath = weakenScript;
 		let threads = 1;
 		let wait_ms = 500;
 

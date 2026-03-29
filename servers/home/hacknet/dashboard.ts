@@ -43,23 +43,23 @@ export function dashboard(ns: NS) {
 
 	// Upgrade info
 	ns.print(
-		`Level +1: ${formatNumber(ns, lvlCost)} | Time: ${
-			formatTime((lvlCost - money) / income)
+		`Level +1: ${formatNumber(ns, lvlCost * 4)} | Time: ${
+			formatTime((lvlCost * 4 - money) / income)
 		}`,
 	);
 	ns.print(
-		`RAM +1: ${formatNumber(ns, ramCost)} | Time: ${
-			formatTime((ramCost - money) / income)
+		`RAM +1: ${formatNumber(ns, ramCost * 2)} | Time: ${
+			formatTime((ramCost * 2 - money) / income)
 		}`,
 	);
 	ns.print(
-		`Core +1: ${formatNumber(ns, coreCost)} | Time: ${
-			formatTime((coreCost - money) / income)
+		`Core +1: ${formatNumber(ns, coreCost * 2)} | Time: ${
+			formatTime((coreCost * 2 - money * 0.5) / income)
 		}`,
 	);
 	ns.print(
-		`New Node: ${formatNumber(ns, newNodeCost)} | Time: ${
-			formatTime((newNodeCost - money) / income)
+		`New Node: ${formatNumber(ns, newNodeCost * 4)} | Time: ${
+			formatTime((newNodeCost * 4 - money) / income)
 		}`,
 	);
 
@@ -71,8 +71,6 @@ export function dashboard(ns: NS) {
 	ns.print(`RAM +1 ROI: ${ns.format.number(estimateRamROI(ns, 1) * 60)}`);
 	ns.print(`Core +1 ROI: ${ns.format.number(estimateCoreROI(ns, 1) * 60)}`);
 	ns.print(
-		`New Node ROI: ${
-			ns.format.number(estimateNewNodeROI(ns, fleet) * 60)
-		}`,
+		`New Node ROI: ${ns.format.number(estimateNewNodeROI(ns, fleet) * 60)}`,
 	);
 }

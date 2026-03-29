@@ -39,12 +39,12 @@ export async function main(ns: NS) {
 		}
 	}
 
-	ns.tprint(`\n=== ROOT SUMMARY ===`);
+	ns.tprint(`=== ROOT SUMMARY ===`);
 	ns.tprint(`Rooted: ${rooted.length}`);
 	if (rooted.length > 0) ns.tprint(rooted.join(", "));
 
-	ns.tprint(`\nSkipped: ${skipped.length}`);
-	if (skipped.length > 0) ns.tprint(skipped.join("\n"));
+	ns.tprint(`Skipped: ${skipped.length}`);
+	if (skipped.length > 0) ns.tprint(skipped.map((v) => `{${v}}`).join("\ "));
 }
 
 function tryOpenPorts(ns: NS, host: string) {

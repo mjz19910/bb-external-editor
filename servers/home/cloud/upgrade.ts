@@ -25,11 +25,11 @@ export async function main(ns: NS) {
 
 	const calcWidth = (chars: number) => chars * (16 / 2.5) + 3;
 	const calcHeight = (lines: number) => 35 + 24 * lines;
-	const width = calcWidth(62) + 61.185;
+	const width = calcWidth(63) + 61.185;
 	const maxHeight = Math.max(220, ns.ui.windowSize()[1] - 160);
 
 	let lines = 1;
-	ns.print("-".repeat(62));
+	ns.print("-".repeat(47));
 	ns.ui.resizeTail(width, Math.min(maxHeight, calcHeight(lines)));
 	ns.ui.moveTail(280, 70);
 
