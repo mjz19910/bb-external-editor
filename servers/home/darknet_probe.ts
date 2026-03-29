@@ -5,10 +5,7 @@ import {
 } from "./NetscriptDefinitions.d";
 import { DarknetServer, isDarknetServer2 } from "./darknet/misc";
 import { Darknet, WithPort } from "./darknet_paths";
-import {
-	DarknetFoundPassProbeMessage,
-	DarkNetProbeMessage,
-} from "./type/helper";
+import { DarknetFoundPassProbeMessage } from "./type/helper";
 
 type ServerAuthDetails2 = {
 	isOnline: boolean;
