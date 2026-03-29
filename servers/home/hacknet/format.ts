@@ -6,6 +6,7 @@ export function formatNumber(ns: NS, value: number, precision = 2): string {
 
 /** Format time in hh:mm:ss */
 export function formatTime(seconds: number): string {
+	if (seconds === Infinity) return "---";
 	if (seconds <= 0) return "0s";
 	const h = Math.floor(seconds / 3600);
 	const m = Math.floor((seconds % 3600) / 60);

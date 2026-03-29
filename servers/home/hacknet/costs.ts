@@ -34,16 +34,16 @@ export function totalCostForNewNodeToMatch(
 	const baseCost = ns.hacknet.getPurchaseNodeCost();
 	let levelCost = 0;
 	for (let lvl = 1; lvl < targetLevel; lvl++) {
-		levelCost += ns.hacknet.getLevelUpgradeCost(0, 1); // always use idx=0 for cost reference
+		levelCost += ns.hacknet.getLevelUpgradeCost(0);
 	}
 
 	let ramCost = 0;
 	let curRam = 1;
 	while (curRam < targetRam) {
-		ramCost += ns.hacknet.getRamUpgradeCost(0, 1); // use idx=0
+		ramCost += ns.hacknet.getRamUpgradeCost(0);
 		curRam *= 2;
 	}
 
-	const coreCost = ns.hacknet.getCoreUpgradeCost(0, targetCores - 1); // idx=0
+	const coreCost = ns.hacknet.getCoreUpgradeCost(0, targetCores - 1);
 	return baseCost + levelCost + ramCost + coreCost;
 }
