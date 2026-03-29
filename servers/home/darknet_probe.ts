@@ -22,7 +22,7 @@ const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	I: 1,
 };
 
-function decode_roman_num(ns: NS, val: string): number {
+function decode_roman_num(val: string): number {
 	if (val.length === 0) return 0;
 	if (val.length === 1) {
 		const v = ROMAN_NUMERAL_VALUES[val[0]];
@@ -39,10 +39,10 @@ function decode_roman_num(ns: NS, val: string): number {
 
 	if (first < second) {
 		// Subtractive notation, e.g., IV = 4
-		return second - first + decode_roman_num(ns, val.slice(2));
+		return second - first + decode_roman_num(val.slice(2));
 	} else {
 		// Regular additive notation
-		return first + decode_roman_num(ns, val.slice(1));
+		return first + decode_roman_num(val.slice(1));
 	}
 }
 /**
@@ -442,7 +442,7 @@ class AuthManager {
 	}
 	async BellaCuore(opts: AuthFlowState) {
 		const ad = opts.info.authDetails!;
-		const num = decode_roman_num(this.ns, ad.data);
+		const num = decode_roman_num(ad.data);
 		const pw = "" + num;
 		await this.doAuth(opts, pw);
 	}
