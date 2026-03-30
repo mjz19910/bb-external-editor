@@ -7,7 +7,7 @@ export type NetworkNode = {
 	neighbors: string[];
 };
 
-class NetworkMap {
+export class NetworkMap {
 	constructor(
 		public hosts: string[] = [],
 		public nodes: Record<string, NetworkNode> = {},
@@ -198,7 +198,11 @@ export type ServerSnapshot = {
 	growth: number;
 };
 
-export function snapshotServer(ns: NS, host: string): ServerSnapshot {
+export function snapshotServer(
+	ns: NS,
+	map: NetworkMap,
+	host: string,
+): ServerSnapshot {
 	return {
 		host,
 		rooted: ns.hasRootAccess(host),
@@ -218,18 +222,25 @@ export function rootedHosts(ns: NS, hosts: string[]): string[] {
 	return hosts.filter((h) => ns.hasRootAccess(h));
 }
 
-export function runnableHosts(ns: NS, hosts: string[]): string[] {
-	return hosts.filter((h) =>
-		ns.hasRootAccess(h) && map.ramSizes[host] > 0
-	);
+export function runnableHosts(
+	ns: NS,
+	map: NetworkMap,
+	hosts: string[],
+): string[] {
+	return hosts.filter((h) => ns.hasRootAccess(h) && map.ramSizes[h] > 0);
 }
 
-export function freeRam(ns: NS, host: string): number {
+export function freeRam(ns: NS, map: NetworkMap, host: string): number {
 	return map.ramSizes[host] - ns.getServerUsedRam(host);
 }
 
-export function canRunThreads(ns: NS, host: string, script: string): number {
+export function canRunThreads(
+	ns: NS,
+	map: NetworkMap,
+	host: string,
+	script: string,
+): number {
 	const ram = ns.getScriptRam(script, "home");
 	if (ram <= 0) return 0;
-	return Math.floor(freeRam(ns, host) / ram);
+	return Math.floor(freeRam(ns, map, host) / ram);
 }

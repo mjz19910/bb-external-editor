@@ -1,5 +1,5 @@
 import { NS } from "../@ns";
-import { buildNetworkMap, freeRam } from "./network_map";
+import { buildNetworkMap, freeRam, NetworkMap } from "./network_map";
 
 export type FleetHost = {
 	host: string;
@@ -15,15 +15,13 @@ export type Fleet = {
 	totalFreeRam: number;
 };
 
-export function getFleet(ns: NS): Fleet {
-	const map = buildNetworkMap(ns);
-
+export function getFleet(ns: NS, map: NetworkMap): Fleet {
 	const hosts: FleetHost[] = map.hosts
 		.filter((h) => ns.hasRootAccess(h) && map.ramSizes[h] > 0)
 		.map((host) => {
-			const maxRam = map.ramSizes[host]
+			const maxRam = map.ramSizes[host];
 			const usedRam = ns.getServerUsedRam(host);
-			const free = freeRam(ns, host);
+			const free = freeRam(ns, map, host);
 
 			return {
 				host,
@@ -54,21 +52,23 @@ export function getFleet(ns: NS): Fleet {
 
 export function maxThreadsForScript(
 	ns: NS,
+	map: NetworkMap,
 	host: string,
 	script: string,
 ): number {
 	const ram = ns.getScriptRam(script, "home");
 	if (ram <= 0) return 0;
-	return Math.floor(freeRam(ns, host) / ram);
+	return Math.floor(freeRam(ns, map, host) / ram);
 }
 
 export function totalThreadsForScript(
 	ns: NS,
+	map: NetworkMap,
 	fleet: Fleet,
 	script: string,
 ): number {
 	return fleet.hosts.reduce(
-		(sum, h) => sum + maxThreadsForScript(ns, h.host, script),
+		(sum, h) => sum + maxThreadsForScript(ns, map, h.host, script),
 		0,
 	);
 }

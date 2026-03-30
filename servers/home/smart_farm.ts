@@ -7,6 +7,7 @@ import {
 	totalThreadsForScript,
 } from "./lib/fleet";
 import { log, tlog } from "./lib/log";
+import { buildNetworkMap } from "./lib/network_map";
 import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep";
 import { chooseBestTarget } from "./lib/targeting";
 
@@ -32,16 +33,17 @@ export async function main(ns: NS) {
 	}
 
 	tlog(ns, `[SMART_FARM] target=${target} hackPct=${hackPct}`);
+	const map = buildNetworkMap(ns);
 
 	while (true) {
-		const fleet = getFleet(ns);
+		const fleet = getFleet(ns, map);
 		await deployScriptSet(ns, FILES, fleet.hosts.map((h) => h.host));
 
 		const prep = calcPrepPlan(ns, target);
 
 		if (!prep.isPrepped) {
-			const weakenCap = totalThreadsForScript(ns, fleet, WEAKEN);
-			const growCap = totalThreadsForScript(ns, fleet, GROW);
+			const weakenCap = totalThreadsForScript(ns, map, fleet, WEAKEN);
+			const growCap = totalThreadsForScript(ns, map, fleet, GROW);
 
 			const weakenWanted = Math.min(prep.totalWeaken, weakenCap);
 			const growWanted = Math.min(prep.needGrow, growCap);
@@ -60,7 +62,7 @@ export async function main(ns: NS) {
 			}
 
 			if (prep.needGrow > 0) {
-				const fleetAfterW = getFleet(ns);
+				const fleetAfterW = getFleet(ns, map);
 				const growAlloc = allocateThreads(
 					ns,
 					fleetAfterW,
@@ -120,7 +122,7 @@ export async function main(ns: NS) {
 			const growAlloc = allocateThreads(ns, fleet, GROW, growThreads);
 			const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
 
-			const fleetAfterG = getFleet(ns);
+			const fleetAfterG = getFleet(ns, map);
 			const weakAlloc = allocateThreads(
 				ns,
 				fleetAfterG,
@@ -144,15 +146,15 @@ export async function main(ns: NS) {
 		const hackAlloc = allocateThreads(ns, fleet, HACK, hackThreads);
 		const launchedH = runAllocations(ns, HACK, hackAlloc, [target]);
 
-		const fleetAfterH = getFleet(ns);
+		const fleetAfterH = getFleet(ns, map);
 		const weakAllocH = allocateThreads(ns, fleetAfterH, WEAKEN, hackWeaken);
 		const launchedWH = runAllocations(ns, WEAKEN, weakAllocH, [target]);
 
-		const fleetAfterWH = getFleet(ns);
+		const fleetAfterWH = getFleet(ns, map);
 		const growAlloc = allocateThreads(ns, fleetAfterWH, GROW, growThreads);
 		const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
 
-		const fleetAfterG = getFleet(ns);
+		const fleetAfterG = getFleet(ns, map);
 		const weakAllocG = allocateThreads(ns, fleetAfterG, WEAKEN, growWeaken);
 		const launchedWG = runAllocations(ns, WEAKEN, weakAllocG, [target]);
 

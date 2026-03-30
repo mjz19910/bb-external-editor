@@ -1,4 +1,5 @@
 import { NS } from "../@ns";
+import { buildNetworkMap } from "../lib/network_map";
 
 /** /cloud/upgrade.ts */
 export async function main(ns: NS) {
@@ -8,6 +9,7 @@ export async function main(ns: NS) {
 	const BOOTSTRAP_SCRIPT = "/cloud/bootstrap_cloud.ts";
 	const CATCHUP_BUDGET_RATIO = 0.01; // 1%
 
+	const map = buildNetworkMap(ns);
 	let hosts = ns.cloud.getServerNames();
 	if (hosts.length === 0) {
 		ns.print("no servers found, spawning bootstrap");
@@ -15,10 +17,7 @@ export async function main(ns: NS) {
 		return;
 	}
 
-	const ramSizes: Record<string, number> = {};
-	for (const host of hosts) {
-		ramSizes[host] = map.ramSizes[host]
-	}
+	const ramSizes = map.ramSizes;
 
 	const sortHosts = () =>
 		hosts.sort((a, b) => ramSizes[a] - ramSizes[b] || a.localeCompare(b));
