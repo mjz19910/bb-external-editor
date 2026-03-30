@@ -4,7 +4,7 @@ import { Darknet, WithPort } from "./darknet_paths";
 import {
 	DarknetAuthenticateMessage,
 	DarknetFoundPassProbeMessage,
-	DarkNetProbeMessage,
+	DarknetProbeMessage,
 } from "./type/helper";
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
@@ -581,7 +581,7 @@ export async function main(ns: NS) {
 			type: "darknet.probe",
 			by: runner,
 			infos,
-		} as DarkNetProbeMessage);
+		} as DarknetProbeMessage);
 		for (let i = 0; i < infos.length; i++) {
 			let info = infos[i];
 			if (!info.connectedToParent) continue;

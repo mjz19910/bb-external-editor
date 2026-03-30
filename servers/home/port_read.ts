@@ -2,7 +2,7 @@ import { ScriptPort } from "./type/ScriptPort";
 import {
 	DarknetAuthenticateMessage,
 	DarknetFoundPassProbeMessage,
-	DarkNetProbeMessage,
+	DarknetProbeMessage,
 	NewWordsMessage,
 	QuitMessage,
 	WaitMessage,
@@ -61,7 +61,7 @@ type PortMessage =
 	| WaitMessage
 	| QuitMessage
 	| NewWordsMessage
-	| DarkNetProbeMessage
+	| DarknetProbeMessage
 	| DarknetFoundPassProbeMessage;
 const pw_db = new Map<string, string>();
 const commonPasswordDictionary: string[] = [];
@@ -107,9 +107,15 @@ function handle_object_message(
 			return true;
 		}
 		case "darknet.probe": {
-			for (const info of msg.infos) {
-				if (info.password === void 0) {
-					ns.tprint("unauth server " + info.server!.hostname);
+			if (msg.alt === "ip") {
+				for (const ip of msg.results) {
+					ns.tprint(`found ip ${ip} connected to ${msg.for}`);
+				}
+			} else {
+				for (const info of msg.infos) {
+					if (info.password === null) {
+						ns.tprint("unauth server " + info.server.hostname);
+					}
 				}
 			}
 			return true;

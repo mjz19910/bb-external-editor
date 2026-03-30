@@ -15,10 +15,16 @@ export type DarknetAuthenticateMessage = {
 	auth: DarknetResult;
 	password: string;
 };
-export type DarkNetProbeMessage = {
+export type DarknetProbeMessage = {
 	type: "darknet.probe";
+	alt: "names";
 	by: string;
 	infos: DarknetServerInfo[];
+} | {
+	type: "darknet.probe";
+	for: string;
+	alt: "ip";
+	results: string[];
 };
 export type DarknetFoundPassProbeMessage = {
 	type: "found_password";

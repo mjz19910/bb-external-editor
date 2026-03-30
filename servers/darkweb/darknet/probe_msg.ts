@@ -31,7 +31,7 @@ export async function main(ns: NS) {
 		reply_port: 4,
 	});
 	await port4.nextWrite();
-	ns.print(port4.read<unknown>());
+	ns.print(port4.tryRead<unknown>());
 	port.write<ReplyMessage>({
 		type: "darknet.probe",
 		for: args[0],
