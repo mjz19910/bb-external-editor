@@ -596,7 +596,7 @@ function post_dnet_probe(
 	}
 }
 
-const SELF = "darknet_probe.ts";
+const SELF = "gpt_pause/src/darknet/probe2.ts";
 
 export async function main(ns: NS) {
 	ns.disableLog("dnet.probe");
@@ -619,9 +619,9 @@ export async function main(ns: NS) {
 	const local_probe = ns.dnet.probe();
 	const dnet_files_dyn: string[] = [];
 	dnet_files_dyn.push(SELF);
-	dnet_files_dyn.push("lib/helper.ts");
-	dnet_files_dyn.push("darknet/misc.ts");
-	dnet_files_dyn.push("NetscriptDefinitions.d.ts");
+	dnet_files_dyn.push("gpt_pause/src/lib/helper.ts");
+	dnet_files_dyn.push("gpt_pause/src/darknet/misc.ts");
+	dnet_files_dyn.push("gpt_pause/src/@ns.ts");
 	dnet_files_dyn.push(Darknet.MemoryReallocation);
 	dnet_files_dyn.push(WithPort.Read);
 	if (local_probe.length == 1 && local_probe[0] == "darkweb") {

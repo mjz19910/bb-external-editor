@@ -1,12 +1,12 @@
 import { NS } from "../@ns";
-import { buildNetworkMap } from "../gpt_pause/lib/network_map";
+import { buildNetworkMap } from "../lib/network_map";
 
 /** /cloud/upgrade.ts */
 export async function main(ns: NS) {
 	ns.disableLog("ALL");
 	ns.ui.openTail();
 
-	const BOOTSTRAP_SCRIPT = "/cloud/bootstrap_cloud.ts";
+	const BOOTSTRAP_SCRIPT = "gpt_pause/src/cloud/bootstrap_cloud.ts";
 	const CATCHUP_BUDGET_RATIO = 0.01; // 1%
 
 	const map = buildNetworkMap(ns);

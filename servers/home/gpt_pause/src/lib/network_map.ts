@@ -75,7 +75,7 @@ export class NetworkMap {
 	}
 }
 
-const DB_PATH = "db/network_map.json";
+const DB_PATH = "gpt_pause/src/db/network_map.json";
 let saved_map_invalid = false;
 let network_map: NetworkMap | null = null;
 
@@ -95,8 +95,8 @@ export function buildNetworkMap(ns: NS, start = "home"): NetworkMap {
 		}
 		return network_map;
 	}
-	x: if (!saved_map_invalid && ns.fileExists("db/network_map.json")) {
-		const json_txt = ns.read("db/network_map.json");
+	x: if (!saved_map_invalid && ns.fileExists(DB_PATH)) {
+		const json_txt = ns.read(DB_PATH);
 		const net_map: NetworkMap = JSON.parse(json_txt);
 		if (!("ramSizes" in net_map)) {
 			break x;

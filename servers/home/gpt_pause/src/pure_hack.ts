@@ -9,7 +9,7 @@ export async function main(ns: NS) {
 		? Number(ns.args[ns.args.indexOf("--reserve") + 1] ?? 0)
 		: 0;
 
-	const script = "tmp/hack.ts";
+	const script = "gpt_pause/src/hack.ts";
 	const scriptRam = ns.getScriptRam(script);
 	const map = buildNetworkMap(ns);
 

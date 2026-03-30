@@ -1,7 +1,7 @@
 import { ScriptArg } from "./@ns";
 
 export const deps = [
-  "types/arg_parse.ts"
+  "gpt_pause/src/arg_parse.ts"
 ];
 
 export function read_string_arg(arg: ScriptArg) {

@@ -1,6 +1,5 @@
-import { NS, ProcessInfo } from "./@ns";
+import { NS, ProcessInfo } from "../@ns";
 import { getFleet } from "./fleet";
-import { NetworkMap } from "./network_map";
 
 export type TargetJobCounts = {
 	target: string;
@@ -18,9 +17,9 @@ export type JobSnapshot = {
 	totalJobs: number;
 };
 
-const HACK = "hack_worker.ts";
-const GROW = "grow_worker.ts";
-const WEAKEN = "weaken_worker.ts";
+const HACK = "gpt_pause/src/hack_worker.ts";
+const GROW = "gpt_pause/src/grow_worker.ts";
+const WEAKEN = "gpt_pause/src/weaken_worker.ts";
 
 function ensureTarget(
 	out: Record<string, TargetJobCounts>,

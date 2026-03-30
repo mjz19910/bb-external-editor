@@ -9,10 +9,16 @@ import { getTargetJobCounts } from "../src/lib/jobs";
 import { log, tlog } from "../src/lib/log";
 import { calcHackThreadsForPercent, calcPrepPlan } from "../src/lib/prep";
 import { chooseBestTarget } from "./choose_best_target";
-const HACK = "hack_worker.ts";
-const GROW = "grow_worker.ts";
-const WEAKEN = "weaken_worker.ts";
-const FILES = [HACK, GROW, WEAKEN, "@ns.ts"];
+const HACK = "gpt_pause/src/hack_worker.ts";
+const GROW = "gpt_pause/src/grow_worker.ts";
+const WEAKEN = "gpt_pause/src/weaken_worker.ts";
+const FILES = [
+	HACK,
+	GROW,
+	WEAKEN,
+	"gpt_pause/src/@ns.ts",
+	"gpt_pause/cur/@ns.ts",
+];
 
 function missing(wanted: number, active: number): number {
 	return Math.max(0, wanted - active);

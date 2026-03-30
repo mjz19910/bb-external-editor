@@ -2,14 +2,16 @@ import { NS, Server } from "./@ns";
 import { isNormalServer } from "./lib/helper";
 import { exec } from "./exec2";
 import { HostInfoDB } from "./HostInfoDB";
-const RUN_PATH = "api/loop/grow.ts";
+
+const RUN_PATH = "gpt_pause/src/grow.ts";
+
 export async function main(ns: NS) {
 	const runner = "lit";
 	const target = "n00dles";
 	ns.rm(RUN_PATH, runner);
 	ns.scp(RUN_PATH, runner, "home");
-	ns.rm("db/hosts.json", runner);
-	ns.scp("db/hosts.json", runner, "home");
+	ns.rm("gpt_pause/src/db/hosts.json", runner);
+	ns.scp("gpt_pause/src/db/hosts.json", runner, "home");
 	const db = new HostInfoDB(ns);
 	const runInfo = db.find(runner);
 	const targetInfo = db.find(target);

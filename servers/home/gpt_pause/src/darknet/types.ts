@@ -28,11 +28,10 @@ export type DarknetServerInfo = {
 };
 
 export const darknet_files = [
-	"api/darknet/probe.ts",
-	"api/darknet/stasis.ts",
-	"types/darknet_types.ts",
-	"api/darknet/probe_one.ts",
-	"api/port_file_read.ts",
-	"api/darknet/open_cache.ts",
-	"api/darknet/update_probe.ts",
+	"gpt_pause/src/darknet/probe.ts",
+	"gpt_pause/src/darknet/stasis.ts",
+	"gpt_pause/src/darknet/types.ts",
+	"gpt_pause/src/with_port/read.ts",
+	"gpt_pause/src/darknet/open_cache.ts",
+	"gpt_pause/src/darknet/update_probe.ts",
 ];

@@ -64,7 +64,7 @@ const commonPasswordDictionary: string[] = [];
 const common_pw_dict_parts: string[][] = [commonPasswordDictionary];
 function handle_wait_request(ns: NS, msg: WaitMessage) {
 	if (msg.on === "darknet.nextMutation") {
-		ns.run("darknet/nextMutation.ts", 1, "--port", msg.reply_port);
+		ns.run("gpt_pause/src/darknet/nextMutation.ts", 1, "--port", msg.reply_port);
 	}
 }
 const db = new class {
@@ -137,7 +137,7 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 						type: "query_security",
 						infos: msg.infos,
 					});
-					ns.run("darknet/query_security.ts", 1);
+					ns.run("gpt_pause/src/darknet/query_security.ts", 1);
 				}
 			} else {
 				const ips: string[] = [];
@@ -245,7 +245,7 @@ export async function main(ns: NS) {
 	const port2 = ScriptPort.open_reply_port(ns);
 	const port3 = ScriptPort.open_api_port(ns);
 	port3.clear("empty before use");
-	ns.run("src/getHostname.ts", 1);
+	ns.run("gpt_pause/src/getHostname.ts", 1);
 	await port3.nextWrite("wait for hostname");
 	const v = port3.read<HostnameReplyMsg>("read hostname");
 	const s: StateType = {

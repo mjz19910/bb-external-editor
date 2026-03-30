@@ -5,9 +5,9 @@ export async function main(ns: NS) {
 	if (runner === "home") runner = "darkweb";
 	ns.scp(
 		[
-			"darknet/probe.ts",
-			"darknet/stasis.ts",
-			"darknet/update_probe.ts",
+			"gpt_pause/src/darknet/probe2.ts",
+			"gpt_pause/src/darknet/stasis.ts",
+			"gpt_pause/src/darknet/update_probe.ts",
 		],
 		runner,
 		"home",

@@ -6,7 +6,7 @@ export async function main(ns: NS) {
 	ns.ui.openTail();
 
 	const START_RAM = 1;
-	const UPGRADE_SCRIPT = "/cloud/upgrade.ts";
+	const UPGRADE_SCRIPT = "gpt_pause/src/cloud/upgrade.ts";
 	const limit = ns.cloud.getServerLimit();
 
 	const calcWidth = (chars: number) => chars * (16 / 2.5) + 3;

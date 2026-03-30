@@ -3,9 +3,9 @@ import { tlog } from "../src/lib/log";
 import { NS } from "./@ns";
 
 const FILES = [
-	"hack_worker.ts",
-	"grow_worker.ts",
-	"weaken_worker.ts",
+	"gpt_pause/src/hack_worker.ts",
+	"gpt_pause/src/grow_worker.ts",
+	"gpt_pause/src/weaken_worker.ts",
 ];
 
 export async function main(ns: NS) {

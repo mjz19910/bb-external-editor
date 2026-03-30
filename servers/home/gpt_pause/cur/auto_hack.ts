@@ -6,9 +6,9 @@ export async function main(ns: NS) {
 	ns.clearLog();
 
 	const host = ns.getHostname();
-	const hackScript = "_/hack.ts";
-	const growScript = "_/grow.ts";
-	const weakenScript = "_/weak.ts";
+	const hackScript = "gpt_pause/src/_/hack.ts";
+	const growScript = "gpt_pause/src/_/grow.ts";
+	const weakenScript = "gpt_pause/src/_/weak.ts";
 	const hackRam = ns.getScriptRam(hackScript);
 	const growRam = ns.getScriptRam(growScript);
 	const weakenRam = ns.getScriptRam(weakenScript);

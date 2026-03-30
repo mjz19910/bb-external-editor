@@ -11,9 +11,10 @@ export function isDarknetServer2(
 }
 
 export class WithPort {
-	static Read = "with_port/read.ts" as const;
+	static Read = "gpt_pause/src/with_port/read.ts" as const;
 }
 export class Darknet {
-	static OpenCache = "darknet/openCache.ts" as const;
-	static MemoryReallocation = "darknet/memoryReallocation.ts" as const;
+	static OpenCache = "gpt_pause/src/darknet/openCache.ts" as const;
+	static MemoryReallocation =
+		"gpt_pause/src/darknet/memoryReallocation.ts" as const;
 }

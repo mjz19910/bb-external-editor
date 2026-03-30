@@ -3,8 +3,8 @@ import { buildNetworkMap } from "../src/lib/network_map";
 import { log, tlog } from "../src/lib/log";
 import { NS } from "./@ns";
 
-const WEAKEN = "weaken_worker.ts";
-const GROW = "grow_worker.ts";
+const WEAKEN = "gpt_pause/src/weaken_worker.ts";
+const GROW = "gpt_pause/src/grow_worker.ts";
 
 export async function main(ns: NS) {
 	const target = String(ns.args[0] ?? "");

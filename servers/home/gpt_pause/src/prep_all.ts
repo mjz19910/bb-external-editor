@@ -13,7 +13,11 @@ function formatMoney(ns: NS, n: number) {
 	return "$" + ns.format.number(n, 2);
 }
 
-const all_scripts = ["tmp/prep_weak.ts", "tmp/prep_grow.ts", "@ns.ts"];
+const all_scripts = [
+	"gpt_pause/src/tmp/prep_weak.ts",
+	"gpt_pause/src/tmp/prep_grow.ts",
+	"gpt_pause/src/@ns.ts",
+];
 export async function main(ns: NS) {
 	function log(...args: any[]) {
 		ns.tprint(...args);
@@ -99,7 +103,7 @@ export async function main(ns: NS) {
 			if (!secReady) {
 				const launched = await launchAcrossNetwork(
 					ns,
-					"tmp/prep_weak.ts",
+					"gpt_pause/src/tmp/prep_weak.ts",
 					target,
 					reserve,
 					hosts,
@@ -119,7 +123,7 @@ export async function main(ns: NS) {
 			} else if (!moneyReady) {
 				const launched = await launchAcrossNetwork(
 					ns,
-					"tmp/prep_grow.ts",
+					"gpt_pause/src/tmp/prep_grow.ts",
 					target,
 					reserve,
 					hosts,

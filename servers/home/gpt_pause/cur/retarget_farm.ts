@@ -3,12 +3,12 @@ import { getFleet } from "../src/lib/fleet";
 import { chooseBestTarget } from "../src/lib/targeting";
 
 const WORKERS = new Set([
-	"hack_worker.ts",
-	"grow_worker.ts",
-	"weaken_worker.ts",
+	"gpt_pause/src/hack_worker.ts",
+	"gpt_pause/src/grow_worker.ts",
+	"gpt_pause/src/weaken_worker.ts",
 ]);
 
-const FARM_SCRIPT = "smart_farm.ts";
+const FARM_SCRIPT = "gpt_pause/cur/smart_farm.ts";
 
 export async function main(ns: NS) {
 	let newTarget = String(ns.args[0] ?? "");

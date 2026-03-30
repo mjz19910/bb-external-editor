@@ -1,4 +1,4 @@
-import { Server, NS } from "./@ns";
+import { NS, Server } from "./@ns";
 import { DarknetServer } from "./darknet/misc";
 
 /** HostInfoDB.ts */
@@ -9,7 +9,7 @@ export type HostInfo<T> = {
 	server: T;
 };
 
-export const DB_FILE = "/host_info.json";
+export const DB_FILE = "gpt_pause/src/db/host_info.json";
 
 export class HostInfoDB<T extends Server | DarknetServer> {
 	ns: NS;

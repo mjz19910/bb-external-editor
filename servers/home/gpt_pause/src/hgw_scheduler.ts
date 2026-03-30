@@ -14,7 +14,7 @@ interface StateFile {
 	nextScriptId: number; // next unique script ID to use
 }
 
-const STATE_FILE = "/tmp/hgw_state.json";
+const STATE_FILE = "gpt_pause/src/db/hgw_state.json";
 
 function readState(ns: NS): StateFile {
 	if (!ns.fileExists(STATE_FILE, "home")) {
