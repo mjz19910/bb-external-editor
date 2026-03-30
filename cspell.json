@@ -1,0 +1,10 @@
+{
+	"dictionaryDefinitions": [
+		{
+			"name": "all",
+			"path": "./dict/all.txt",
+			"addWords": true
+		}
+	],
+	"dictionaries": [ "all" ]
+}
