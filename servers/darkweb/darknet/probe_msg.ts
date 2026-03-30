@@ -30,7 +30,10 @@ export async function main(ns: NS) {
 		reply_port: 4,
 	});
 	await port4.nextWrite();
-	ns.print(port4.readOpt<null>());
+	if (port4.readOpt<void>().type === "None") {
+		ns.toast("port(4) failed to read nextMutation message", "error");
+		return;
+	}
 	const ips = ns.dnet.probe(true);
 	port.write<ReplyMessage>({
 		type: "darknet.probe",
@@ -38,6 +41,4 @@ export async function main(ns: NS) {
 		alt: "ip",
 		results: ips,
 	});
-	await Promise.race([port4.nextWrite(), ns.asleep(500)]);
-	ns.print(port4.readOpt<null>());
 }
