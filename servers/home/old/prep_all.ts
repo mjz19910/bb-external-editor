@@ -20,7 +20,7 @@ export async function main(ns: NS) {
 		ns.print(...args);
 	}
 
-	// ns.disableLog("ALL");
+	ns.disableLog("ALL");
 	ns.clearLog();
 
 	const reserve = ns.args.includes("--reserve")
