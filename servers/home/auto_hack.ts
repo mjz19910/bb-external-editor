@@ -1,9 +1,11 @@
+import { buildNetworkMap } from "./lib/network_map";
+
 export async function main(ns: NS) {
 	ns.disableLog("ALL");
 	ns.clearLog();
 
 	const host = ns.getHostname();
-	const hackScript = "_/hack.ts"
+	const hackScript = "_/hack.ts";
 	const growScript = "_/grow.ts";
 	const weakenScript = "_/weak.ts";
 	let time_offset = 1.5;
@@ -72,12 +74,12 @@ export async function main(ns: NS) {
 
 function findBestTarget(ns: NS) {
 	const myHacking = ns.getHackingLevel();
-	const servers = scanAll(ns);
+	const map = buildNetworkMap(ns);
 
 	let best = null;
 	let bestValue = 0;
 
-	for (const s of servers) {
+	for (const s of map.hosts) {
 		if (s === "home") continue;
 		if (!ns.hasRootAccess(s)) continue;
 		if (ns.getServerRequiredHackingLevel(s) > (myHacking / 2) + 2) continue;
@@ -97,27 +99,4 @@ function findBestTarget(ns: NS) {
 	}
 
 	return best;
-}
-
-function scanAll(ns: NS) {
-	const ret = [];
-	const seen: Set<string> = new Set();
-	const queue: string[] = ["home"];
-
-	while (queue.length > 0) {
-		const host = queue.shift()!;
-		if (seen.has(host)) continue;
-
-		seen.add(host);
-		ret.push(host);
-
-		for (const next of ns.scan(host)) {
-			if (!seen.has(next)) {
-				queue.push(next);
-			}
-		}
-	}
-	seen.clear();
-
-	return ret;
 }

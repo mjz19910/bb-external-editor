@@ -3,6 +3,7 @@
  */
 
 import { isNormalServer } from "../lib/helper";
+import { buildNetworkMap } from "../lib/network_map";
 
 type ScoreRow = {
 	target: string;
@@ -29,23 +30,6 @@ type ScoreRow = {
 	serverGrowth: number;
 };
 
-function scanAll(ns: NS, start = "home"): string[] {
-	const seen = new Set<string>();
-	const q = [start];
-
-	while (q.length > 0) {
-		const host = q.shift()!;
-		if (seen.has(host)) continue;
-		seen.add(host);
-
-		for (const n of ns.scan(host)) {
-			if (!seen.has(n)) q.push(n);
-		}
-	}
-
-	return [...seen];
-}
-
 function ceilSafe(n: number): number {
 	if (!Number.isFinite(n) || n <= 0) return 0;
 	return Math.ceil(n);
@@ -56,11 +40,7 @@ function pad(s: string, len: number) {
 }
 
 // 1️⃣ Validate server
-function isValidTarget(
-	player: Player,
-	server: Server,
-	hackPct: number,
-): boolean {
+function isValidTarget(player: Player, server: Server): boolean {
 	if (server.moneyMax! <= 0) return false;
 	if (server.requiredHackingSkill! > player.skills.hacking * 1.25) {
 		return false;
@@ -131,7 +111,6 @@ function calcScores(
 	g: number,
 	w1: number,
 	w2: number,
-	batchRam: number,
 	ramScale: number,
 	weakenTime: number,
 	moneyStolen: number,
@@ -156,7 +135,7 @@ function scoreTarget(
 
 	if (!isNormalServer(srv)) return null;
 
-	if (!isValidTarget(player, srv, hackPct)) return null;
+	if (!isValidTarget(player, srv)) return null;
 
 	const {
 		h,
@@ -178,7 +157,6 @@ function scoreTarget(
 		g,
 		w1,
 		w2,
-		batchRam,
 		ramScale,
 		ns.formulas.hacking.weakenTime(srv, player),
 		moneyStolen,
@@ -268,7 +246,8 @@ export async function main(ns: NS) {
 
 	const hackPct = Number(ns.args[0] ?? 0.05);
 
-	const rooted = scanAll(ns)
+	const rooted = buildNetworkMap(ns)
+		.hosts
 		.filter((s) => ns.hasRootAccess(s))
 		.filter((s) => s !== "home")
 		.filter((s) => ns.getServerMaxMoney(s) > 0);

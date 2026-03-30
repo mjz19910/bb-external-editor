@@ -565,7 +565,7 @@ function post_dnet_probe(
 	runner: string,
 ) {
 	for (const info of infos) {
-		delete info.parent;
+		info.parent = null;
 		info.connectedToParent = false;
 	}
 	const targets = ns.dnet.probe();
