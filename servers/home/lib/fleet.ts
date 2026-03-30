@@ -1,5 +1,5 @@
 import { NS } from "../@ns";
-import { buildNetworkMap, freeRam, NetworkMap } from "./network_map";
+import { NetworkMap } from "./network_map";
 
 export type FleetHost = {
 	host: string;
@@ -18,18 +18,7 @@ export type Fleet = {
 export function getFleet(ns: NS, map: NetworkMap): Fleet {
 	const hosts: FleetHost[] = map.hosts
 		.filter((h) => ns.hasRootAccess(h) && map.ramSizes[h] > 0)
-		.map((host) => {
-			const maxRam = map.ramSizes[host];
-			const usedRam = ns.getServerUsedRam(host);
-			const free = freeRam(ns, map, host);
-
-			return {
-				host,
-				maxRam,
-				usedRam,
-				freeRam: free,
-			};
-		})
+		.map((host) => map.getRamInfo(ns, host))
 		.sort((a, b) => b.freeRam - a.freeRam);
 
 	let totalMaxRam = 0;
@@ -58,7 +47,8 @@ export function maxThreadsForScript(
 ): number {
 	const ram = ns.getScriptRam(script, "home");
 	if (ram <= 0) return 0;
-	return Math.floor(freeRam(ns, map, host) / ram);
+	const ri = map.getRamInfo(ns, host);
+	return Math.floor(ri.freeRam / ram);
 }
 
 export function totalThreadsForScript(

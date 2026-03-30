@@ -13,6 +13,17 @@ export class NetworkMap {
 		public nodes: Record<string, NetworkNode> = {},
 		public ramSizes: Record<string, number> = {},
 	) {}
+	getRamInfo(ns: NS, host: string) {
+		const maxRam = this.ramSizes[host];
+		const usedRam = ns.getServerUsedRam(host);
+		const free = maxRam - usedRam;
+		return {
+			host,
+			maxRam,
+			usedRam,
+			freeRam: free,
+		};
+	}
 	findBestTarget(ns: NS) {
 		const myHacking = ns.getHackingLevel();
 		const map = this;
@@ -230,10 +241,6 @@ export function runnableHosts(
 	return hosts.filter((h) => ns.hasRootAccess(h) && map.ramSizes[h] > 0);
 }
 
-export function freeRam(ns: NS, map: NetworkMap, host: string): number {
-	return map.ramSizes[host] - ns.getServerUsedRam(host);
-}
-
 export function canRunThreads(
 	ns: NS,
 	map: NetworkMap,
@@ -242,5 +249,6 @@ export function canRunThreads(
 ): number {
 	const ram = ns.getScriptRam(script, "home");
 	if (ram <= 0) return 0;
-	return Math.floor(freeRam(ns, map, host) / ram);
+	const ri = map.getRamInfo(ns, host);
+	return Math.floor(ri.freeRam / ram);
 }
