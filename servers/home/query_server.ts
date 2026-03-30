@@ -10,6 +10,7 @@ export async function main(ns: NS) {
 	}
 	const { value: query_str } = res;
 	const [query_cmd, query_arg] = query_str.split(" ");
+	ns.tprint("query arg ", query_arg);
 	const args = query_arg.split(",");
 	switch (query_cmd) {
 		case "online_check": {
