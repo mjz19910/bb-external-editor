@@ -7,10 +7,7 @@ import {
 } from "./lib/fleet";
 import { getTargetJobCounts } from "./lib/jobs";
 import { log, tlog } from "./lib/log";
-import {
-	calcHackThreadsForPercent,
-	calcPrepPlan,
-} from "./gpt_pause/src/lib/prep";
+import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep";
 import { chooseBestTarget } from "./choose_best_target";
 const HACK = "gpt_pause/src/hack_worker.ts";
 const GROW = "gpt_pause/src/grow_worker.ts";
