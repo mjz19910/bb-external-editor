@@ -9,7 +9,6 @@ import {
 	QuitMessage,
 	WaitMessage,
 } from "./type/helper";
-import { write_info_to_fs_db } from "./write_ip_db";
 
 export function hasTypeField<T extends { type: string }>(x: unknown): x is T {
 	return (

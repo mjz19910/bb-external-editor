@@ -37,21 +37,8 @@ export async function main(ns: NS) {
 	for (const file of ip_db_files) {
 		const file_data = ns.read(file);
 		const info: DarknetServerInfo = JSON.parse(file_data);
-		if (!info.server.isOnline) {
-			ns.rm(file);
-			continue;
-		}
 		const srv = ns.getServer(info.ip) as DarknetServer;
 		info.server = srv;
 		write_info_to_fs_db(ns, info, file_data);
-	}
-	const host_db_files = ns.ls("home", "tmp/host/");
-	for (const file of host_db_files) {
-		const file_data = ns.read(file);
-		const info: DarknetServerInfo = JSON.parse(file_data);
-		if (!info.server.isOnline) {
-			ns.rm(file);
-			continue;
-		}
 	}
 }
