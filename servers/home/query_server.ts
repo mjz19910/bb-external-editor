@@ -3,10 +3,6 @@ import { DarknetServerInfo } from "./darknet/types";
 import { ScriptPort } from "./type/ScriptPort";
 import { write_info_to_fs_db } from "./write_ip_db";
 
-export const utf8_bad_chars = {
-	":": String.fromCharCode(61440 + ":".charCodeAt(0)),
-};
-
 export async function main(ns: NS) {
 	const port = new ScriptPort(ns, 1);
 	const port2 = new ScriptPort(ns, 2);
