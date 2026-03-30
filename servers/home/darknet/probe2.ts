@@ -169,7 +169,7 @@ class AuthManager {
 				next_factor = i;
 				break;
 			}
-			cur_num = next_factor!;
+			cur_num = next_factor ?? 2;
 			const pw = cur_num.toString();
 			ns.tprint(`authenticate(Factorios) for ${host} with "${pw}"`);
 			const auth = await ns.dnet.authenticate(host, pw);
