@@ -158,10 +158,11 @@ class AuthManager {
 
 		ns.tprint(`Starting Factorios auth flow for ${host}`);
 		const pw_len = info.authDetails.passwordLength;
+		let cur_num = 1;
 
 		for (;;) {
 			let next_factor = null;
-			outer: for (let i = 2; i < 999; i++) {
+			outer: for (let i = 1; i < 999; i++) {
 				for (const f of factors) {
 					if (i % f != 0) continue outer;
 				}
@@ -170,14 +171,13 @@ class AuthManager {
 				}
 				if (pw_len == 2 && i >= 100) break;
 				if (pw_len == 3 && i >= 1000) break;
+				if (cur_num == i) continue;
 				next_factor = i;
 				break;
 			}
-			debugger;
-			const cur_num = next_factor!;
+			cur_num = next_factor!;
 			const pw = cur_num.toString();
 			ns.tprint(`authenticate(Factorios) for ${host} with "${pw}"`);
-
 			const auth = await ns.dnet.authenticate(host, pw);
 			ns.tprint("Factorios auth result:", auth);
 			if (this.submit_auth_result(opts, auth, pw)) break;
@@ -187,7 +187,6 @@ class AuthManager {
 				ns.tprint("heartbleed failed:", bleed_res);
 				break;
 			}
-
 			for (const log of bleed_res.logs) {
 				let data: FactorsBleedResult | null = null;
 				try {
@@ -206,15 +205,14 @@ class AuthManager {
 					data,
 					`pw=${data.passwordAttempted} num=${cur_num}`,
 				);
-
 				let candidate = cur_num;
 				const { data: feedback_raw } = data;
 				const feedback = feedback_raw === "true";
-
 				if (feedback) {
-					if (factors.includes(candidate)) continue;
-					factors.push(candidate);
-					ns.tprint(`New valid factor discovered: ${candidate}`);
+					if (!factors.includes(candidate)) {
+						factors.push(candidate);
+						ns.tprint(`New valid factor discovered: ${candidate}`);
+					}
 				} else {
 					for (const f of factors) {
 						if (candidate % f == 0) candidate /= f;
