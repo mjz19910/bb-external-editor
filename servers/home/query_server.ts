@@ -54,12 +54,21 @@ export async function main(ns: NS) {
 	}
 	const ip_db_files = ns.ls("home", "tmp/ip/");
 	for (const file of ip_db_files) {
-		const content = ns.read(file);
-		const info: DarknetServerInfo = JSON.parse(content);
+		const file_data = ns.read(file);
+		const info: DarknetServerInfo = JSON.parse(file_data);
 		const oSrv = info.server;
+		if (oSrv === void 0) {
+			ns.tprint("missing info.server field ", file);
+			ns.rm(file);
+			continue;
+		}
 		const host = oSrv.hostname;
+		if (!host) {
+			ns.tprint("missing hostname field ", oSrv);
+			continue;
+		}
 		const srv = ns.getServer(info.server.ip) as DarknetServer;
-		let nt_ok_path = oSrv.hostname.replaceAll(/[-:;^&@%$]/g, "_");
+		let nt_ok_path = host.replaceAll(/[-:;^&@%$]/g, "_");
 		nt_ok_path = nt_ok_path.replaceAll(/__+/g, "_");
 		nt_ok_path = nt_ok_path.replaceAll("🅱️", "b");
 		const host_save_path = `tmp/host/${nt_ok_path}.txt`;
@@ -73,7 +82,7 @@ export async function main(ns: NS) {
 		}
 		info.server = srv;
 		const new_content = JSON.stringify(info, void 0, "\t");
-		if (new_content != content) {
+		if (new_content != file_data) {
 			ns.write(file, new_content, "w");
 			ns.write(host_save_path, new_content, "w");
 		}

@@ -175,6 +175,12 @@ function handle_object_message(
 				const info = db.server_map_decay_list[i];
 				const srv = info.server;
 				const host = srv.hostname;
+				if (info.server.ip === void 0) {
+					ns.tprint("missing ip field on srv.ip ", info);
+					db.server_map_decay_list.splice(i, 1);
+					i--;
+					continue;
+				}
 				if (query_map[host]) {
 					info.server = query_map[host];
 					ns.write(
