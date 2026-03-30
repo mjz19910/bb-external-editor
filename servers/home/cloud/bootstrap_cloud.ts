@@ -1,3 +1,5 @@
+import { NS } from "../@ns"
+
 /** /cloud/bootstrap_cloud.ts */
 export async function main(ns: NS) {
 	ns.disableLog("ALL")

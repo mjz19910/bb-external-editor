@@ -16,6 +16,8 @@
 	other features not present on `analyze` or `scan-analyze`.
 */
 
+import { NS } from "../@ns"
+
 function security_info(ns: NS, server: string) {
 	const cur = ns.getServerSecurityLevel(server)
 	const base = ns.getServerBaseSecurityLevel(server)

@@ -1,3 +1,5 @@
+import { NS } from "../@ns";
+
 /**
  * Compute partition number p(n) using Euler's pentagonal number theorem
  *
@@ -7,37 +9,37 @@
  *      - ...
  */
 export function partitions(n: number): number {
-	const memo: number[] = Array(n + 1).fill(0)
+	const memo: number[] = Array(n + 1).fill(0);
 
-	memo[0] = 1 // base case: p(0) = 1
+	memo[0] = 1; // base case: p(0) = 1
 
 	for (let i = 1; i <= n; i++) {
-		let sum = 0
+		let sum = 0;
 
 		// k = 1,2,3,... generates pentagonal numbers
-		for (let k = 1; ; k++) {
+		for (let k = 1;; k++) {
 			// generalized pentagonal numbers:
-			const g1 = (k * (3 * k - 1)) / 2  // k(3k-1)/2
-			const g2 = (k * (3 * k + 1)) / 2  // k(3k+1)/2
+			const g1 = (k * (3 * k - 1)) / 2; // k(3k-1)/2
+			const g2 = (k * (3 * k + 1)) / 2; // k(3k+1)/2
 
-			if (g1 > i) break // stop when terms exceed current i
+			if (g1 > i) break; // stop when terms exceed current i
 
 			// sign pattern: + + − − + + ...
-			const sign = k % 2 === 1 ? +1 : -1
+			const sign = k % 2 === 1 ? +1 : -1;
 
 			// p(i - g1)
-			sum += sign * memo[i - g1]
+			sum += sign * memo[i - g1];
 
 			// p(i - g2) (only if valid)
 			if (g2 <= i) {
-				sum += sign * memo[i - g2]
+				sum += sign * memo[i - g2];
 			}
 		}
 
-		memo[i] = sum
+		memo[i] = sum;
 	}
 
-	return memo[n]
+	return memo[n];
 }
 
 /**
@@ -45,9 +47,9 @@ export function partitions(n: number): number {
  * number of ways to write n as sum of >= 2 positive integers
  */
 export function waysAtLeastTwo(n: number): number {
-	return partitions(n) - 1 // subtract the single-term partition [n]
+	return partitions(n) - 1; // subtract the single-term partition [n]
 }
 
 export async function main(ns: NS) {
-	ns.tprint("waysAtLeastTwo ", waysAtLeastTwo(ns.args[0] as number))
+	ns.tprint("waysAtLeastTwo ", waysAtLeastTwo(ns.args[0] as number));
 }

@@ -1,3 +1,5 @@
+import { NS, ScriptArg } from "../@ns";
+
 export async function main(ns: NS) {
 	const f = ns.flags([["port", 1]]) as {
 		port: number;

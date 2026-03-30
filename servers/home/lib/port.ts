@@ -1,3 +1,5 @@
+import { NetscriptPort, NS } from "../@ns";
+
 // port.ts
 export class PortEmptyError extends Error {
 	constructor() { super(`Unexpected "NULL PORT DATA"`); this.name = "PortEmptyError"; }

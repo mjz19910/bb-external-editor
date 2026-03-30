@@ -1,3 +1,5 @@
+import { NS } from "../@ns";
+
 /** Format numbers consistently for display */
 export function formatNumber(ns: NS, value: number, precision = 2): string {
 	if (!ns) return value.toString();

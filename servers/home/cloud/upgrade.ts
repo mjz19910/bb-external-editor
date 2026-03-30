@@ -1,3 +1,5 @@
+import { NS } from "../@ns";
+
 /** /cloud/upgrade.ts */
 export async function main(ns: NS) {
 	ns.disableLog("ALL");

@@ -1,3 +1,5 @@
+import { NS } from "../@ns";
+import { isNormalServer } from "../lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
 
 export async function main(ns: NS) {
@@ -5,6 +7,7 @@ export async function main(ns: NS) {
 	for (const info of db.data) {
 		const srv = info.server;
 		if (srv === null) continue;
+		if (!isNormalServer(srv)) continue;
 		if (srv.openPortCount === void 0) continue;
 		if (srv.numOpenPortsRequired === void 0) continue;
 		if (srv.numOpenPortsRequired < 2) continue;

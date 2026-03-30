@@ -7,6 +7,7 @@ import {
 	PortMessage,
 } from "../type/helper";
 import { ScriptPort } from "../type/ScriptPort";
+import { DarknetResult, NS, ScriptArg } from "../@ns";
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,
@@ -565,7 +566,7 @@ function post_dnet_probe(
 	runner: string,
 ) {
 	for (const info of infos) {
-		info.parent = null;
+		info.parent = void 0;
 		info.connectedToParent = false;
 	}
 	const targets = ns.dnet.probe();

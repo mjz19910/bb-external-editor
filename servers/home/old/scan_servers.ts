@@ -1,3 +1,4 @@
+import { NS, Server } from "../@ns";
 import { HostInfoDB } from "../src/HostInfoDB";
 import { read_string_arg } from "../src/arg_parse";
 

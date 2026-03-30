@@ -1,3 +1,4 @@
+import { NS } from "../@ns"
 import { HostInfoDB } from "./HostInfoDB"
 
 export async function main(ns: NS) {

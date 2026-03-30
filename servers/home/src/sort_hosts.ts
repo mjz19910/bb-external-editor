@@ -1,3 +1,4 @@
+import { NS } from "../@ns";
 import { HostInfoDB } from "../src/HostInfoDB";
 import { wv } from "../src/V";
 

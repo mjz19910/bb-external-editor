@@ -1,3 +1,4 @@
+import { NS, Server } from "../@ns";
 import { DarknetServer, isDarknetServer2 } from "../darknet/misc";
 import { isNormalServer } from "../lib/helper";
 import { HostInfoDB } from "./HostInfoDB";

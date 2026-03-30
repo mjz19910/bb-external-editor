@@ -1,3 +1,5 @@
+import { NS } from "../@ns"
+
 export async function main(ns: NS) {
 	let contract: string | null = null
 	if (typeof ns.args[0] === "string") {

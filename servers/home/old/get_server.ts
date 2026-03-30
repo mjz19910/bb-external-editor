@@ -1,3 +1,4 @@
+import { NS, Server } from "../@ns";
 import { HostInfoDB } from "../src/HostInfoDB";
 function set_key<U, K extends keyof U>(base: U, updated: U, k: K): U[K] {
 	return base[k] = updated[k];

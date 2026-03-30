@@ -1,3 +1,5 @@
+import { AutocompleteData, ScriptArg, NS } from "../@ns"
+
 export function autocomplete(data: AutocompleteData, args: ScriptArg[]) {
 	// return data.servers
 	if (args.length == 0) {

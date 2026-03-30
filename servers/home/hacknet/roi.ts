@@ -1,3 +1,4 @@
+import { NS } from "../@ns";
 import {
 	totalCoreUpgradeCost,
 	totalCostForNewNodeToMatch,

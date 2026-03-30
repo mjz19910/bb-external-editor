@@ -1,4 +1,5 @@
 // hgw-message.ts
+import { ScriptArg, NS } from "../@ns";
 import { Arg } from "./arg-codec";
 
 export type HgwType = "hack" | "grow" | "weaken";

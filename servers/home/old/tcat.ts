@@ -1,3 +1,4 @@
+import { NS, AutocompleteData, ScriptArg } from "../@ns";
 import { read_string_arg } from "../src/arg_parse";
 
 export async function main(ns: NS) {

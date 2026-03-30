@@ -1,3 +1,5 @@
+import { NS } from "../@ns";
+
 /**
  * Centralized logging for Hacknet upgrades
  * @param ns NS instance

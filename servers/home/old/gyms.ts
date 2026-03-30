@@ -1,3 +1,5 @@
+import { NS } from "../@ns";
+
 type Compute<T> = { [K in keyof T]: T[K]; } & {};
 type RW<T> = { -readonly [R in keyof T]: RW<T[R]> } & {}
 function rw<T>(x: T): RW<T> { return x }

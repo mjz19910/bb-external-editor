@@ -1,3 +1,5 @@
+import { NS } from "../@ns";
+
 export const deps = [
 	"darkweb.ts",
 ];
