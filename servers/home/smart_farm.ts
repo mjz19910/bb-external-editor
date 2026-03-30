@@ -27,8 +27,8 @@ function missing(wanted: number, active: number): number {
 
 export async function main(ns: NS) {
 	ns.disableLog("sleep");
-	ns.disableLog("scp");
-	ns.disableLog("exec");
+	// ns.disableLog("scp");
+	// ns.disableLog("exec");
 	ns.disableLog("getServerUsedRam");
 	ns.disableLog("getServerMaxRam");
 

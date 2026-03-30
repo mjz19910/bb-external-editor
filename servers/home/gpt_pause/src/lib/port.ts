@@ -1,8 +1,11 @@
-import { NetscriptPort, NS } from "./@ns";
+import { NetscriptPort, NS } from "../@ns";
 
 // port.ts
 export class PortEmptyError extends Error {
-	constructor() { super(`Unexpected "NULL PORT DATA"`); this.name = "PortEmptyError"; }
+	constructor() {
+		super(`Unexpected "NULL PORT DATA"`);
+		this.name = "PortEmptyError";
+	}
 }
 
 export class Com<T> {
@@ -12,8 +15,12 @@ export class Com<T> {
 		this.#port = ns.getPortHandle(portId);
 	}
 
-	write(value: T) { return this.#port.write(value); }
-	tryWrite(value: T) { return this.#port.tryWrite(value); }
+	write(value: T) {
+		return this.#port.write(value);
+	}
+	tryWrite(value: T) {
+		return this.#port.tryWrite(value);
+	}
 
 	peek(): T {
 		const data = this.#port.peek();
@@ -34,7 +41,7 @@ export class Com<T> {
 
 	readAll(): T[] {
 		const results: T[] = [];
-		for (; ;) {
+		for (;;) {
 			const data = this.#port.read();
 			if (data === "NULL PORT DATA") break;
 			results.push(data);
@@ -42,8 +49,16 @@ export class Com<T> {
 		return results;
 	}
 
-	full() { return this.#port.full(); }
-	empty() { return this.#port.empty(); }
-	clear() { return this.#port.clear(); }
-	nextWrite() { return this.#port.nextWrite(); }
+	full() {
+		return this.#port.full();
+	}
+	empty() {
+		return this.#port.empty();
+	}
+	clear() {
+		return this.#port.clear();
+	}
+	nextWrite() {
+		return this.#port.nextWrite();
+	}
 }
