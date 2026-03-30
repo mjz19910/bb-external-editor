@@ -24,18 +24,20 @@ export async function main(ns: NS) {
 	ns.ui.openTail();
 	const port = new ScriptPort<ProbeMessageTypes>(ns, 1);
 	const port4 = new ScriptPort(ns, 4);
-	const ips = ns.dnet.probe(true);
 	port.write<SendMessage>({
 		type: "wait",
 		on: "darknet.nextMutation",
 		reply_port: 4,
 	});
 	await port4.nextWrite();
-	ns.print(port4.tryRead<unknown>());
+	ns.print(port4.readOpt<null>());
+	const ips = ns.dnet.probe(true);
 	port.write<ReplyMessage>({
 		type: "darknet.probe",
 		for: args[0],
 		alt: "ip",
 		results: ips,
 	});
+	await Promise.race([port4.nextWrite(), ns.asleep(500)]);
+	ns.print(port4.readOpt<null>());
 }
