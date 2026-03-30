@@ -166,12 +166,15 @@ function handle_object_message(
 			for (let i = 0; i < db.server_map_decay_list.length; i++) {
 				const info = db.server_map_decay_list[i];
 				const srv = info.server;
-				if (query_map[srv.hostname].isOnline) {
+				if (
+					query_map[srv.hostname] && query_map[srv.hostname].isOnline
+				) {
 					db.server_map_decay_list.splice(i, 1);
 					i--;
 					ns.tprint("still online ", srv.ip);
 				}
 			}
+			ns.tprint(msg.result);
 			return true;
 		}
 		case "found_password": {
