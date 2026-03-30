@@ -57,7 +57,6 @@ export async function main(ns: NS) {
 		}
 		const srv = ns.getServer(info.server.ip) as DarknetServer;
 		if (!srv.isOnline) {
-			ns.tprint("server offline ", host, "(", oSrv.ip, ")");
 			oSrv.isOnline = false;
 			write_info_to_fs_db(ns, info);
 			continue;
