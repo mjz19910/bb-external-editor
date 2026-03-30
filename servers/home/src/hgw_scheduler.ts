@@ -385,7 +385,6 @@ export async function main(ns: NS) {
 	ns.disableLog("sleep");
 	ns.disableLog("exec");
 	ns.disableLog("getServerUsedRam");
-	ns.disableLog("getServerMaxRam");
 
 	const target = ns.args[0];
 	if (typeof target !== "string" || !target) {
