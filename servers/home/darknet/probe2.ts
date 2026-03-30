@@ -451,17 +451,28 @@ class AuthManager {
 		await this.doAuth(opts, "A".repeat(len * 2));
 	}
 	async OpenWebAccessPoint(opts: AuthFlowState) {
-		const ad = opts.info.authDetails!;
-		const pkt = await this.ns.dnet.packetCapture(opts.host);
-		this.ns.tprint(
-			"new OpenWeb auth flow for ",
-			JSON.stringify(opts.info.server.hostname),
-			" len=",
-			ad.passwordLength,
-		);
-		this.ns.tprint("  hint ", JSON.stringify(ad.passwordHint));
-		this.ns.tprint("  data ", ad.data);
-		this.ns.tprint("  pkt ", pkt);
+		const { info } = opts;
+		const ad = info.authDetails;
+		if (!ad) return;
+		const ns = this.ns;
+		const { passwordLength: len } = ad;
+		const { server: srv, host } = info;
+		const pkt = await ns.dnet.packetCapture(host);
+		if (pkt.code !== 200) {
+			ns.tprint("packetCapture failed ", pkt.message);
+			return;
+		}
+		if (pkt.data.includes(host)) {
+			const parts = pkt.data.split(":");
+			for (const p of parts) {
+				ns.tprint("packet part ", p);
+			}
+		} else {
+			ns.tprint("OpenWeb for ", srv.hostname, " len=", len);
+			ns.tprint("  hint ", JSON.stringify(ad.passwordHint));
+			ns.tprint("  data ", ad.data);
+			ns.tprint("  pkt ", pkt.data);
+		}
 	}
 	async Laika4(opts: AuthFlowState) {
 		const ad = opts.info.authDetails;
