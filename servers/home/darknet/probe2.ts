@@ -397,7 +397,7 @@ class AuthManager {
 						"Invalid heartbleed(AccMgr) result code=" + err_code,
 					);
 				}
-				ns.tprint("heartbleed log ", data.message);
+				ns.tprint("heartbleed(AccMgr) log ", data.message);
 			}
 		}
 	}
