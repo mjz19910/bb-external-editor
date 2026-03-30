@@ -10,6 +10,7 @@ dnet_files_dyn.push(Darknet.MemoryReallocation);
 dnet_files_dyn.push(WithPort.Read);
 dnet_files_dyn.push("type/helper.ts");
 dnet_files_dyn.push("type/ScriptPort.ts");
+dnet_files_dyn.push("const/port.ts");
 
 export async function main(ns: NS) {
 	const f = ns.flags([["threads", 1]]) as {
