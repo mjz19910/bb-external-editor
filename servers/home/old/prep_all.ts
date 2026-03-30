@@ -12,8 +12,12 @@ import { buildNetworkMap } from "../lib/network_map";
 function formatMoney(ns: NS, n: number) {
 	return "$" + ns.format.number(n, 2);
 }
-
 export async function main(ns: NS) {
+	function log(...args: any[]) {
+		ns.tprint(...args);
+		ns.print(...args);
+	}
+
 	ns.disableLog("ALL");
 	ns.clearLog();
 
@@ -67,7 +71,7 @@ export async function main(ns: NS) {
 		.filter((h) => h !== "home" && serverMaxMoneyMap.get(h)! > 0)
 		.sort((a, b) => getPrepSortKey(ns, a) - getPrepSortKey(ns, b));
 
-	ns.tprint(`Preparing ${targets.length} servers in parallel...`);
+	log(`Preparing ${targets.length} servers in parallel...`);
 
 	const done = new Set<string>();
 
@@ -95,7 +99,7 @@ export async function main(ns: NS) {
 				);
 				if (launched > 0) {
 					const waitTime = ns.getWeakenTime(target);
-					ns.tprint(
+					log(
 						`${target}: weaken x${launched}, ETA ${
 							ns.format.time(waitTime)
 						}`,
@@ -115,7 +119,7 @@ export async function main(ns: NS) {
 				);
 				if (launched > 0) {
 					const waitTime = ns.getGrowTime(target);
-					ns.tprint(
+					log(
 						`${target}: grow x${launched}, ETA ${
 							ns.format.time(waitTime)
 						}`,
@@ -124,7 +128,7 @@ export async function main(ns: NS) {
 					await ns.sleep(200);
 				}
 			} else {
-				ns.tprint(
+				log(
 					`${target}: READY (${formatMoney(ns, money)} / ${
 						formatMoney(ns, maxMoney)
 					}, sec ${sec.toFixed(2)})`,
@@ -134,7 +138,7 @@ export async function main(ns: NS) {
 		}
 		await ns.sleep(200);
 	}
-	ns.tprint("All servers prepped.");
+	log("All servers prepped.");
 }
 
 function launchAcrossNetwork(
