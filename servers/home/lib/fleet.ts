@@ -15,7 +15,8 @@ export type Fleet = {
 	totalFreeRam: number;
 };
 
-export function getFleet(ns: NS, map: NetworkMap): Fleet {
+export function getFleet(ns: NS): Fleet {
+	const map = NetworkMap.build(ns);
 	const hosts: FleetHost[] = map.hosts
 		.filter((h) => ns.hasRootAccess(h) && map.ramSizes[h] > 0)
 		.map((host) => map.getRamInfo(ns, host))

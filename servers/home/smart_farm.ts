@@ -37,10 +37,10 @@ export async function main(ns: NS) {
 	tlog(ns, `[SMART_FARM] target=${target} hackPct=${hackPct}`);
 
 	while (true) {
-		const fleet = getFleet(ns, map);
+		const fleet = getFleet(ns);
 		await deployScriptSet(ns, FILES, fleet.hosts.map((h) => h.host));
 
-		const jobs = getTargetJobCounts(ns, map, target);
+		const jobs = getTargetJobCounts(ns, target);
 		const prep = calcPrepPlan(ns, target);
 
 		if (!prep.isPrepped) {
@@ -64,7 +64,7 @@ export async function main(ns: NS) {
 			}
 
 			if (missingGrow > 0) {
-				const fleetAfterW = getFleet(ns, map);
+				const fleetAfterW = getFleet(ns);
 				const growAlloc = allocateThreads(
 					ns,
 					fleetAfterW,
@@ -124,7 +124,7 @@ export async function main(ns: NS) {
 			const growAlloc = allocateThreads(ns, fleet, GROW, missingG);
 			const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
 
-			const fleetAfterG = getFleet(ns, map);
+			const fleetAfterG = getFleet(ns);
 			const weakAlloc = allocateThreads(
 				ns,
 				fleetAfterG,
@@ -157,7 +157,7 @@ export async function main(ns: NS) {
 		const hackAlloc = allocateThreads(ns, fleet, HACK, missingHack);
 		const launchedH = runAllocations(ns, HACK, hackAlloc, [target]);
 
-		const fleetAfterH = getFleet(ns, map);
+		const fleetAfterH = getFleet(ns);
 		const weakAlloc = allocateThreads(
 			ns,
 			fleetAfterH,
@@ -166,7 +166,7 @@ export async function main(ns: NS) {
 		);
 		const launchedW = runAllocations(ns, WEAKEN, weakAlloc, [target]);
 
-		const fleetAfterW = getFleet(ns, map);
+		const fleetAfterW = getFleet(ns);
 		const growAlloc = allocateThreads(ns, fleetAfterW, GROW, missingGrow);
 		const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
 
