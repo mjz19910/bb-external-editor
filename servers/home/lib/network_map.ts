@@ -11,14 +11,27 @@ export type NetworkMap = {
 };
 
 const DB_PATH = "db/network_map.json";
+let saved_map_invalid = false;
 let network_map: NetworkMap | null = null;
 
 export function buildNetworkMap(ns: NS, start = "home"): NetworkMap {
-	if (network_map) {
+	x: if (network_map) {
+		const hosts = network_map.hosts;
+		const nodes = network_map.nodes;
+		const hosts_len = hosts.length;
+		const recheck_idx = Math.floor(Math.random() * hosts_len);
+		const check_host = hosts[recheck_idx];
+		const scan_results = ns.scan(check_host);
+		const nn = nodes[check_host];
+		if (scan_results.length != nn.neighbors.length) {
+			network_map = null;
+			saved_map_invalid = true;
+			break x;
+		}
 		return network_map;
 	}
 	let save_net_map = false;
-	if (ns.fileExists("db/network_map.json")) {
+	if (!saved_map_invalid && ns.fileExists("db/network_map.json")) {
 		const json_txt = ns.read("db/network_map.json");
 		const net_map: NetworkMap = JSON.parse(json_txt);
 		network_map = net_map;
