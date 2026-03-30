@@ -5,6 +5,9 @@ import { ScriptPort } from "./type/ScriptPort";
 export const utf8_bad_chars = {
 	":": String.fromCharCode(61440 + ":".charCodeAt(0)),
 };
+const em_chars = [
+	"🅱️",
+];
 
 export async function main(ns: NS) {
 	const port = new ScriptPort(ns, 1);
@@ -42,6 +45,12 @@ export async function main(ns: NS) {
 			ns.tprint("remove file invalid in ntfs ", file);
 			ns.rm(file);
 		}
+		if (file.match(/[-:;^&@%$]/)) {
+			ns.rm(file);
+		}
+		if (file.includes("🅱️")) {
+			ns.rm(file);
+		}
 	}
 	const ip_db_files = ns.ls("home", "tmp/ip/");
 	for (const file of ip_db_files) {
@@ -50,7 +59,9 @@ export async function main(ns: NS) {
 		const oSrv = info.server;
 		const host = oSrv.hostname;
 		const srv = ns.getServer(info.server.ip) as DarknetServer;
-		const nt_ok_path = oSrv.hostname.replaceAll(":", "_");
+		let nt_ok_path = oSrv.hostname.replaceAll(/[-:;^&@%$]/g, "_");
+		nt_ok_path = nt_ok_path.replaceAll(/__+/g, "_");
+		nt_ok_path = nt_ok_path.replaceAll("🅱️", "b");
 		const host_save_path = `tmp/host/${nt_ok_path}.txt`;
 		if (!srv.isOnline) {
 			ns.tprint("server offline ", host, "(", oSrv.ip, ")");
