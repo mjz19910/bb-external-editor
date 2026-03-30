@@ -1,4 +1,6 @@
 import { NS, ScriptArg } from "../@ns";
+import { DarknetProbeMessage } from "../type/helper";
+import { ScriptPort } from "../type/ScriptPort";
 import { DarknetServerInfo } from "./types";
 
 function post_dnet_probe(ns: NS, runner: string, port: number) {
@@ -17,6 +19,13 @@ function post_dnet_probe(ns: NS, runner: string, port: number) {
 		const idx = infos.push(info) - 1;
 		idxs.set(ip, idx);
 	}
+	const port_com = new ScriptPort<DarknetProbeMessage>(ns, port);
+	port_com.write({
+		type: "darknet.probe",
+		alt: "ip",
+		by: runner,
+		infos,
+	});
 }
 
 export async function main(ns: NS) {

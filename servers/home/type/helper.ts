@@ -25,9 +25,9 @@ export type DarknetProbeMessage = {
 	infos: DarknetServerInfo[];
 } | {
 	type: "darknet.probe";
-	for: string;
 	alt: "ip";
-	results: string[];
+	by: string;
+	infos: DarknetServerInfo[];
 };
 export type DarknetFoundPassProbeMessage = {
 	type: "found_password";
