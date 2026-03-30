@@ -1,4 +1,5 @@
 import { DarknetServer } from "./darknet/misc";
+import { DarknetServerInfo } from "./darknet/types";
 import { ScriptPort } from "./type/ScriptPort";
 
 export async function main(ns: NS) {
@@ -30,5 +31,17 @@ export async function main(ns: NS) {
 			});
 			break;
 		}
+	}
+	const ip_db_files = ns.ls("home", "tmp/ip/");
+	for (const file of ip_db_files) {
+		const content = ns.read(file);
+		const info: DarknetServerInfo = JSON.parse(content);
+		const srv = ns.getServer(info.server.ip) as DarknetServer;
+		info.server = srv;
+		if (!srv.isOnline) {
+			ns.rm(file);
+			continue;
+		}
+		ns.write(file, JSON.stringify(info, void 0, "\t"), "w");
 	}
 }
