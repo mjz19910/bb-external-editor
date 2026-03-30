@@ -92,7 +92,8 @@ export type HostnameReplyMsg = {
 export type PortReleaseMsg = {
 	type: "port_release";
 	port: number;
-	infos: DarknetServerInfo[] | null;
+	infos: DarknetServerInfo[];
+	updated_key: keyof DarknetServerInfo;
 };
 export type PortMessage =
 	| DarknetAuthenticateMessage

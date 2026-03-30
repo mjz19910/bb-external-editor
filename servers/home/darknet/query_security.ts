@@ -20,5 +20,6 @@ export async function main(ns: NS) {
 		type: "port_release",
 		port: com_port.port_id,
 		infos,
+		updated_key: "authDetails",
 	});
 }

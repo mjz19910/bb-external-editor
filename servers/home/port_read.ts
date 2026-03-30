@@ -5,6 +5,7 @@ import {
 	HostnameReplyMsg,
 	OnlineCheckMsg,
 	PortMessage,
+	PortReleaseMsg,
 	QuerySecurityMsg,
 	WaitMessage,
 } from "./type/helper";
@@ -78,6 +79,21 @@ type StateType = {
 	port3: ScriptPort<QuerySecurityMsg>;
 	is_api_port_busy: boolean;
 };
+function handle_port_release(ns: NS, msg: PortReleaseMsg) {
+	for (const info of msg.infos) {
+		const my_info = db.servers_by_ip.get(info.ip);
+		if (my_info) {
+			const k = msg.updated_key;
+			if (k === "authDetails") {
+				my_info.authDetails = info.authDetails;
+			} else {
+				ns.tprint("new key to update ", k);
+			}
+		} else {
+			db.servers_by_ip.set(info.ip, info);
+		}
+	}
+}
 function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 	if (msg === null) {
 		ns.tprint("null msg ", msg);
@@ -219,19 +235,12 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 			if (msg.port === 3) {
 				s.is_api_port_busy = false;
 			}
-			if (!msg.infos) return true;
-			for (const info of msg.infos) {
-				const my_info = db.servers_by_ip.get(info.ip);
-				if (my_info) {
-					db.servers_by_ip.set(info.ip, info);
-				}
-			}
+			handle_port_release(ns, msg);
 			return true;
 		default: {
 			ns.tprint(
 				"new handler required for " + (msg as { type: string }).type,
 			);
-			// ns.tprint("handler for ", JSON.stringify(msg, void 0))
 			return false;
 		}
 	}
