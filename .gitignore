@@ -146,3 +146,4 @@ servers/**/*.js
 servers/*/tmp/ip/*.txt
 servers/*/tmp/host/*.txt
 servers/darkweb
+servers/**/*.json
