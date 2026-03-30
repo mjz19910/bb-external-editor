@@ -17,7 +17,7 @@ export async function main(ns: NS) {
 
 	const ramSizes: Record<string, number> = {};
 	for (const host of hosts) {
-		ramSizes[host] = ns.getServerMaxRam(host);
+		ramSizes[host] = map.ramSizes[host]
 	}
 
 	const sortHosts = () =>

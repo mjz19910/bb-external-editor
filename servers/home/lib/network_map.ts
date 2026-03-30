@@ -208,7 +208,7 @@ export function snapshotServer(ns: NS, host: string): ServerSnapshot {
 		money: ns.getServerMoneyAvailable(host),
 		minSec: ns.getServerMinSecurityLevel(host),
 		sec: ns.getServerSecurityLevel(host),
-		maxRam: ns.getServerMaxRam(host),
+		maxRam: map.ramSizes[host],
 		usedRam: ns.getServerUsedRam(host),
 		growth: ns.getServerGrowth(host),
 	};
@@ -220,12 +220,12 @@ export function rootedHosts(ns: NS, hosts: string[]): string[] {
 
 export function runnableHosts(ns: NS, hosts: string[]): string[] {
 	return hosts.filter((h) =>
-		ns.hasRootAccess(h) && ns.getServerMaxRam(h) > 0
+		ns.hasRootAccess(h) && map.ramSizes[host] > 0
 	);
 }
 
 export function freeRam(ns: NS, host: string): number {
-	return ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
+	return map.ramSizes[host] - ns.getServerUsedRam(host);
 }
 
 export function canRunThreads(ns: NS, host: string, script: string): number {

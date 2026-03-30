@@ -19,9 +19,9 @@ export function getFleet(ns: NS): Fleet {
 	const map = buildNetworkMap(ns);
 
 	const hosts: FleetHost[] = map.hosts
-		.filter((h) => ns.hasRootAccess(h) && ns.getServerMaxRam(h) > 0)
+		.filter((h) => ns.hasRootAccess(h) && map.ramSizes[h] > 0)
 		.map((host) => {
-			const maxRam = ns.getServerMaxRam(host);
+			const maxRam = map.ramSizes[host]
 			const usedRam = ns.getServerUsedRam(host);
 			const free = freeRam(ns, host);
 

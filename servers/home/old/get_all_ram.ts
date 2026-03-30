@@ -30,9 +30,9 @@ export function getNetworkAvailableRam(
 	const hosts = map.hosts
 		.filter((host) => ns.hasRootAccess(host))
 		.filter((host) => includeHome || host !== "home")
-		.filter((host) => ns.getServerMaxRam(host) > 0)
+		.filter((host) => map.ramSizes[host] > 0)
 		.map((host) => {
-			const total = ns.getServerMaxRam(host);
+			const total = map.ramSizes[host];
 			const used = ns.getServerUsedRam(host);
 
 			let available = Math.max(0, total - used);
