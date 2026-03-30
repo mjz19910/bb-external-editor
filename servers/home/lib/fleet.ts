@@ -17,10 +17,17 @@ export type Fleet = {
 
 export function getFleet(ns: NS): Fleet {
 	const map = NetworkMap.build(ns);
+	const purchased = new Set(ns.cloud.getServerNames());
 	const hosts: FleetHost[] = map.hosts
 		.filter((h) => ns.hasRootAccess(h) && map.ramSizes[h] > 0)
 		.map((host) => map.getRamInfo(ns, host))
-		.sort((a, b) => b.freeRam - a.freeRam);
+		.sort((a, b) => {
+			const aP = purchased.has(a.host) ? 1 : 0;
+			const bP = purchased.has(b.host) ? 1 : 0;
+
+			if (aP !== bP) return bP - aP; // purchased first
+			return b.freeRam - a.freeRam;
+		});
 
 	let totalMaxRam = 0;
 	let totalUsedRam = 0;
