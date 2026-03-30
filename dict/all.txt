@@ -18,6 +18,7 @@ bnlvl
 brutessh
 btime
 clarkinc
+codepaths
 codingcontract
 CompuTek
 cooldown

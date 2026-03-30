@@ -3,13 +3,13 @@ import { buildNetworkMap } from "./lib/network_map";
 import { log, tlog } from "./lib/log";
 import { NS } from "./@ns";
 
-const WEAKEN = "weaken_worker.js";
-const GROW = "grow_worker.js";
+const WEAKEN = "weaken_worker.ts";
+const GROW = "grow_worker.ts";
 
 export async function main(ns: NS) {
 	const target = String(ns.args[0] ?? "");
 	if (!target) {
-		ns.tprint("Usage: run prep_target.js <target>");
+		ns.tprint("Usage: run prep_target.ts <target>");
 		return;
 	}
 
