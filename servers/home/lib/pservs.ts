@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 
 export type PurchasedServerInfo = {
 	host: string;

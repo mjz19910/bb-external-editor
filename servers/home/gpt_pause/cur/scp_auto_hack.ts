@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 
 export async function main(ns: NS) {
 	const a0 = ns.args.shift();
@@ -8,9 +7,6 @@ export async function main(ns: NS) {
 	const target = a0 ?? "worker-01";
 	if (target === "home") {
 		return ns.tprint("target not allowed to be home");
-	}
-	if (!ns.fileExists("gpt_pause/src/@ns.ts", target)) {
-		ns.scp("gpt_pause/src/@ns.ts", target);
 	}
 	if (ns.fileExists("gpt_pause/src/_/hack.ts", target)) {
 		ns.rm("gpt_pause/src/_/hack.ts", target);

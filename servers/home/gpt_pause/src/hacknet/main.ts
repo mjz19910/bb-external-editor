@@ -1,4 +1,3 @@
-import { NS } from "../@ns";
 import { dashboard } from "./dashboard";
 import { getFleetStats, syncFleet } from "./fleet";
 import { applyBestUpgrade } from "./upgrade";

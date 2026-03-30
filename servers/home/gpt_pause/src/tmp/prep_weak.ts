@@ -1,4 +1,3 @@
-import { NS } from "../@ns";
 
 /** prep_weak.ts */
 export async function main(ns: NS) {

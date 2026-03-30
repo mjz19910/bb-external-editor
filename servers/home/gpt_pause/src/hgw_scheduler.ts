@@ -1,4 +1,3 @@
-import { NS, Server } from "./@ns";
 import { isNormalServer } from "./lib/helper";
 
 interface RunnerState {

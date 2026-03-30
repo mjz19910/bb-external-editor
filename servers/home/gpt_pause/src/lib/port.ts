@@ -1,4 +1,3 @@
-import { NetscriptPort, NS } from "../@ns";
 
 // port.ts
 export class PortEmptyError extends Error {

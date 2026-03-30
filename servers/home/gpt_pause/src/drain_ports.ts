@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 import { Com } from "./lib/port";
 
 export async function main(ns: NS) {

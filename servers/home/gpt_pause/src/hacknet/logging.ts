@@ -1,4 +1,3 @@
-import { NS } from "../@ns";
 
 /**
  * Centralized logging for Hacknet upgrades

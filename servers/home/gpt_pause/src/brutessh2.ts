@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 import { isNormalServer } from "./lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
 

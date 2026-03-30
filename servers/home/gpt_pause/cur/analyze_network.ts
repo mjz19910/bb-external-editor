@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 import {
 	buildNetworkMap,
 	classifyServer,

@@ -1,4 +1,3 @@
-import { NS, AutocompleteData, ScriptArg } from "../@ns";
 
 export async function main(ns: NS) {
 	for (const target of ns.args) {

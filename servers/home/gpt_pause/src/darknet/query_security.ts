@@ -1,4 +1,3 @@
-import { NS } from "../@ns";
 import { PortReleaseMsg } from "../type/helper";
 import { ScriptPort } from "../type/ScriptPort";
 

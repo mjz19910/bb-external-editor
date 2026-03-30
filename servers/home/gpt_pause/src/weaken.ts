@@ -1,4 +1,3 @@
-import { AutocompleteData, NS, ScriptArg } from "./@ns";
 
 export function autocomplete(data: AutocompleteData, args: ScriptArg[]) {
 	if (args.length == 0) {

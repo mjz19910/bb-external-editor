@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 import { getJobSnapshot } from "./lib/jobs";
 
 export async function main(ns: NS) {

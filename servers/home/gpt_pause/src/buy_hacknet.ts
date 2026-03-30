@@ -1,4 +1,3 @@
-import { NodeStats, NS } from "./@ns";
 
 type State = {
 	width: number;

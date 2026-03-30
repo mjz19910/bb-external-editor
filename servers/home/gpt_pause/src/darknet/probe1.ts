@@ -1,4 +1,3 @@
-import { NS, ScriptArg } from "../@ns";
 import { DarknetProbeMessage } from "../type/helper";
 import { ScriptPort } from "../type/ScriptPort";
 import { DarknetServerInfo } from "./types";

@@ -1,4 +1,3 @@
-import { ScriptArg } from "./@ns";
 
 export const deps = [
   "gpt_pause/src/arg_parse.ts"

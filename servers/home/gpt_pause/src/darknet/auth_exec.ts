@@ -1,4 +1,3 @@
-import { NS } from "../@ns";
 import { Darknet, WithPort } from "./misc";
 
 const darknet_files_dyn: string[] = [];

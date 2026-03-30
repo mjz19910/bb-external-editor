@@ -2,7 +2,6 @@
  * Rank rooted servers for HWGW XP / money without Formulas.exe
  */
 
-import { NS } from "../@ns";
 import { buildNetworkMap } from "../gpt_pause/lib/network_map";
 
 type ScoreRow = {

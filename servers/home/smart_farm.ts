@@ -1,4 +1,3 @@
-import { AutocompleteData, NS, ScriptArg } from "./@ns";
 import {
 	allocateThreads,
 	deployScriptSet,
@@ -15,10 +14,7 @@ const WEAKEN = "gpt_pause/src/weaken_worker.ts";
 const FILES = [
 	HACK,
 	GROW,
-	WEAKEN,
-	"@ns.ts",
-	"gpt_pause/src/@ns.ts",
-	"gpt_pause/cur/@ns.ts",
+	WEAKEN
 ];
 
 function missing(wanted: number, active: number): number {

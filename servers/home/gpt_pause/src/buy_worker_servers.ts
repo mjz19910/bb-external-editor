@@ -1,4 +1,3 @@
-import { NS } from "./@ns"
 
 /* buy_worker_servers.ts */
 export async function main(ns: NS) {

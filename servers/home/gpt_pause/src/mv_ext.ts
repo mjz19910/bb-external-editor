@@ -1,4 +1,3 @@
-import { AutocompleteData, NS, ScriptArg } from "./@ns";
 import { mvExtended } from "./mv";
 
 export async function main(ns: NS) {

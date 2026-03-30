@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 import { nextAffordableRamUpgrade, worstPurchasedServer } from "./lib/pservs";
 
 export async function main(ns: NS) {

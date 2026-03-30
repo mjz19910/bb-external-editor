@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 import { getFleet } from "./lib/fleet";
 import { chooseBestTarget } from "./lib/targeting";
 

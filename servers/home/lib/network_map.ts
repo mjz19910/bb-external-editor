@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 
 export type NetworkNode = {
 	host: string;

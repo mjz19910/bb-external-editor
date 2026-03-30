@@ -1,4 +1,3 @@
-import { Server } from "../@ns";
 import { DarknetServer } from "../darknet/misc";
 
 export function isNormalServer(

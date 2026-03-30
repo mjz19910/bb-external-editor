@@ -16,7 +16,6 @@
 	other features not present on `analyze` or `scan-analyze`.
 */
 
-import { NS } from "./@ns";
 import { buildNetworkMap } from "../../lib/network_map";
 
 function security_info(ns: NS, server: string) {

@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 import { buildNetworkMap, classifyServer } from "./network_map";
 
 export type TargetInfo = {

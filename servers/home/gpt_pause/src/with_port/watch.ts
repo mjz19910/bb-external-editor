@@ -1,4 +1,3 @@
-import { NS } from "../@ns";
 import { Com } from "../gpt_pause/lib/port";
 
 async function* watchPorts<T>(

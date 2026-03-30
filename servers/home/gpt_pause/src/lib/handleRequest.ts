@@ -1,7 +1,6 @@
 // handleRequest.ts
 import { Com } from "./port";
 import { HgwRequest, makeHgwReply, logHgw, HgwReply } from "./hgw-message";
-import { NS } from "../@ns";
 
 export type RunTaskCallback = (data: HgwRequest) => Promise<number> | number;
 

@@ -1,4 +1,3 @@
-import { ScriptArg } from "./@ns";
 
 export type ExecRequest = {
   type: "exec";

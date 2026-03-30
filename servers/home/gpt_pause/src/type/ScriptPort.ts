@@ -1,4 +1,3 @@
-import { NS } from "../@ns";
 import { API_PORT, REPLY_PORT, REQUEST_PORT } from "../const/port";
 import {
 	ApiMessage,

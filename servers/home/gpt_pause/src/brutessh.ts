@@ -1,4 +1,3 @@
-import { AutocompleteData, NS, ScriptArg } from "./@ns";
 import { isNormalServer } from "./lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
 

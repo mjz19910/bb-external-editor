@@ -1,4 +1,3 @@
-import { NS } from "../@ns";
 import { run_weaken } from "./weak";
 
 export async function main(ns: NS) {

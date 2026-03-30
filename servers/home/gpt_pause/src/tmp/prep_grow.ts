@@ -1,4 +1,3 @@
-import { NS } from "../@ns";
 
 /** prep_grow.ts */
 export async function main(ns: NS) {

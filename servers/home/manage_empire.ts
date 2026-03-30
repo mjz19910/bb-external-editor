@@ -1,4 +1,3 @@
-import { NS, ScriptArg } from "./@ns";
 function exec_if(
 	ns: NS,
 	script: string,

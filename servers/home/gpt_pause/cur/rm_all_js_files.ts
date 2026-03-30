@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 
 export async function main(ns: NS) {
 	const files = ns.ls(ns.getHostname(), ".js");

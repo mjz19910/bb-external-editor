@@ -1,4 +1,3 @@
-import { NS } from "./@ns";
 
 type PromiseParts<Result> = {
   resolve(value: Result): void;

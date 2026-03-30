@@ -2,7 +2,6 @@
  * Rank rooted servers for HGW XP / money using Formulas.exe
  */
 
-import { NS, Player, Server } from "../@ns";
 import { isNormalServer } from "../gpt_pause/lib/helper";
 import { buildNetworkMap } from "../gpt_pause/lib/network_map";
 
