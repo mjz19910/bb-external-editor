@@ -166,6 +166,10 @@ function handle_object_message(
 			for (let i = 0; i < db.server_map_decay_list.length; i++) {
 				const info = db.server_map_decay_list[i];
 				const srv = info.server;
+				const host = srv.hostname;
+				if (query_map[host]) {
+					info.server = query_map[host];
+				}
 				if (
 					query_map[srv.hostname] && query_map[srv.hostname].isOnline
 				) {
@@ -176,11 +180,6 @@ function handle_object_message(
 					db.server_map_decay_list.splice(i, 1);
 					i--;
 				}
-			}
-			for (const offline_info of db.server_map_decay_list) {
-				const host = offline_info.server.hostname;
-				const qr = db.server_map.get(host);
-				if (qr) db.server_map.delete(host);
 			}
 			db.server_map_decay_list.length = 0;
 			return true;
