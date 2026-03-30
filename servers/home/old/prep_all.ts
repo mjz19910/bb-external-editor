@@ -48,6 +48,8 @@ export async function main(ns: NS) {
 		serverMinSecMap.set(target, ns.getServerMinSecurityLevel(target));
 	}
 
+	hosts.sort((a, b) => serverMinSecMap.get(a)! - serverMinSecMap.get(b)!);
+
 	const weaken1 = ns.weakenAnalyze(1);
 
 	function getPrepSortKey(ns: NS, target: string): number {
