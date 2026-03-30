@@ -5,7 +5,8 @@
   "description": "template for external editors for the game bitburner",
   "main": "index.js",
   "scripts": {
-    "start": "node ./config.mjs"
+    "start": "node ./config.mjs",
+    "postinstall": "patch-package"
   },
   "repository": {
     "type": "git",
@@ -22,5 +23,9 @@
     "@types/react-dom": "^18.3.0",
     "esbuild": "^0.27.4",
     "esbuild-bitburner-plugin": "^1.7.9"
+  },
+  "devDependencies": {
+    "patch-package": "^8.0.1",
+    "postinstall-postinstall": "^2.1.0"
   }
 }

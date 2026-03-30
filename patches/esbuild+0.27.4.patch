@@ -1,0 +1,25 @@
+diff --git a/node_modules/esbuild/lib/main.js b/node_modules/esbuild/lib/main.js
+index d701d63..b01de0e 100644
+--- a/node_modules/esbuild/lib/main.js
++++ b/node_modules/esbuild/lib/main.js
+@@ -1199,7 +1199,19 @@ function buildOrContextImpl(callName, buildKey, sendRequest, sendResponse, refs,
+       const originalErrors = result.errors.slice();
+       const originalWarnings = result.warnings.slice();
+       if (response.outputFiles) result.outputFiles = response.outputFiles.map(convertOutputFiles);
+-      if (response.metafile) result.metafile = parseJSON(response.metafile);
++      if(response.metafile) {
++        /** @type {Uint8Array} */
++        let test_u8_arr;
++        test_u8_arr = response.metafile;
++        if(test_u8_arr instanceof Uint8Array && test_u8_arr.byteLength != 0) {
++          result.metafile = parseJSON(response.metafile);
++        } else {
++          console.log("refuse to parse empty response.metafile", response.metafile);
++        }
++        if(!(test_u8_arr instanceof Uint8Array)) {
++          result.metafile = parseJSON(response.metafile);
++        }
++      }
+       if (response.mangleCache) result.mangleCache = response.mangleCache;
+       if (response.writeToStdout !== void 0) console.log(decodeUTF8(response.writeToStdout).replace(/\n$/, ""));
+       runOnEndCallbacks(result, (onEndErrors, onEndWarnings) => {
