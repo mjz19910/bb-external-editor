@@ -9,6 +9,7 @@ Darkscape
 darkweb
 deltaone
 dnet
+esbuild
 filesync
 foodnstuff
 ftpcrack
@@ -27,6 +28,7 @@ netlink
 Netscript
 omnia
 omnitek
+outbase
 relaysmtp
 run4theh111z
 sessioned

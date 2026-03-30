@@ -153,11 +153,11 @@ class AuthManager {
 		const factors: number[] = []; // confirmed valid factors >= 100
 		const invalidFactors: number[] = []; // numbers ruled out by data === "false"
 		const { info } = opts;
-		const { server: srv } = info;
+		const { server: srv, authDetails: ad } = info;
 		const { hostname: host } = srv;
+		const { passwordLength: len } = ad;
 
 		ns.tprint(`Starting Factorios auth flow for ${host}`);
-		const pw_len = info.authDetails.passwordLength;
 		let cur_num = 1;
 
 		for (;;) {
@@ -169,8 +169,8 @@ class AuthManager {
 				for (const f of invalidFactors) {
 					if (i % f == 0) continue outer;
 				}
-				if (pw_len == 2 && i >= 100) break;
-				if (pw_len == 3 && i >= 1000) break;
+				if (len == 2 && i >= 100) break;
+				if (len == 3 && i >= 1000) break;
 				if (cur_num == i) continue;
 				next_factor = i;
 				break;
