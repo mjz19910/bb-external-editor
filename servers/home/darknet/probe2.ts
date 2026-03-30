@@ -488,10 +488,8 @@ class AuthManager {
 			return;
 		}
 		if (pkt.data.includes(host)) {
-			const parts = pkt.data.split(":");
-			for (const p of parts) {
-				ns.tprint("packet part ", p);
-			}
+			const password = pkt.data.split(":")[1].slice(0, len);
+			await this.doAuth(opts, password);
 		} else {
 			ns.tprint("OpenWeb for ", srv.hostname, " len=", len);
 			ns.tprint("  hint ", JSON.stringify(ad.passwordHint));
