@@ -1,5 +1,4 @@
 import { ScriptPort } from "../type/ScriptPort";
-import { DarknetResult } from "../NetscriptDefinitions.d";
 import { DarknetServerInfo } from "../darknet/types";
 
 export function hasTypeField<T extends { type: string }>(x: unknown): x is T {
@@ -89,7 +88,7 @@ function handle_wait_request(ns: NS, msg: WaitMessage) {
 }
 function handle_object_message(
 	ns: NS,
-	s: { running: boolean; runner: string; port2: ScriptPort },
+	s: { running: boolean; runner: string; port2: ScriptPort<null> },
 	msg: PortMessage | {} | null,
 ) {
 	if (msg === null) {

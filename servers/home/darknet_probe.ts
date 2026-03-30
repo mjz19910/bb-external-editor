@@ -1,8 +1,3 @@
-import {
-	DarknetResponseCode,
-	DarknetResult,
-	ScriptArg,
-} from "./NetscriptDefinitions.d";
 import { isDarknetServer2 } from "./darknet/misc";
 import { DarknetServerInfo } from "./darknet/types";
 import { Darknet, WithPort } from "./darknet_paths";
@@ -76,7 +71,7 @@ export const dog_names = [
 	"max",
 ];
 interface FactorsBleedResult extends DarknetResult {
-	code: DarknetResponseCode;
+	code: DarknetResult["code"] & {};
 	message: string;
 	data: `${boolean}`;
 	passwordAttempted: string;

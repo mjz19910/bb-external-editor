@@ -1,6 +1,5 @@
 /** scan.ts */
-import { Server } from "../NetscriptDefinitions.d";
-import { DarknetServer } from "../type/helper";
+import { DarknetServer } from "../darknet/misc";
 import { HostInfoDB } from "./HostInfoDB";
 
 export class ScanContext<T extends Server | DarknetServer> {

@@ -1,5 +1,6 @@
+import { DarknetServer, isDarknetServer2 } from "../darknet/misc";
+import { isNormalServer } from "../lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
-import { Server } from "../NetscriptDefinitions.d";
 import { read_string_arg } from "./arg_parse";
 
 export async function main(ns: NS) {
@@ -22,8 +23,13 @@ export async function main(ns: NS) {
   }
   const db = new HostInfoDB(ns);
   const host_map: Record<string, Server> = {};
+  const dark_host_map: Record<string, DarknetServer> = {};
   for (const info of db.data) {
     const srv = info.server;
+    if (isDarknetServer2(srv)) {
+      dark_host_map[srv.hostname] = srv;
+      continue;
+    }
     host_map[srv.hostname] = srv;
   }
   for (const info of db.data) {
@@ -46,6 +52,7 @@ export async function main(ns: NS) {
     }
     if (state.find_weaken_target && state.weaken_target_server) {
       if (!srv.backdoorInstalled) continue;
+      if (!isNormalServer(srv)) continue;
       if (srv.hackDifficulty != srv.minDifficulty) {
         const exec_server = host_map[state.weaken_target_server];
         const free_ram = exec_server.maxRam;

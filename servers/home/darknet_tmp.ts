@@ -1,7 +1,6 @@
 import { DarknetServer, isDarknetServer2 } from "./darknet/misc";
 import { Darknet, WithPort } from "./darknet_paths";
 import { isNormalServer } from "./lib/helper";
-import { Server } from "./NetscriptDefinitions.d";
 
 class PortApi {
 	constructor(public ns: NS) {}
