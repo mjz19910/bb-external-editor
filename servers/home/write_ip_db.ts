@@ -11,7 +11,6 @@ export function write_info_to_fs_db(ns: NS, info: DarknetServerInfo) {
 	if (srv.isOnline) {
 		ns.write(ip_save_path, new_content, "w");
 	} else {
-		ns.rm(ip_save_path);
 	}
 	const host = info.server.hostname;
 	if (host === void 0 || host === "") {
@@ -19,7 +18,6 @@ export function write_info_to_fs_db(ns: NS, info: DarknetServerInfo) {
 		return;
 	}
 	let nt_ok_path = host.replaceAll(/[:]/g, "_");
-	nt_ok_path = nt_ok_path.replaceAll(/__+/g, "_");
 	const host_save_path = `tmp/host/${nt_ok_path}.txt`;
 	ns.write(host_save_path, new_content, "w");
 }
