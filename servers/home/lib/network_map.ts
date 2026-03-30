@@ -7,10 +7,43 @@ export type NetworkNode = {
 	neighbors: string[];
 };
 
-export type NetworkMap = {
-	hosts: string[];
-	nodes: Record<string, NetworkNode>;
-};
+class NetworkMap {
+	constructor(
+		public hosts: string[] = [],
+		public nodes: Record<string, NetworkNode> = {},
+		public ramSizes: Record<string, number> = {},
+	) {}
+	findBestTarget(ns: NS) {
+		const myHacking = ns.getHackingLevel();
+		const map = this;
+
+		let best = null;
+		let bestValue = 0;
+
+		for (const s of map.hosts) {
+			if (s === "home") continue;
+			if (!ns.hasRootAccess(s)) continue;
+			if (ns.getServerRequiredHackingLevel(s) > (myHacking / 2) + 2) {
+				continue;
+			}
+
+			const maxMoney = ns.getServerMaxMoney(s);
+			if (maxMoney <= 0) continue;
+
+			const reqHack = ns.getServerRequiredHackingLevel(s);
+			const minSec = ns.getServerMinSecurityLevel(s);
+			const growth = ns.getServerGrowth(s);
+			const score = (maxMoney * growth) / Math.max(1, minSec * reqHack);
+
+			if (score > bestValue) {
+				bestValue = score;
+				best = s;
+			}
+		}
+
+		return best;
+	}
+}
 
 const DB_PATH = "db/network_map.json";
 let saved_map_invalid = false;
@@ -32,14 +65,17 @@ export function buildNetworkMap(ns: NS, start = "home"): NetworkMap {
 		}
 		return network_map;
 	}
-	let save_net_map = false;
-	if (!saved_map_invalid && ns.fileExists("db/network_map.json")) {
+	x: if (!saved_map_invalid && ns.fileExists("db/network_map.json")) {
 		const json_txt = ns.read("db/network_map.json");
 		const net_map: NetworkMap = JSON.parse(json_txt);
-		network_map = net_map;
+		if (!("ramSizes" in net_map)) {
+			break x;
+		}
+		network_map = new NetworkMap();
+		network_map.hosts = net_map.hosts;
+		network_map.nodes = net_map.nodes;
+		network_map.ramSizes = net_map.ramSizes;
 		return network_map;
-	} else {
-		save_net_map = true;
 	}
 	const nodes: Record<string, NetworkNode> = {};
 	const queue: string[] = [start];
@@ -72,11 +108,13 @@ export function buildNetworkMap(ns: NS, start = "home"): NetworkMap {
 	}
 
 	const hosts = Object.keys(nodes).sort();
-	network_map = { hosts, nodes };
-	if (save_net_map) {
-		const json_txt = JSON.stringify(network_map, void 0, "\t");
-		ns.write(DB_PATH, json_txt, "w");
+	const ramSizes: Record<string, number> = {};
+	for (const host of hosts) {
+		ramSizes[host] = ns.getServerMaxRam(host);
 	}
+	network_map = new NetworkMap(hosts, nodes, ramSizes);
+	const json_txt = JSON.stringify(network_map, void 0, "\t");
+	ns.write(DB_PATH, json_txt, "w");
 	return network_map;
 }
 
