@@ -18,6 +18,7 @@ function post_dnet_probe(ns: NS, runner: string, port: number) {
 		idxs.set(ip, idx);
 	}
 }
+
 export async function main(ns: NS) {
 	const f = ns.flags([["runner", "home"], ["threads", 1], ["port", 1]]) as {
 		runner: string;
