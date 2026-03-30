@@ -600,7 +600,6 @@ export async function main(ns: NS) {
 			const srv = info.server;
 			const host = srv.hostname;
 			const opts: AuthFlowState = { info, host, runner, port };
-			ns.tprint(`enter auth for ${host} with modelId=${ad.modelId}`);
 			const handler_id = decode_model_id(ad.modelId);
 			// spell:words Factori-Os BellaCuore
 			switch (handler_id) {
