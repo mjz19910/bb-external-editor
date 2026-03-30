@@ -152,8 +152,8 @@ export async function main(ns: NS) {
 	port3.clear("empty before use");
 	ns.run("api/getHostname.ts", 1);
 	await port3.nextWrite("wait for hostname");
-	const v = port3.readOpt("read hostname");
-	if (v.type === "empty") return ns.tprint("missing port(3).getHostname()");
+	const v = port3.readOpt<string>("read hostname");
+	if (v.type === "None") return ns.tprint("missing port(3).getHostname()");
 	const s = {
 		running: true,
 		runner: v.value,
