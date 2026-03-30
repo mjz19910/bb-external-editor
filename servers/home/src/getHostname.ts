@@ -1,4 +1,3 @@
-import { ScriptArg } from "../NetscriptDefinitions.d";
 import { ScriptPort } from "../type/ScriptPort";
 
 export async function main(ns: NS) {

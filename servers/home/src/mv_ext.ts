@@ -1,4 +1,3 @@
-import { AutocompleteData, ScriptArg } from "../NetscriptDefinitions.d";
 import { mvExtended } from "./mv";
 
 export async function main(ns: NS) {

@@ -35,5 +35,6 @@ sessioned
 sqlinject
 syscore
 tprint
+txts
 viteburner
 volhaven

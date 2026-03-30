@@ -1,4 +1,3 @@
-import { AutocompleteData, ScriptArg } from "../NetscriptDefinitions.d";
 import { read_number_arg, read_string_arg } from "./arg_parse";
 import { exec } from "./exec2";
 

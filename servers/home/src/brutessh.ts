@@ -1,4 +1,3 @@
-import { AutocompleteData, ScriptArg } from "../NetscriptDefinitions.d";
 import { HostInfoDB } from "./HostInfoDB";
 
 export async function main(ns: NS) {
