@@ -6,12 +6,12 @@ import {
 	runAllocations,
 } from "./gpt_pause/src/lib/fleet";
 import { getTargetJobCounts } from "./gpt_pause/src/lib/jobs";
-import { log, tlog } from "./gpt_pause/src/lib/log";
+import { log, tlog } from "./lib/log";
 import {
 	calcHackThreadsForPercent,
 	calcPrepPlan,
 } from "./gpt_pause/src/lib/prep";
-import { chooseBestTarget } from "./gpt_pause/cur/choose_best_target";
+import { chooseBestTarget } from "./choose_best_target";
 const HACK = "gpt_pause/src/hack_worker.ts";
 const GROW = "gpt_pause/src/grow_worker.ts";
 const WEAKEN = "gpt_pause/src/weaken_worker.ts";

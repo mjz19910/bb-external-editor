@@ -1,5 +1,5 @@
 import { buildNetworkMap, runnableHosts } from "../../lib/network_map";
-import { tlog } from "../src/lib/log";
+import { tlog } from "../../lib/log";
 import { NS } from "./@ns";
 
 const FILES = [
