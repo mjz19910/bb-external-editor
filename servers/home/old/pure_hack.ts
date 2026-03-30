@@ -15,7 +15,7 @@ export async function main(ns: NS) {
 
 	const hosts = map.hosts.filter((h) =>
 		ns.hasRootAccess(h) &&
-		ns.getServerMaxRam(h) > 0
+		map.ramSizes[h] > 0
 	);
 
 	while (true) {
@@ -46,7 +46,7 @@ export async function main(ns: NS) {
 		let launched = 0;
 
 		for (const host of hosts) {
-			const maxRam = ns.getServerMaxRam(host);
+			const maxRam = map.ramSizes[host];
 			const usedRam = ns.getServerUsedRam(host);
 			const freeRam = host === "home"
 				? Math.max(0, maxRam - usedRam - reserve)

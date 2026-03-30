@@ -29,7 +29,7 @@ export async function main(ns: NS) {
 	const scriptRamMap = new Map<string, number>();
 
 	for (const host of hosts) {
-		maxRamByHost.set(host, ns.getServerMaxRam(host));
+		maxRamByHost.set(host, map.ramSizes[host]);
 	}
 
 	for (const target of hosts) {
