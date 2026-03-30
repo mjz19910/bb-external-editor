@@ -1,4 +1,4 @@
-import { NS } from "./@ns";
+import { AutocompleteData, NS, ScriptArg } from "./@ns";
 import {
 	allocateThreads,
 	deployScriptSet,
@@ -27,8 +27,8 @@ function missing(wanted: number, active: number): number {
 
 export async function main(ns: NS) {
 	ns.disableLog("sleep");
-	// ns.disableLog("scp");
-	// ns.disableLog("exec");
+	ns.disableLog("scp");
+	ns.disableLog("exec");
 	ns.disableLog("getServerUsedRam");
 	ns.disableLog("getServerMaxRam");
 
@@ -50,6 +50,7 @@ export async function main(ns: NS) {
 	deployScriptSet(ns, FILES, fleet.hosts.map((h) => h.host));
 
 	while (true) {
+		ns.clearLog();
 		const fleet = getFleet(ns);
 
 		const jobs = getTargetJobCounts(ns, target);
@@ -196,4 +197,14 @@ export async function main(ns: NS) {
 
 		await ns.sleep(Math.max(4000, ns.getHackTime(target) * 0.25));
 	}
+}
+
+export function autocomplete(data: AutocompleteData, args: ScriptArg[]) {
+	const servers = data.servers;
+	const srv_set = new Set(servers);
+	if (args.length > 1) return [];
+	if (args.length === 0) return servers;
+	if (typeof args[0] != "string") return [];
+	if (srv_set.has(args[0])) return [];
+	return servers;
 }
