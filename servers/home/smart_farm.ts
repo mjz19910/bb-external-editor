@@ -13,9 +13,12 @@ import { chooseBestTarget } from "./lib/targeting";
 const HACK = "hack_worker.ts";
 const GROW = "grow_worker.ts";
 const WEAKEN = "weaken_worker.ts";
-const FILES = [HACK, GROW, WEAKEN];
+const DEFS = "@ns.ts";
+const FILES = [HACK, GROW, WEAKEN, DEFS];
 
 export async function main(ns: NS) {
+	ns.ramOverride(9.9);
+
 	let target = String(ns.args[0] ?? "");
 	const hackPct = Number(ns.args[1] ?? 0.1);
 
