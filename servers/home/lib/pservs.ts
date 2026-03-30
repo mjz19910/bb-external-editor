@@ -1,4 +1,3 @@
-
 export type PurchasedServerInfo = {
 	host: string;
 	ram: number;

@@ -1,3 +1,5 @@
+import { DB_PATH } from "./paths";
+
 export type NetworkNode = {
 	host: string;
 	parent: string | null;
@@ -73,7 +75,6 @@ export class NetworkMap {
 	}
 }
 
-const DB_PATH = "tmp/db/network_map.json";
 let saved_map_invalid = false;
 let network_map: NetworkMap | null = null;
 
