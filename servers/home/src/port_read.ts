@@ -1,6 +1,6 @@
-import { TypedNetScriptPort } from "old/TypedNetScriptPort";
-import { DarknetServerInfo } from "dnet/types2.ts";
+import { DarknetServerInfo } from "../darknet/types";
 import { DarknetResult } from "../NetscriptDefinitions";
+import { TypedNSP } from "../old/TypedNetScriptPort";
 
 export function hasTypeField<T extends { type: string }>(x: unknown): x is T {
 	return (
@@ -89,7 +89,7 @@ function handle_wait_request(ns: NS, msg: WaitMessage) {
 }
 function handle_object_message(
 	ns: NS,
-	s: { running: boolean; runner: string; port2: TypedNetScriptPort },
+	s: PortReadState,
 	msg: PortMessage | {} | null,
 ) {
 	if (msg === null) {
@@ -124,8 +124,8 @@ function handle_object_message(
 		}
 		case "darknet.probe": {
 			for (const info of msg.infos) {
-				if (info.key === void 0) {
-					console.log("unauth server " + info.server!.hostname);
+				if (info.password === null) {
+					console.log("unauth server " + info.server.hostname);
 				}
 			}
 			return true;
@@ -141,20 +141,28 @@ function handle_object_message(
 }
 const REPLY_PORT = 2;
 const API_PORT = 3;
+
+type PortReadState = {
+	running: boolean;
+	runner: string;
+	port: TypedNSP;
+	port2: TypedNSP;
+};
+
 export async function main(ns: NS) {
 	const { port: requestPort } = ns.flags([["port", 1]]) as { port: number };
 	if (requestPort > 1 && requestPort < 4) {
 		return ns.tprint("port conflict requestPort=", requestPort);
 	}
-	const port = new TypedNetScriptPort(ns, requestPort);
-	const port2 = new TypedNetScriptPort(ns, REPLY_PORT);
-	const port3 = new TypedNetScriptPort(ns, API_PORT);
+	const port = new TypedNSP(ns, requestPort);
+	const port2 = new TypedNSP(ns, REPLY_PORT);
+	const port3 = new TypedNSP(ns, API_PORT);
 	port3.clear("empty before use");
 	ns.run("api/getHostname.ts", 1);
 	await port3.nextWrite("wait for hostname");
-	const v = port3.readOpt("read hostname");
-	if (v.type === "empty") return ns.tprint("missing port(3).getHostname()");
-	const s = {
+	const v = port3.readOpt<string>("read hostname");
+	if (v.type === "None") return ns.tprint("missing port(3).getHostname()");
+	const s: PortReadState = {
 		running: true,
 		runner: v.value,
 		port,

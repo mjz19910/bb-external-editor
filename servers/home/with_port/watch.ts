@@ -1,4 +1,4 @@
-import { Com } from "lib/port"
+import { Com } from "../lib/port"
 
 async function* watchPorts<T>(a: Com<T>[]): AsyncIterableIterator<[number, Com<T>]> {
 	const waits = a.map((c, i) => c.nextWrite().then(() => i))

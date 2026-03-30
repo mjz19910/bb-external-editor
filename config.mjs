@@ -15,7 +15,7 @@ const ctx = await context({
       port: 12527,
       types: void 0,
       mirror: {
-        "servers": "all",
+        "servers": ["home", "darkweb"],
       },
       distribute: {},
     }),

@@ -1,6 +1,6 @@
 // grow.ts
-import { parseHgwRequest, HgwRequest } from "lib/hgw-message";
-import { handleRequest } from "lib/handleRequest";
+import { parseHgwRequest, HgwRequest } from "../lib/hgw-message";
+import { handleRequest } from "../lib/handleRequest";
 
 export async function main(ns: NS) {
 	let t = true; if (t) return;
