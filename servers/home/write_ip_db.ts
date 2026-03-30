@@ -26,7 +26,9 @@ export function write_info_to_fs_db(
 	cur_data?: string,
 ) {
 	const ip_save_path = `tmp/ip/${info.ip}.txt`;
+	if (info.host === void 0) return;
 	const host_save_path = `tmp/host/${info.host.replaceAll(/[:]/g, "_")}.txt`;
+	if (info.server === void 0) return;
 	for (const k1 of Object.keys(info.server)) {
 		const k = k1 as keyof typeof info.server;
 		if (k === "ip") continue;
@@ -36,7 +38,7 @@ export function write_info_to_fs_db(
 		}
 	}
 	if (info.server.isOnline === false) {
-		info.authDetails = null;
+		delete info.authDetails;
 		ns.rm(ip_save_path);
 		ns.rm(host_save_path);
 		return;

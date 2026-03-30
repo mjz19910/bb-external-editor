@@ -19,12 +19,12 @@ export type ServerAuthDetails2 = {
 
 export type DarknetServerInfo = {
 	ip: string;
-	host: string;
-	server: DarknetServer;
-	authDetails: ServerAuthDetails2 | null;
-	parent: string | null;
-	password: string | null;
 	connectedToParent: boolean;
+	host?: string;
+	server?: DarknetServer;
+	authDetails?: ServerAuthDetails2;
+	parent?: string;
+	password?: string;
 };
 
 export const darknet_files = [

@@ -96,6 +96,9 @@ class AuthManager {
 	extract_info(opts: AuthFlowState) {
 		const { info } = opts;
 		const { server: srv } = info;
+		if (!srv) {
+			return { opts, srv, authDetails: info.authDetails };
+		}
 		const { hostname: host } = srv;
 		return { opts, srv, host, authDetails: info.authDetails };
 	}
@@ -103,6 +106,7 @@ class AuthManager {
 		const [opts, auth, password] = args;
 		const { info, port, runner } = opts;
 		const { server: srv } = info;
+		if (!srv) return false;
 		const { hostname: host } = srv;
 		const ns = this.ns;
 		if (!auth.success) {
@@ -159,6 +163,7 @@ class AuthManager {
 		const invalidFactors: number[] = []; // numbers ruled out by data === "false"
 		const { info } = opts;
 		const { server: srv } = info;
+		if (!srv) return;
 		const { hostname: host } = srv;
 
 		ns.tprint(`Starting Factorios auth flow for ${host}`);
@@ -231,6 +236,7 @@ class AuthManager {
 		const { info } = opts;
 		const ad = info.authDetails;
 		const { server: srv } = info;
+		if (!srv) return;
 		const { hostname: host } = srv;
 		if (!ad) return ns.tprint("No authDetails for ", host);
 		const digits: string[] = ad.data.split("");
@@ -251,6 +257,7 @@ class AuthManager {
 	async FreshInstall(opts: AuthFlowState) {
 		const ns = this.ns;
 		const { host, authDetails } = this.extract_info(opts);
+		if (host === void 0) return;
 		if (!authDetails) return;
 		const {
 			passwordFormat: format,
@@ -287,6 +294,7 @@ class AuthManager {
 		const { authDetails: ad } = info;
 		if (!ad) return;
 		const { passwordLength: len } = ad;
+		if (!srv) return;
 		const { hostname: host } = srv;
 		const chars = "0123456789".split("");
 		const pw_arr = Array.from<string | null>({ length: len }).fill(
@@ -386,6 +394,7 @@ class AuthManager {
 	async AccountsManager(opts: AuthFlowState) {
 		const ns = this.ns;
 		const { host, authDetails: ad } = this.extract_info(opts);
+		if (host === void 0) return;
 		if (!ad) return;
 		let match = ad.passwordHint.match(ac_mgr_regexp);
 		if (!match) {
@@ -434,6 +443,7 @@ class AuthManager {
 		const chars = "0123456789".split("");
 		const { passwordLength: len } = ad;
 		const srv = info.server;
+		if (srv === void 0) return;
 		const host = srv.hostname;
 		const pw_arr = Array.from<string | null>({ length: len }).fill(null);
 		for (const char of chars) {
@@ -485,6 +495,8 @@ class AuthManager {
 		const ns = this.ns;
 		const { passwordLength: len } = ad;
 		const { server: srv, host } = info;
+		if (srv === void 0) return;
+		if (host === void 0) return;
 		const pkt = await ns.dnet.packetCapture(host);
 		if (pkt.code !== 200) {
 			ns.tprint("packetCapture failed ", pkt.message);
@@ -553,7 +565,7 @@ function post_dnet_probe(
 	runner: string,
 ) {
 	for (const info of infos) {
-		info.parent = null;
+		delete info.parent;
 		info.connectedToParent = false;
 	}
 	const targets = ns.dnet.probe();
@@ -567,7 +579,6 @@ function post_dnet_probe(
 			parent: runner,
 			server: srv,
 			authDetails: ad,
-			password: null,
 			connectedToParent: true,
 		};
 		if (infos_idx_map.has(trg)) {
@@ -631,6 +642,7 @@ export async function main(ns: NS) {
 			if (!ad) continue;
 			if (ad.hasSession && info.password !== null) continue;
 			const srv = info.server;
+			if (srv === void 0) continue;
 			const host = srv.hostname;
 			const opts: AuthFlowState = { info, host, runner, port };
 			const handler_id = decode_model_id(ad.modelId);
@@ -676,7 +688,7 @@ export async function main(ns: NS) {
 					}
 				}
 			}
-			if (info.password === null) continue;
+			if (info.password === void 0) continue;
 			port.write<DarknetFoundPassProbeMessage>({
 				type: "found_password",
 				by: runner,
@@ -687,6 +699,7 @@ export async function main(ns: NS) {
 		}
 		const online_infos = [];
 		for (const info of infos) {
+			if (info.server === void 0) continue;
 			if (info.server.isOnline) {
 				online_infos.push(info);
 			}

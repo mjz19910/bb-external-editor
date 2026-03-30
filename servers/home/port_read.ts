@@ -67,6 +67,7 @@ function handle_wait_request(ns: NS, msg: WaitMessage) {
 }
 const db = new class {
 	server_map = new Map<string, DarknetServerInfo>();
+	servers_by_ip = new Map<string, DarknetServerInfo>();
 	server_map_decay_list: DarknetServerInfo[] = [];
 }();
 type StateType = {
@@ -118,12 +119,19 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 					s.port3.write<QuerySecurityMsg>({
 						type: "query_security",
 						ips: msg.results,
+						infos: msg.results.map((v) => {
+							return {
+								ip: v,
+								connectedToParent: false,
+							};
+						}),
 					});
 					ns.run("darknet/query_security.ts", 1);
 				}
 			} else {
 				const ips: string[] = [];
 				for (const info of msg.infos) {
+					if (info.server === void 0) continue;
 					ips.push(info.server.ip);
 					if (!info.connectedToParent) {
 						continue;
@@ -153,6 +161,7 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 		case "timeout_check": {
 			const ips: string[] = [];
 			for (const info of db.server_map_decay_list) {
+				if (info.server === void 0) continue;
 				ips.push(info.server.ip);
 			}
 			if (ips.length > 0) {
@@ -166,12 +175,25 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 		case "online_servers": {
 			const query_map: Record<string, DarknetServer> = {};
 			for (const srv of msg.result.darkweb) {
-				if (!db.server_map.has(srv.hostname)) continue;
+				if (!db.server_map.has(srv.hostname)) {
+					db.server_map.set(srv.hostname, {
+						ip: srv.ip,
+						connectedToParent: false,
+						server: srv,
+					});
+					query_map[srv.hostname] = srv;
+					continue;
+				}
 				query_map[srv.hostname] = srv;
 			}
 			for (let i = 0; i < db.server_map_decay_list.length; i++) {
 				const info = db.server_map_decay_list[i];
 				const srv = info.server;
+				if (srv === void 0) {
+					db.server_map_decay_list.splice(i, 1);
+					i--;
+					continue;
+				}
 				const host = srv.hostname;
 				if (query_map[host]) {
 					info.server = query_map[host];
@@ -196,6 +218,13 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 		case "port_release":
 			if (msg.port === 3) {
 				s.is_api_port_busy = false;
+			}
+			if (!msg.infos) return true;
+			for (const info of msg.infos) {
+				const my_info = db.servers_by_ip.get(info.ip);
+				if (my_info) {
+					db.servers_by_ip.set(info.ip, info);
+				}
 			}
 			return true;
 		default: {

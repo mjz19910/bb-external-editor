@@ -83,6 +83,7 @@ export type OnlineCheckMsg = {
 export type QuerySecurityMsg = {
 	type: "query_security";
 	ips: string[];
+	infos: DarknetServerInfo[];
 };
 export type HostnameReplyMsg = {
 	type: "getHostname";
@@ -91,6 +92,7 @@ export type HostnameReplyMsg = {
 export type PortReleaseMsg = {
 	type: "port_release";
 	port: number;
+	infos: DarknetServerInfo[] | null;
 };
 export type PortMessage =
 	| DarknetAuthenticateMessage

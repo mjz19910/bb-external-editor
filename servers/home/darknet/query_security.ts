@@ -11,12 +11,14 @@ export async function main(ns: NS) {
 	const { value: msg } = res;
 	if (msg.type !== "query_security") return;
 	ns.tprint("query getting server auth details");
-	for (const ip of msg.ips) {
-		const ad = ns.dnet.getServerAuthDetails(ip);
-		ns.tprint(ad);
+	const infos = msg.infos;
+	for (const info of infos) {
+		const ad = ns.dnet.getServerAuthDetails(info.ip);
+		info.authDetails = ad;
 	}
 	reply_port.write<PortReleaseMsg>({
 		type: "port_release",
 		port: com_port.port_id,
+		infos,
 	});
 }
