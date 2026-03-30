@@ -114,7 +114,7 @@ export async function main(ns: NS) {
 		const growWeaken = Math.ceil(growSec / ns.weakenAnalyze(1));
 
 		if (sec > minSec + 1.5) {
-			const wantedW = hackWeaken + growWeaken + 20;
+			const wantedW = Math.ceil((hackWeaken + growWeaken + 20) * 1.25);
 			const missingW = missing(wantedW, jobs.weaken);
 
 			const alloc = allocateThreads(ns, fleet, WEAKEN, missingW);
@@ -132,7 +132,7 @@ export async function main(ns: NS) {
 
 		if (money < maxMoney * 0.9) {
 			const missingG = missing(growThreads, jobs.grow);
-			const missingW = missing(growWeaken, jobs.weaken);
+			const missingW = missing(Math.ceil(growWeaken * 1.15), jobs.weaken);
 
 			const growAlloc = allocateThreads(ns, fleet, GROW, missingG);
 			const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
@@ -161,7 +161,7 @@ export async function main(ns: NS) {
 
 		const wantedHack = hackThreads;
 		const wantedGrow = growThreads;
-		const wantedWeaken = hackWeaken + growWeaken;
+		const wantedWeaken = Math.ceil((hackWeaken + growWeaken + 1) * 1.25);
 
 		const missingHack = missing(wantedHack, jobs.hack);
 		const missingGrow = missing(wantedGrow, jobs.grow);
