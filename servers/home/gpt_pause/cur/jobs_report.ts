@@ -1,5 +1,5 @@
-import { NS } from "../../@ns";
-import { getJobSnapshot } from "../lib/jobs";
+import { NS } from "./@ns";
+import { getJobSnapshot } from "../src/lib/jobs";
 
 export async function main(ns: NS) {
 	const snap = getJobSnapshot(ns);

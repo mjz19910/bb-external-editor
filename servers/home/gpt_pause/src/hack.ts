@@ -1,4 +1,4 @@
-import { NS, ScriptArg, Server, AutocompleteData } from "../@ns";
+import { AutocompleteData, NS, ScriptArg, Server } from "./@ns";
 import { HostInfoDB } from "./HostInfoDB";
 
 export async function main(ns: NS) {

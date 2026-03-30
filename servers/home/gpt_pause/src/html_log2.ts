@@ -1,5 +1,5 @@
 import React from "react";
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 
 type PromiseParts<Result> = {
   resolve(value: Result): void;

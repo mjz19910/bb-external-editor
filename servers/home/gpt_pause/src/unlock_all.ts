@@ -1,6 +1,6 @@
 /** unlock_all.ts */
 
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 
 export async function main(ns: NS) {
 	const visited = new Set<string>();

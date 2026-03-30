@@ -1,4 +1,4 @@
-import { Server, NS } from "../@ns";
+import { Server, NS } from "./@ns";
 import { DarknetServer } from "./darknet/misc";
 
 /** HostInfoDB.ts */

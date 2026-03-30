@@ -1,4 +1,4 @@
-import { NS, Server } from "../../@ns";
+import { NS, Server } from "./@ns";
 import { DarknetServer } from "../src/darknet/misc";
 import { DarknetServerInfo } from "../src/darknet/types";
 import { OnlineServersMessage } from "../src/type/helper";

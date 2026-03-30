@@ -1,4 +1,4 @@
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 
 /**
  * Compute partition number p(n) using Euler's pentagonal number theorem

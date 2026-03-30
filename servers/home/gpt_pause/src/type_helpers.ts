@@ -1,1 +1,1 @@
-export type Compute<T> = { [U in keyof T]: T[U] } & {}
+export type Compute<T> = { [U in keyof T]: T[U] } & {};

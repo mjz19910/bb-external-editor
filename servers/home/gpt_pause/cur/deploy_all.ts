@@ -1,6 +1,6 @@
-import { buildNetworkMap, runnableHosts } from "../lib/network_map";
-import { tlog } from "../lib/log";
-import { NS } from "../../@ns";
+import { buildNetworkMap, runnableHosts } from "../src/lib/network_map";
+import { tlog } from "../src/lib/log";
+import { NS } from "./@ns";
 
 const FILES = [
 	"hack_worker.ts",
@@ -10,7 +10,7 @@ const FILES = [
 
 export async function main(ns: NS) {
 	const map = buildNetworkMap(ns);
-	const runners = runnableHosts(ns, map.hosts);
+	const runners = runnableHosts(ns, map, map.hosts);
 
 	let copied = 0;
 

@@ -1,14 +1,13 @@
-import { AutocompleteData, ScriptArg, NS } from "../../@ns"
+import { AutocompleteData, NS, ScriptArg } from "./@ns";
 
 export function autocomplete(data: AutocompleteData, args: ScriptArg[]) {
-	// return data.servers
 	if (args.length == 0) {
-		return ["n00dles"]
+		return data.servers;
 	}
-	return []
+	return [];
 }
 export async function main(ns: NS) {
-	ns.ui.openTail()
-	ns.ui.resizeTail(623.8, 35 + 24 * 5)
-	await ns.weaken(ns.args[0] as string)
+	ns.ui.openTail();
+	ns.ui.resizeTail(623.8, 35 + 24 * 5);
+	await ns.weaken(ns.args[0] as string);
 }

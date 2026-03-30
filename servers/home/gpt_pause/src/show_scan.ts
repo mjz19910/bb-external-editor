@@ -1,4 +1,4 @@
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 
 function show_scan(ns: NS, target: string) {
 	const home_res = ns.scan(target);

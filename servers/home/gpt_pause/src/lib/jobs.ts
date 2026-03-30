@@ -1,4 +1,4 @@
-import { NS, ProcessInfo } from "../../@ns";
+import { NS, ProcessInfo } from "./@ns";
 import { getFleet } from "./fleet";
 import { NetworkMap } from "./network_map";
 

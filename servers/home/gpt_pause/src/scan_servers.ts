@@ -1,6 +1,8 @@
-import { NS, Server } from "../../@ns";
+import { NS, Server } from "./@ns";
+import { DarknetServer, isDarknetServer2 } from "./darknet/misc";
+import { isNormalServer } from "./lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
-import { read_string_arg } from "../../src/arg_parse";
+import { read_string_arg } from "./arg_parse";
 
 export async function main(ns: NS) {
 	const state = new class {
@@ -20,18 +22,20 @@ export async function main(ns: NS) {
 		ns.tprint("\t--next-weaken # find next weaken target");
 		return;
 	}
-	const db = new HostInfoDB<Server>(ns);
+	const db = new HostInfoDB(ns);
 	const host_map: Record<string, Server> = {};
-	for (const { server: srv } of db.data) {
+	const dark_host_map: Record<string, DarknetServer> = {};
+	for (const info of db.data) {
+		const srv = info.server;
+		if (isDarknetServer2(srv)) {
+			dark_host_map[srv.hostname] = srv;
+			continue;
+		}
 		host_map[srv.hostname] = srv;
 	}
 	for (const info of db.data) {
 		const srv = info.server;
 		const host = srv.hostname;
-		if (!srv) {
-			ns.tprint("missing server info, run get-server");
-			return;
-		}
 		if (state.script_ram_target !== -1) {
 			if (!srv.hasAdminRights) continue;
 			if (host === "home") continue;
@@ -49,6 +53,7 @@ export async function main(ns: NS) {
 		}
 		if (state.find_weaken_target && state.weaken_target_server) {
 			if (!srv.backdoorInstalled) continue;
+			if (!isNormalServer(srv)) continue;
 			if (srv.hackDifficulty != srv.minDifficulty) {
 				const exec_server = host_map[state.weaken_target_server];
 				const free_ram = exec_server.maxRam;

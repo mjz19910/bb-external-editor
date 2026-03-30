@@ -1,4 +1,4 @@
-import { AutocompleteData, NS, ScriptArg, Server } from "../../@ns";
+import { AutocompleteData, NS, ScriptArg, Server } from "./@ns";
 import { HostInfoDB } from "./HostInfoDB";
 
 export async function main(ns: NS) {
@@ -48,6 +48,7 @@ export async function main(ns: NS) {
 		}
 	}, 2500);
 }
+
 export function autocomplete(data: AutocompleteData, args: ScriptArg[]) {
 	if (args.length === 0) return data.servers;
 	if (typeof args[0] != "string") return [];

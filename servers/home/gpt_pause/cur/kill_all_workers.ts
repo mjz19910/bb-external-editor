@@ -1,5 +1,5 @@
-import { NS } from "../../@ns";
-import { getFleet } from "../lib/fleet";
+import { NS } from "./@ns";
+import { getFleet } from "../src/lib/fleet";
 
 const WORKERS = new Set([
 	"hack_worker.ts",

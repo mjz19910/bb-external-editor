@@ -1,5 +1,5 @@
-import { AutocompleteData, NS, ScriptArg } from "../../@ns";
-import { isNormalServer } from "../lib/helper";
+import { AutocompleteData, NS, ScriptArg } from "./@ns";
+import { isNormalServer } from "./lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
 export async function main(ns: NS) {
 	if (typeof ns.args[0] != "string") {

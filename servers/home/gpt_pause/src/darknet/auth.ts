@@ -1,4 +1,4 @@
-import { NS } from "../../../@ns";
+import { NS } from "../@ns";
 
 type AuthResult = {
 	success: never;

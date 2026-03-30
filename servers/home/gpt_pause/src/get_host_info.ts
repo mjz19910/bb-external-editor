@@ -1,4 +1,4 @@
-import { Server } from "../../@ns";
+import { Server } from "./@ns";
 
 export type BasicHostInfo = {
   host: string;

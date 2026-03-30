@@ -1,4 +1,4 @@
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 import { ScriptPort } from "./type/ScriptPort";
 
 export async function main(ns: NS) {

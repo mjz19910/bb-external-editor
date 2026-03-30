@@ -1,4 +1,4 @@
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 import { HostInfoDB } from "./HostInfoDB";
 
 /** Source info for a file copy */

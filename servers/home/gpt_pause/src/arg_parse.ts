@@ -1,4 +1,4 @@
-import { ScriptArg } from "../../@ns";
+import { ScriptArg } from "./@ns";
 
 export const deps = [
   "types/arg_parse.ts"

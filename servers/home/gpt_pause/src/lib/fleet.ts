@@ -1,4 +1,4 @@
-import { NS } from "../../../@ns";
+import { NS } from "../@ns";
 import { NetworkMap } from "./network_map";
 
 export type FleetHost = {

@@ -1,4 +1,4 @@
-import { NS } from "../../../@ns";
+import { NS } from "../@ns";
 import { handleRequest } from "../lib/handleRequest";
 import { HgwRequest, parseHgwRequest } from "../lib/hgw-message";
 

@@ -1,4 +1,4 @@
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 import { DarknetServer } from "../src/darknet/misc";
 import { DarknetServerInfo } from "../src/darknet/types";
 import { ScriptPort } from "../src/type/ScriptPort";

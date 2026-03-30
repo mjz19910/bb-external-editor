@@ -1,4 +1,4 @@
-import { NS } from "../../../@ns";
+import { NS } from "../@ns";
 
 export async function main(ns: NS) {
 	const [runner, threads, port] = ns.args as [string, number, number];

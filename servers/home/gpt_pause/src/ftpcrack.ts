@@ -1,6 +1,7 @@
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 import { isNormalServer } from "./lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
+
 export async function main(ns: NS) {
 	const db = new HostInfoDB(ns);
 	for (const info of db.data) {

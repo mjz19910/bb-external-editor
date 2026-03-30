@@ -1,4 +1,4 @@
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 
 export function log(ns: NS, msg: string) {
 	ns.print(msg);

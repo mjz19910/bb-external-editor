@@ -1,5 +1,5 @@
-import { NS, AutocompleteData, ScriptArg } from "../../@ns";
-import { read_string_arg } from "../../src/arg_parse";
+import { AutocompleteData, NS, ScriptArg } from "./@ns";
+import { read_string_arg } from "./arg_parse";
 
 export async function main(ns: NS) {
 	if (ns.args.length < 1) {

@@ -7,7 +7,7 @@ import {
 	PortMessage,
 } from "../type/helper";
 import { ScriptPort } from "../type/ScriptPort";
-import { DarknetResult, NS, ScriptArg } from "../../../@ns";
+import { DarknetResult, NS, ScriptArg } from ".././@ns";
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,

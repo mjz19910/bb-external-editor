@@ -1,5 +1,5 @@
 /** scan.ts */
-import { NS, Server } from "../../@ns";
+import { NS, Server } from "./@ns";
 import { DarknetServer } from "./darknet/misc";
 import { HostInfoDB } from "./HostInfoDB";
 

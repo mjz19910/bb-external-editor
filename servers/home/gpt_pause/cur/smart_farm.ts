@@ -1,15 +1,14 @@
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 import {
 	allocateThreads,
 	deployScriptSet,
 	getFleet,
 	runAllocations,
-} from "../lib/fleet";
-import { chooseBestTarget } from "../lib/targeting";
-import { calcHackThreadsForPercent, calcPrepPlan } from "../lib/prep";
-import { getTargetJobCounts } from "../lib/jobs";
-import { log, tlog } from "../lib/log";
-
+} from "../src/lib/fleet";
+import { getTargetJobCounts } from "../src/lib/jobs";
+import { log, tlog } from "../src/lib/log";
+import { calcHackThreadsForPercent, calcPrepPlan } from "../src/lib/prep";
+import { chooseBestTarget } from "./choose_best_target";
 const HACK = "hack_worker.ts";
 const GROW = "grow_worker.ts";
 const WEAKEN = "weaken_worker.ts";

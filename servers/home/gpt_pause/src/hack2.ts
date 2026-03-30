@@ -1,9 +1,9 @@
-import { NS, AutocompleteData } from "../@ns"
+import { AutocompleteData, NS } from "./@ns";
 
 export async function main(ns: NS) {
-	await ns.hack(ns.args[0] as string)
+	await ns.hack(ns.args[0] as string);
 }
 
 export function autocomplete(data: AutocompleteData) {
-	return data.servers
+	return data.servers;
 }

@@ -1,10 +1,10 @@
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 import {
 	buildNetworkMap,
 	classifyServer,
 	hubHosts,
 	leafHosts,
-} from "../lib/network_map";
+} from "../src/lib/network_map";
 
 export async function main(ns: NS) {
 	const map = buildNetworkMap(ns);

@@ -1,5 +1,5 @@
-import { NS, Server } from "../../@ns";
-import { isNormalServer } from "../lib/helper";
+import { NS, Server } from "./@ns";
+import { isNormalServer } from "./lib/helper";
 
 interface RunnerState {
 	target: string;

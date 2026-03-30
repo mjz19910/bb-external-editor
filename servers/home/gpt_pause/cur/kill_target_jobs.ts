@@ -1,4 +1,4 @@
-import { NS } from "../../@ns";
+import { NS } from "./@ns";
 import { getFleet } from "../lib/fleet";
 
 const WORKERS = new Set([

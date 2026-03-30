@@ -2,10 +2,10 @@ import {
 	buildNetworkMap,
 	canRunThreads,
 	runnableHosts,
-} from "../lib/network_map";
+} from "../src/lib/network_map";
 import { chooseBestTarget } from "./choose_best_target";
-import { log, tlog } from "../lib/log";
-import { NS } from "../../@ns";
+import { log, tlog } from "../src/lib/log";
+import { NS } from "./@ns";
 
 const HACK = "hack_worker.ts";
 const GROW = "grow_worker.ts";

@@ -1,5 +1,5 @@
-import { NS } from "../../@ns";
-import { isNormalServer } from "../lib/helper";
+import { NS } from "./@ns";
+import { isNormalServer } from "./lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
 
 // api/all_hosts/relaysmtp.ts
