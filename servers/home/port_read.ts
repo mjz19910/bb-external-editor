@@ -73,7 +73,7 @@ function handle_wait_request(ns: NS, msg: WaitMessage) {
 }
 function handle_object_message(
 	ns: NS,
-	s: { running: boolean; runner: string; port2: ScriptPort<null> },
+	s: { running: boolean; runner: string; port2: ScriptPort<string | null> },
 	msg: PortMessage | {} | null,
 ) {
 	if (msg === null) {
@@ -111,6 +111,8 @@ function handle_object_message(
 				for (const ip of msg.results) {
 					ns.tprint(`found ip ${ip} connected to ${msg.for}`);
 				}
+				s.port2.write<string>("query_ips " + msg.results.join(","));
+				ns.run("darknet/query_security.ts", 1);
 			} else {
 				for (const info of msg.infos) {
 					if (info.password === null) {
