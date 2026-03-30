@@ -8,5 +8,15 @@ export async function main(ns: NS) {
 	}
 	const { value: query_str } = res;
 	const [query_cmd, query_arg] = query_str.split(" ");
-	ns.tprint("query ", query_cmd, " ", query_arg.split(","));
+	const args = query_arg.split(",");
+	switch (query_cmd) {
+		case "query_ips": {
+			ns.tprint("query getting server auth details");
+			for (const ip of args) {
+				const ad = ns.dnet.getServerAuthDetails(ip);
+				ns.tprint(ad);
+			}
+			break;
+		}
+	}
 }
