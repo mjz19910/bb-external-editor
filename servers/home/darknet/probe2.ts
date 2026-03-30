@@ -76,6 +76,11 @@ interface FactorsBleedResult extends DarknetResult {
 	passwordAttempted: string;
 }
 const verbose = false;
+type SubmitAuthArgs = [
+	opts: AuthFlowState,
+	auth: DarknetResult,
+	password: string,
+];
 class AuthManager {
 	constructor(public ns: NS) {}
 	extract_info(opts: AuthFlowState) {
@@ -84,11 +89,8 @@ class AuthManager {
 		const { hostname: host } = srv;
 		return { opts, srv, host, authDetails: info.authDetails };
 	}
-	submit_auth_result(
-		opts: AuthFlowState,
-		auth: DarknetResult,
-		password: string,
-	) {
+	submit_auth_result(...args: SubmitAuthArgs) {
+		const [opts, auth, password] = args;
 		const { info, port, runner } = opts;
 		const { server: srv } = info;
 		const { hostname: host } = srv;
@@ -131,10 +133,6 @@ class AuthManager {
 		);
 		this.submit_auth_result(opts, auth, password);
 	}
-	// password=""
-	async ZeroLogon(opts: AuthFlowState) {
-		await this.doAuth(opts, "");
-	}
 	async OctantVoxel(opts: AuthFlowState) {
 		const data = opts.info.authDetails.data;
 		const [base, num] = data.split(",");
@@ -144,6 +142,7 @@ class AuthManager {
 	/** Solve a Factori-0s Darknet auth flow, using both valid factor sieve and invalid factor filtering */
 	async Factori_0s(opts: AuthFlowState) {
 		const ns = this.ns;
+		const tried_num_flag = [];
 		const factors: number[] = []; // confirmed valid factors >= 100
 		const invalidFactors: number[] = []; // numbers ruled out by data === "false"
 		const { info } = opts;
@@ -170,6 +169,10 @@ class AuthManager {
 				break;
 			}
 			cur_num = next_factor ?? 2;
+			while (tried_num_flag[cur_num]) {
+				cur_num++;
+			}
+			tried_num_flag[cur_num] = true;
 			const pw = cur_num.toString();
 			ns.tprint(`authenticate(Factorios) for ${host} with "${pw}"`);
 			const auth = await ns.dnet.authenticate(host, pw);
@@ -442,10 +445,8 @@ class AuthManager {
 		}
 	}
 	async BellaCuore(opts: AuthFlowState) {
-		const ad = opts.info.authDetails!;
-		const num = decode_roman_num(ad.data);
-		const pw = "" + num;
-		await this.doAuth(opts, pw);
+		const num = decode_roman_num(opts.info.authDetails.data);
+		await this.doAuth(opts, "" + num);
 	}
 	// overflow the buffer!
 	async Pr0verFl0(opts: AuthFlowState) {
@@ -617,6 +618,9 @@ export async function main(ns: NS) {
 					break;
 				case "OctantVoxel":
 					await am.OctantVoxel(opts);
+					break;
+				case "ZeroLogon":
+					await am.doAuth(opts, "");
 					break;
 				default: {
 					if (handler_id) {
