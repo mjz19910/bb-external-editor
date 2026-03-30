@@ -10,11 +10,10 @@ export async function main(ns: NS) {
 	}
 	const { value: query_str } = res;
 	const [query_cmd, query_arg] = query_str.split(" ");
-	ns.tprint("query arg ", query_arg);
+	if (!query_arg) return ns.tprint("port(2): nothing to query (empty ips)");
 	const args = query_arg.split(",");
 	switch (query_cmd) {
 		case "online_check": {
-			ns.tprint("query getting server auth details");
 			const servers: DarknetServer[] = [];
 			const alt_servers: Server[] = [];
 			for (const ip of args) {
