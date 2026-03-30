@@ -52,7 +52,7 @@ export async function main(ns: NS) {
 		const new_content = JSON.stringify(info, void 0, "\t");
 		if (new_content != content) {
 			ns.write(file, new_content, "w");
-			ns.tprint("update data for ", srv.hostname);
+			ns.tprint("update data for [", srv.hostname, "](", srv.ip, ")");
 		}
 	}
 }
