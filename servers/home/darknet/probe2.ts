@@ -81,6 +81,14 @@ type SubmitAuthArgs = [
 	auth: DarknetResult,
 	password: string,
 ];
+type AccMgrBleedData = {
+	code: 401;
+	message: string;
+	passwordAttempted: string;
+	data: string;
+} | {
+	code: 200;
+};
 class AuthManager {
 	constructor(public ns: NS) {}
 	extract_info(opts: AuthFlowState) {
@@ -341,17 +349,39 @@ class AuthManager {
 		const pw = opts.info.authDetails!.passwordHint.match(/\d+/)![0];
 		await this.doAuth(opts, pw);
 	}
+	private parseAccMgrBleedFeedback(
+		ns: NS,
+		logs: string[],
+	): "Higher" | "Lower" | null {
+		for (const log of logs) {
+			let parsed: AccMgrBleedData | null = null;
+
+			try {
+				parsed = JSON.parse(log) as AccMgrBleedData;
+			} catch {
+				ns.tprint("heartbleed text_log ", log);
+				continue;
+			}
+
+			if (parsed.code === 200) {
+				ns.tprint("hb log ", parsed);
+				continue;
+			}
+
+			if (parsed.code !== 401) {
+				throw new Error("Invalid hb result " + parsed);
+			}
+
+			if (parsed.data === "Higher" || parsed.data === "Lower") {
+				return parsed.data;
+			}
+		}
+
+		return null;
+	}
 	// "The password is a number between 0 and 10"
 	async AccountsManager(opts: AuthFlowState) {
 		const ns = this.ns;
-		type AccMgrBleedData = {
-			code: 401;
-			message: string;
-			passwordAttempted: string;
-			data: boolean;
-		} | {
-			code: 200;
-		};
 		const { host, authDetails: ad } = this.extract_info(opts);
 		if (!ad) return;
 		let match = ad.passwordHint.match(ac_mgr_regexp);
@@ -361,36 +391,31 @@ class AuthManager {
 			);
 		}
 		const [, min_arg, max_arg] = match as [string, string, string];
-		const min = +min_arg, max = +max_arg;
-		for (let i = min; i < max; i++) {
-			const pw = "" + i;
+		let lo = +min_arg;
+		let hi = +max_arg - 1;
+
+		while (lo <= hi) {
+			const mid = Math.floor((lo + hi) / 2);
+			const pw = "" + mid;
+
 			const auth = await ns.dnet.authenticate(host, pw);
 			if (this.submit_auth_result(opts, auth, pw)) break;
-			const bleed_res = await ns.dnet.heartbleed(host);
-			if (!bleed_res.success) {
-				ns.tprint("heartbleed failed:", bleed_res);
+
+			const hb = await ns.dnet.heartbleed(host);
+			if (!hb.success) {
+				ns.tprint("heartbleed failed:", hb);
 				break;
 			}
-			for (const log of bleed_res.logs) {
-				let data: AccMgrBleedData | null = null;
-				try {
-					data = JSON.parse(log) as AccMgrBleedData;
-				} catch {
-					ns.tprint("heartbleed text_log ", log);
-				}
-				if (!data) continue;
-				if (data.code === 200) {
-					ns.tprint("heartbleed(AccMgr,200) log ", data);
-					continue;
-				}
-				if (data.code != 401) {
-					const err_code = (data as { code: number }).code;
-					throw new Error(
-						"Invalid heartbleed(AccMgr) result code=" + err_code,
-					);
-				}
-				ns.tprint("heartbleed(AccMgr) log ", data.message);
+
+			const feedback = this.parseAccMgrBleedFeedback(ns, hb.logs);
+			if (!feedback) {
+				throw new Error(
+					"No Higher/Lower feedback found in heartbleed logs",
+				);
 			}
+
+			if (feedback === "Higher") lo = mid + 1;
+			else hi = mid - 1;
 		}
 	}
 	async NIL(opts: AuthFlowState) {

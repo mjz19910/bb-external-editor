@@ -6,8 +6,8 @@ import { write_info_to_fs_db } from "./write_ip_db";
 
 export async function main(ns: NS) {
 	const port = new ScriptPort(ns, 1);
-	const port2 = new ScriptPort(ns, 2);
-	for await (const v of start_read_loop<string>(port2)) {
+	const port2 = new ScriptPort<string>(ns, 2);
+	for await (const v of start_read_loop(port2)) {
 		const [query_cmd, query_arg] = v.split(" ");
 		const args = query_arg === "" ? [] : query_arg.split(",");
 		handle_query(ns, port, query_cmd, args);
@@ -54,13 +54,11 @@ function handle_online_check(
 type A<T> = AsyncGenerator<T, void, void>;
 type B<T> = ScriptPort<T>;
 async function* start_read_loop<T>(port: B<T>): A<T> {
-	for (;;) {
-		const res = port.readOpt<T>();
-		if (res.type === "None") {
-			await port.nextWrite();
-			continue;
+	for (; ;) {
+		for (; !port.empty();) {
+			yield port.read<T>();
 		}
-		yield res.value;
+		await port.nextWrite();
 	}
 }
 
