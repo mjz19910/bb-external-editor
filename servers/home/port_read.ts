@@ -154,8 +154,10 @@ function handle_object_message(
 			for (const info of db.server_map_decay_list) {
 				ips.push(info.server.ip);
 			}
-			s.port2.write<string>("online_check " + ips.join(","));
-			ns.run("query_server.ts", 1);
+			if (ips.length > 0) {
+				s.port2.write<string>("online_check " + ips.join(","));
+				ns.run("query_server.ts", 1);
+			}
 			return true;
 		}
 		case "online_servers": {
