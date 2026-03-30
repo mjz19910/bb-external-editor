@@ -289,7 +289,7 @@ class AuthManager {
 		let sym_match_chars = [];
 		for (const char of chars) {
 			const pw = pw_arr.map((v) => v === null ? char : v).join("");
-			const auth: DarknetResult = await ns.dnet.authenticate(host, pw);
+			const auth = await ns.dnet.authenticate(host, pw);
 			if (this.submit_auth_result(opts, auth, pw)) break;
 			const bleed_res = await ns.dnet.heartbleed(host);
 			if (!bleed_res.success) {
@@ -319,12 +319,17 @@ class AuthManager {
 						+m2,
 					);
 					if (num_match > 0) {
-						sym_match_chars.push(char.repeat(num_match));
+						const chars = char.repeat(num_match).split("");
+						sym_match_chars.push(...chars);
 					}
 				}
 			}
 		}
-		ns.tprint("deep green pw includes chars ", sym_match_chars);
+		for (const pw_chars of permute(sym_match_chars)) {
+			const pw = pw_chars.join("");
+			const auth = await ns.dnet.authenticate(host, pw);
+			if (this.submit_auth_result(opts, auth, pw)) break;
+		}
 	}
 	async CloudBlare(opts: AuthFlowState) {
 		const { info } = opts;
