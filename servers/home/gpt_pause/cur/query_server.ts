@@ -1,6 +1,6 @@
 import { NS, Server } from "../../@ns";
-import { DarknetServer } from "../darknet/misc";
-import { DarknetServerInfo } from "../darknet/types";
+import { DarknetServer } from "../src/darknet/misc";
+import { DarknetServerInfo } from "../src/darknet/types";
 import { OnlineServersMessage } from "../src/type/helper";
 import { ScriptPort } from "../src/type/ScriptPort";
 import { write_info_to_fs_db } from "./write_ip_db";

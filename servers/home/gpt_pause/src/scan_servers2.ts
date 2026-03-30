@@ -1,5 +1,5 @@
 import { NS, Server } from "../../@ns";
-import { DarknetServer, isDarknetServer2 } from "../darknet/misc";
+import { DarknetServer, isDarknetServer2 } from "./darknet/misc";
 import { isNormalServer } from "../lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
 import { read_string_arg } from "./arg_parse";

@@ -1,5 +1,5 @@
 import { NS } from "../../@ns";
-import { Com } from "../lib/port";
+import { Com } from "./lib/port";
 
 export async function main(ns: NS) {
 	let portNumber = 1;

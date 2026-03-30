@@ -12,7 +12,7 @@ import {
 	estimateRamROI,
 } from "./roi";
 import { formatNumber, formatTime } from "./format";
-import { NS } from "../@ns";
+import { NS } from "../../../@ns";
 
 /** Display hacknet fleet diagnostics and compute upgrade ROI */
 export function dashboard(ns: NS) {

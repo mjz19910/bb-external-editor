@@ -1,5 +1,5 @@
 import { NS } from "../../@ns";
-import { isNormalServer } from "../lib/helper";
+import { isNormalServer } from "./lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
 
 export async function main(ns: NS) {

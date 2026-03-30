@@ -1,6 +1,6 @@
-import { NS, ScriptArg } from "../../@ns";
-import { DarknetProbeMessage } from "../src/type/helper";
-import { ScriptPort } from "../src/type/ScriptPort";
+import { NS, ScriptArg } from "../../../@ns";
+import { DarknetProbeMessage } from "../type/helper";
+import { ScriptPort } from "../type/ScriptPort";
 import { DarknetServerInfo } from "./types";
 
 function post_dnet_probe(ns: NS, runner: string, port: number) {

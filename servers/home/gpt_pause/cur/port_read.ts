@@ -1,6 +1,6 @@
 import { NS } from "../../@ns";
-import { DarknetServer } from "../darknet/misc";
-import { DarknetServerInfo } from "../darknet/types";
+import { DarknetServer } from "../src/darknet/misc";
+import { DarknetServerInfo } from "../src/darknet/types";
 import { ScriptPort } from "../src/type/ScriptPort";
 import {
 	HostnameReplyMsg,

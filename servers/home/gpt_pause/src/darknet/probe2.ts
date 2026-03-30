@@ -5,9 +5,9 @@ import {
 	DarknetFoundPassProbeMessage,
 	DarknetProbeMessage,
 	PortMessage,
-} from "../src/type/helper";
-import { ScriptPort } from "../src/type/ScriptPort";
-import { DarknetResult, NS, ScriptArg } from "../../@ns";
+} from "../type/helper";
+import { ScriptPort } from "../type/ScriptPort";
+import { DarknetResult, NS, ScriptArg } from "../../../@ns";
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,

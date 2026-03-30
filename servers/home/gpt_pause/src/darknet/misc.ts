@@ -1,4 +1,4 @@
-import { DarknetServerData, Server } from "../../@ns";
+import { DarknetServerData, Server } from "../../../@ns";
 
 export interface DarknetServer extends DarknetServerData {
 	isOnline: boolean;

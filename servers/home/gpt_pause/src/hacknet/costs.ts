@@ -1,4 +1,4 @@
-import { NS } from "../@ns";
+import { NS } from "../../../@ns";
 
 export function totalLevelUpgradeCost(ns: NS, levels: number) {
 	const h = ns.hacknet;

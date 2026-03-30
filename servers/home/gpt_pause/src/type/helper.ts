@@ -1,6 +1,6 @@
 import { DarknetResult, Server } from "../../../@ns";
-import { DarknetServer } from "../../darknet/misc";
-import { DarknetServerInfo } from "../../darknet/types";
+import { DarknetServer } from "../darknet/misc";
+import { DarknetServerInfo } from "../darknet/types";
 
 const EmptyOptStr = "None";
 const ValueOptStr = "Some";

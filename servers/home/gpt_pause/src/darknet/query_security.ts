@@ -1,6 +1,6 @@
-import { NS } from "../../@ns";
-import { PortReleaseMsg } from "../src/type/helper";
-import { ScriptPort } from "../src/type/ScriptPort";
+import { NS } from "../../../@ns";
+import { PortReleaseMsg } from "../type/helper";
+import { ScriptPort } from "../type/ScriptPort";
 
 export async function main(ns: NS) {
 	const reply_port = ScriptPort.open_request_port(ns);

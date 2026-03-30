@@ -1,6 +1,6 @@
 /** scan.ts */
 import { NS, Server } from "../../@ns";
-import { DarknetServer } from "../darknet/misc";
+import { DarknetServer } from "./darknet/misc";
 import { HostInfoDB } from "./HostInfoDB";
 
 export class ScanContext<T extends Server | DarknetServer> {
