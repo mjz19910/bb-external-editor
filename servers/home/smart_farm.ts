@@ -104,9 +104,7 @@ export async function main(ns: NS) {
 		const hackThreads = calcHackThreadsForPercent(ns, target, hackPct);
 		const hackSec = ns.hackAnalyzeSecurity(hackThreads, target);
 		let hackWeaken = Math.ceil(hackSec / ns.weakenAnalyze(1));
-		hackWeaken *= 2;
-		ns.tprint("hack weaken ", hackWeaken);
-		hackWeaken = Math.ceil(hackWeaken) + 1;
+		hackWeaken = Math.ceil(hackWeaken);
 
 		const growFactor = 1 / Math.max(0.001, 1 - hackPct);
 		let growThreads = ns.growthAnalyze(target, growFactor);
