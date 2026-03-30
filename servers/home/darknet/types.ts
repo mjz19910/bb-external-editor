@@ -21,7 +21,7 @@ export type DarknetServerInfo = {
 	ip: string;
 	host: string;
 	server: DarknetServer;
-	authDetails: ServerAuthDetails2;
+	authDetails: ServerAuthDetails2 | null;
 	parent: string | null;
 	password: string | null;
 	connectedToParent: boolean;

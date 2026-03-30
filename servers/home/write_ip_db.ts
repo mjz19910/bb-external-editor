@@ -30,9 +30,13 @@ export function write_info_to_fs_db(
 	for (const k1 of Object.keys(info.server)) {
 		const k = k1 as keyof typeof info.server;
 		if (k === "ip") continue;
+		if (k === "isOnline") continue;
 		if (info.server[k] === default_server[k]) {
 			delete info.server[k];
 		}
+	}
+	if(info.server.isOnline === false) {
+		info.authDetails = null;
 	}
 	const new_content = JSON.stringify(info, void 0, "\t");
 	if (new_content !== cur_data) {

@@ -134,6 +134,7 @@ class AuthManager {
 		this.submit_auth_result(opts, auth, password);
 	}
 	async OctantVoxel(opts: AuthFlowState) {
+		if (!opts.info.authDetails) return;
 		const data = opts.info.authDetails.data;
 		const [base, num] = data.split(",");
 		await this.doAuth(opts, "" + Number.parseInt(num, +base));
@@ -150,7 +151,7 @@ class AuthManager {
 		const { hostname: host } = srv;
 
 		ns.tprint(`Starting Factorios auth flow for ${host}`);
-		const pw_len = info.authDetails.passwordLength;
+		if (!info.authDetails) return;
 		let cur_num = 1;
 
 		for (;;) {
@@ -351,8 +352,8 @@ class AuthManager {
 		} | {
 			code: 200;
 		};
-		const { host, authDetails } = this.extract_info(opts);
-		const ad = authDetails;
+		const { host, authDetails: ad } = this.extract_info(opts);
+		if (!ad) return;
 		let match = ad.passwordHint.match(ac_mgr_regexp);
 		if (!match) {
 			throw new Error(
@@ -400,9 +401,10 @@ class AuthManager {
 			passwordAttempted: string;
 		};
 		const info = opts.info;
-		const { authDetails } = info;
+		const { authDetails: ad } = info;
+		if (!ad) return;
 		const chars = "0123456789".split("");
-		const { passwordLength: len } = authDetails;
+		const { passwordLength: len } = ad;
 		const srv = info.server;
 		const host = srv.hostname;
 		const pw_arr = Array.from<string | null>({ length: len }).fill(null);
@@ -436,6 +438,7 @@ class AuthManager {
 		}
 	}
 	async BellaCuore(opts: AuthFlowState) {
+		if (!opts.info.authDetails) return;
 		const num = decode_roman_num(opts.info.authDetails.data);
 		await this.doAuth(opts, "" + num);
 	}
@@ -443,6 +446,7 @@ class AuthManager {
 	async Pr0verFl0(opts: AuthFlowState) {
 		const { info } = opts;
 		const { authDetails: ad } = info;
+		if (!ad) return;
 		const { passwordLength: len } = ad;
 		await this.doAuth(opts, "A".repeat(len * 2));
 	}
@@ -461,12 +465,13 @@ class AuthManager {
 	}
 	async Laika4(opts: AuthFlowState) {
 		const ad = opts.info.authDetails;
+		if (!ad) return;
 		const hint = ad.passwordHint;
-		this.ns.tprint("dog hint: ", opts.info.authDetails.passwordHint);
-		this.ns.tprint(opts.info.authDetails);
+		this.ns.tprint("dog hint: ", ad.passwordHint);
+		this.ns.tprint(ad);
 		for (const dog_name of dog_names) {
 			const pw = dog_name;
-			if (pw.length != opts.info.authDetails.passwordLength) continue;
+			if (pw.length != ad.passwordLength) continue;
 			const auth = await this.ns.dnet.authenticate(opts.host, pw);
 			if (this.submit_auth_result(opts, auth, pw)) {
 				this.dog_hint_map2[hint] ??= [];
