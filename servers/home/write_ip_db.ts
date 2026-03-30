@@ -6,10 +6,12 @@ export function write_info_to_fs_db(ns: NS, info: DarknetServerInfo) {
 		ns.tprint("missing ip field on srv.ip ", info);
 		return;
 	}
+	const ip_save_path = `tmp/ip/${srv.ip}.txt`;
 	const new_content = JSON.stringify(info, void 0, "\t");
 	if (srv.isOnline) {
-		const ip_save_path = `tmp/ip/${srv.ip}.txt`;
 		ns.write(ip_save_path, new_content, "w");
+	} else {
+		ns.rm(ip_save_path);
 	}
 	const host = info.server.hostname;
 	if (host === void 0 || host === "") {
