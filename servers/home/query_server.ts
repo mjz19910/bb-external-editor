@@ -36,23 +36,25 @@ export async function main(ns: NS) {
 	for (const file of ip_db_files) {
 		const content = ns.read(file);
 		const info: DarknetServerInfo = JSON.parse(content);
+		const oSrv = info.server;
+		const host = oSrv.hostname;
 		const srv = ns.getServer(info.server.ip) as DarknetServer;
 		if (!srv.isOnline) {
-			ns.tprint(
-				"server offline ",
-				info.server.hostname,
-				"(",
-				info.server.ip,
-				")",
-			);
+			ns.tprint("server offline ", host, "(", oSrv.ip, ")");
 			ns.rm(file);
 			continue;
+		}
+		for (const kx of Object.keys(srv)) {
+			const k = kx as keyof DarknetServer;
+			if (oSrv[k] !== srv[k]) {
+				ns.tprint("diff ", k, " a=", oSrv[k], " b=", srv[k]);
+			}
 		}
 		info.server = srv;
 		const new_content = JSON.stringify(info, void 0, "\t");
 		if (new_content != content) {
 			ns.write(file, new_content, "w");
-			ns.tprint("update data for [", srv.hostname, "](", srv.ip, ")");
+			ns.tprint("update data for [", host, "](", srv.ip, ")");
 		}
 	}
 }
