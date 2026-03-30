@@ -7,9 +7,9 @@ import { chooseBestTarget } from "./choose_best_target";
 import { log, tlog } from "./lib/log";
 import { NS } from "./@ns";
 
-const HACK = "hack_worker.js";
-const GROW = "grow_worker.js";
-const WEAKEN = "weaken_worker.js";
+const HACK = "hack_worker.ts";
+const GROW = "grow_worker.ts";
+const WEAKEN = "weaken_worker.ts";
 
 export async function main(ns: NS) {
 	let target = String(ns.args[0] ?? "");

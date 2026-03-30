@@ -1,6 +1,6 @@
 import { NS } from "../@ns";
 
-/** prep_grow.js */
+/** prep_grow.ts */
 export async function main(ns: NS) {
 	const f = ns.flags([["v", false]]);
 	const verbose = !!f.v;

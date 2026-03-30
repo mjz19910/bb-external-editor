@@ -3,9 +3,9 @@ import { tlog } from "./lib/log";
 import { NS } from "./@ns";
 
 const FILES = [
-	"hack_worker.js",
-	"grow_worker.js",
-	"weaken_worker.js",
+	"hack_worker.ts",
+	"grow_worker.ts",
+	"weaken_worker.ts",
 ];
 
 export async function main(ns: NS) {
