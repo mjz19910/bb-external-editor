@@ -140,3 +140,23 @@ export function snapshotServer(ns: NS, host: string): ServerSnapshot {
 		growth: ns.getServerGrowth(host),
 	};
 }
+
+export function rootedHosts(ns: NS, hosts: string[]): string[] {
+	return hosts.filter((h) => ns.hasRootAccess(h));
+}
+
+export function runnableHosts(ns: NS, hosts: string[]): string[] {
+	return hosts.filter((h) =>
+		ns.hasRootAccess(h) && ns.getServerMaxRam(h) > 0
+	);
+}
+
+export function freeRam(ns: NS, host: string): number {
+	return ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
+}
+
+export function canRunThreads(ns: NS, host: string, script: string): number {
+	const ram = ns.getScriptRam(script, "home");
+	if (ram <= 0) return 0;
+	return Math.floor(freeRam(ns, host) / ram);
+}

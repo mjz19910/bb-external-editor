@@ -33,10 +33,12 @@ omnia
 omnitek
 outbase
 relaysmtp
+rootable
 run4theh111z
 sessioned
 sqlinject
 syscore
+tlog
 tprint
 txts
 viteburner
