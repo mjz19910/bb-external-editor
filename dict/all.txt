@@ -18,6 +18,7 @@ heartbleed
 httpworm
 hwgw
 joesguns
+Laika4
 lexo-corp
 megacorp
 millenium-fitness
