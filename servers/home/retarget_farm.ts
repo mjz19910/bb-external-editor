@@ -1,6 +1,6 @@
 import { NS } from "./@ns";
-import { getFleet } from "../src/lib/fleet";
-import { chooseBestTarget } from "../src/lib/targeting";
+import { getFleet } from "./gpt_pause/src/lib/fleet";
+import { chooseBestTarget } from "./gpt_pause/src/lib/targeting";
 
 const WORKERS = new Set([
 	"gpt_pause/src/hack_worker.ts",
@@ -8,7 +8,7 @@ const WORKERS = new Set([
 	"gpt_pause/src/weaken_worker.ts",
 ]);
 
-const FARM_SCRIPT = "gpt_pause/cur/smart_farm.ts";
+const FARM_SCRIPT = "smart_farm.ts";
 
 export async function main(ns: NS) {
 	let newTarget = String(ns.args[0] ?? "");

@@ -4,11 +4,14 @@ import {
 	deployScriptSet,
 	getFleet,
 	runAllocations,
-} from "../src/lib/fleet";
-import { getTargetJobCounts } from "../src/lib/jobs";
-import { log, tlog } from "../src/lib/log";
-import { calcHackThreadsForPercent, calcPrepPlan } from "../src/lib/prep";
-import { chooseBestTarget } from "./choose_best_target";
+} from "./gpt_pause/src/lib/fleet";
+import { getTargetJobCounts } from "./gpt_pause/src/lib/jobs";
+import { log, tlog } from "./gpt_pause/src/lib/log";
+import {
+	calcHackThreadsForPercent,
+	calcPrepPlan,
+} from "./gpt_pause/src/lib/prep";
+import { chooseBestTarget } from "./gpt_pause/cur/choose_best_target";
 const HACK = "gpt_pause/src/hack_worker.ts";
 const GROW = "gpt_pause/src/grow_worker.ts";
 const WEAKEN = "gpt_pause/src/weaken_worker.ts";
@@ -16,6 +19,7 @@ const FILES = [
 	HACK,
 	GROW,
 	WEAKEN,
+	"@ns.ts",
 	"gpt_pause/src/@ns.ts",
 	"gpt_pause/cur/@ns.ts",
 ];
