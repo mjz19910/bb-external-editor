@@ -10,11 +10,18 @@ import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep";
 import { chooseBestTarget } from "./choose_best_target";
 import { NetworkMap } from "./lib/network_map";
 import { GROW, HACK, WEAKEN } from "./lib/paths";
-const FILES = [
-	HACK,
-	GROW,
-	WEAKEN,
-];
+
+export function autocomplete(
+	data: AutocompleteData,
+	args: ScriptArg[],
+): string[] {
+	const servers = data.servers;
+	const srv_set = new Set(servers);
+	for (const arg of args) {
+		srv_set.delete(arg as string);
+	}
+	return [...srv_set];
+}
 
 function missing(wanted: number, active: number): number {
 	return Math.max(0, wanted - active);
@@ -42,31 +49,32 @@ export async function main(ns: NS) {
 	ns.ui.setTailTitle(`smart_farm:${target}`);
 	tlog(ns, `[SMART_FARM] target=${target} hackPct=${hackPct}`);
 	const map = NetworkMap.build(ns);
+	const FILES = [
+		HACK,
+		GROW,
+		WEAKEN,
+	];
 	deployScriptSet(ns, FILES, map.hosts);
-
+	let steps = 0;
 	while (true) {
 		ns.clearLog();
-		await run_farm_step(ns, target, hackPct);
+		await run_farm_step(ns, target, hackPct, steps);
+		steps++;
 	}
 }
 
-export function autocomplete(data: AutocompleteData, args: ScriptArg[]) {
-	const servers = data.servers;
-	const srv_set = new Set(servers);
-	if (args.length > 1) return [];
-	if (args.length === 0) return servers;
-	if (typeof args[0] != "string") return [];
-	if (srv_set.has(args[0])) return [];
-	return servers;
-}
-
-async function run_farm_step(ns: NS, target: string, hackPct: number) {
+async function run_farm_step(
+	ns: NS,
+	target: string,
+	hackPct: number,
+	steps: number,
+) {
 	const fleet = getFleet(ns);
 
 	const jobs = getTargetJobCounts(ns, target);
 	const prep = calcPrepPlan(ns, target);
 
-	if (!prep.isPrepped) {
+	if (!prep.isPrepped && false) {
 		const wantedWeaken = prep.totalWeaken;
 		const wantedGrow = prep.needGrow;
 
@@ -105,7 +113,7 @@ async function run_farm_step(ns: NS, target: string, hackPct: number) {
 				`launchW=${launchedW} launchG=${launchedG}`,
 		);
 
-		await ns.sleep(Math.max(0, ns.getWeakenTime(target) + 50));
+		await ns.sleep(50);
 		return;
 	}
 
@@ -114,7 +122,8 @@ async function run_farm_step(ns: NS, target: string, hackPct: number) {
 	const money = ns.getServerMoneyAvailable(target);
 	const maxMoney = ns.getServerMaxMoney(target);
 
-	const hackThreads = calcHackThreadsForPercent(ns, target, hackPct);
+	let hackThreads = calcHackThreadsForPercent(ns, target, hackPct);
+	hackThreads++;
 	const hackSec = ns.hackAnalyzeSecurity(hackThreads, target);
 	let hackWeaken = Math.ceil(hackSec / ns.weakenAnalyze(1));
 	hackWeaken = Math.ceil(hackWeaken);
@@ -126,9 +135,10 @@ async function run_farm_step(ns: NS, target: string, hackPct: number) {
 	let growWeaken = growSec / ns.weakenAnalyze(1);
 	growWeaken = Math.ceil(growWeaken);
 
-	if (sec > minSec + 1.5) {
+	if (sec > minSec + 1.5 && false) {
 		let wantedW = hackWeaken + growWeaken + 20;
-		const missingW = missing(wantedW, jobs.weaken);
+		let missingW = missing(wantedW, jobs.weaken);
+		missingW = wantedW;
 
 		const alloc = allocateThreads(ns, fleet, WEAKEN, missingW);
 		const launched = runAllocations(ns, WEAKEN, alloc, [target]);
@@ -139,13 +149,15 @@ async function run_farm_step(ns: NS, target: string, hackPct: number) {
 				`wantedW=${wantedW} activeW=${jobs.weaken} launchW=${launched}`,
 		);
 
-		await ns.sleep(Math.max(0, ns.getWeakenTime(target) * 0.5));
+		await ns.sleep(50);
 		return;
 	}
 
-	if (money < maxMoney * 0.9) {
-		const missingG = missing(growThreads, jobs.grow);
-		const missingW = missing(growWeaken, jobs.weaken);
+	if (money < maxMoney * 0.9 && false) {
+		let missingG = missing(growThreads, jobs.grow);
+		let missingW = missing(growWeaken, jobs.weaken);
+		missingG = growThreads;
+		missingW = growWeaken;
 
 		const growAlloc = allocateThreads(ns, fleet, GROW, missingG);
 		const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
@@ -168,7 +180,7 @@ async function run_farm_step(ns: NS, target: string, hackPct: number) {
 				`launchG=${launchedG} launchW=${launchedW}`,
 		);
 
-		await ns.sleep(Math.max(0, ns.getGrowTime(target) * 0.5));
+		await ns.sleep(50);
 		return;
 	}
 
@@ -176,9 +188,13 @@ async function run_farm_step(ns: NS, target: string, hackPct: number) {
 	const wantedGrow = growThreads;
 	const wantedWeaken = hackWeaken + growWeaken;
 
-	const missingHack = missing(wantedHack, jobs.hack);
-	const missingGrow = missing(wantedGrow, jobs.grow);
-	const missingWeaken = missing(wantedWeaken, jobs.weaken);
+	let missingHack = missing(wantedHack, jobs.hack);
+	let missingGrow = missing(wantedGrow, jobs.grow);
+	let missingWeaken = missing(wantedWeaken, jobs.weaken);
+
+	missingHack = wantedHack;
+	missingGrow = wantedGrow;
+	missingWeaken = wantedWeaken;
 
 	const hackAlloc = allocateThreads(ns, fleet, HACK, missingHack);
 	const launchedH = runAllocations(ns, HACK, hackAlloc, [target]);
@@ -205,6 +221,7 @@ async function run_farm_step(ns: NS, target: string, hackPct: number) {
 			`active(h/g/w)=${jobs.hack}/${jobs.grow}/${jobs.weaken} ` +
 			`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
 	);
-
-	await ns.sleep(Math.max(0, ns.getHackTime(target) * 0.5));
+	if (steps % 5 == 0) {
+		await ns.sleep(40);
+	}
 }
