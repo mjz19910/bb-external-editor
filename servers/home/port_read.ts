@@ -163,6 +163,7 @@ function handle_object_message(
 		case "online_servers": {
 			const query_map: Record<string, DarknetServer> = {};
 			for (const srv of msg.result.darkweb) {
+				if (!db.server_map.has(srv.hostname)) continue;
 				query_map[srv.hostname] = srv;
 			}
 			for (let i = 0; i < db.server_map_decay_list.length; i++) {
@@ -175,11 +176,24 @@ function handle_object_message(
 					i--;
 					ns.tprint("still online ", srv.ip);
 				}
+				if (!db.server_map.has(srv.hostname)) {
+					db.server_map_decay_list.splice(i, 1);
+					i--;
+					ns.tprint(
+						"removing from decay list, server is missing from db ",
+						srv.hostname,
+					);
+				}
 			}
-			ns.tprint(
-				"decayed servers ",
-				...db.server_map_decay_list.map((v) => v.server.ip + " "),
-			);
+			for (const offline_info of db.server_map_decay_list) {
+				const host = offline_info.server.hostname;
+				const qr = db.server_map.get(host);
+				if (qr) {
+					ns.tprint("server offline, removing from db ", host);
+					db.server_map.delete(host);
+				}
+			}
+			db.server_map_decay_list.length = 0;
 			return true;
 		}
 		case "found_password": {
