@@ -137,6 +137,10 @@ function handle_object_message(
 					if (!info.connectedToParent) {
 						continue;
 					}
+					if (info.server.ip === void 0) {
+						ns.tprint("missing ip field on srv.ip ", info);
+						continue;
+					}
 					ns.write(
 						`tmp/ip/${info.server.ip}.txt`,
 						JSON.stringify(info, void 0, "\t"),
