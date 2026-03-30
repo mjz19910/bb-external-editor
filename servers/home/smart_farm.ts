@@ -9,7 +9,6 @@ import { chooseBestTarget } from "./lib/targeting";
 import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep";
 import { getTargetJobCounts } from "./lib/jobs";
 import { log, tlog } from "./lib/log";
-import { NetworkMap } from "./lib/network_map";
 
 const HACK = "hack_worker.ts";
 const GROW = "grow_worker.ts";
@@ -21,7 +20,6 @@ function missing(wanted: number, active: number): number {
 }
 
 export async function main(ns: NS) {
-	const map = NetworkMap.build(ns);
 	let target = String(ns.args[0] ?? "");
 	const hackPct = Number(ns.args[1] ?? 0.1);
 
