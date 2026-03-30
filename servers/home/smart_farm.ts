@@ -4,22 +4,24 @@ import {
 	deployScriptSet,
 	getFleet,
 	runAllocations,
-	totalThreadsForScript,
 } from "./lib/fleet";
-import { log, tlog } from "./lib/log";
-import { buildNetworkMap } from "./lib/network_map";
-import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep";
 import { chooseBestTarget } from "./lib/targeting";
+import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep";
+import { getTargetJobCounts } from "./lib/jobs";
+import { log, tlog } from "./lib/log";
+import { NetworkMap } from "./lib/network_map";
 
-const HACK = "hack_worker.ts";
-const GROW = "grow_worker.ts";
-const WEAKEN = "weaken_worker.ts";
-const DEFS = "@ns.ts";
-const FILES = [HACK, GROW, WEAKEN, DEFS];
+const HACK = "hack_worker.js";
+const GROW = "grow_worker.js";
+const WEAKEN = "weaken_worker.js";
+const FILES = [HACK, GROW, WEAKEN];
+
+function missing(wanted: number, active: number): number {
+	return Math.max(0, wanted - active);
+}
 
 export async function main(ns: NS) {
-	ns.ramOverride(9.9);
-
+	const map = NetworkMap.build(ns);
 	let target = String(ns.args[0] ?? "");
 	const hackPct = Number(ns.args[1] ?? 0.1);
 
@@ -33,41 +35,41 @@ export async function main(ns: NS) {
 	}
 
 	tlog(ns, `[SMART_FARM] target=${target} hackPct=${hackPct}`);
-	const map = buildNetworkMap(ns);
 
 	while (true) {
 		const fleet = getFleet(ns, map);
 		await deployScriptSet(ns, FILES, fleet.hosts.map((h) => h.host));
 
+		const jobs = getTargetJobCounts(ns, target);
 		const prep = calcPrepPlan(ns, target);
 
 		if (!prep.isPrepped) {
-			const weakenCap = totalThreadsForScript(ns, map, fleet, WEAKEN);
-			const growCap = totalThreadsForScript(ns, map, fleet, GROW);
+			const wantedWeaken = prep.totalWeaken;
+			const wantedGrow = prep.needGrow;
 
-			const weakenWanted = Math.min(prep.totalWeaken, weakenCap);
-			const growWanted = Math.min(prep.needGrow, growCap);
+			const missingWeaken = missing(wantedWeaken, jobs.weaken);
+			const missingGrow = missing(wantedGrow, jobs.grow);
 
 			let launchedW = 0;
 			let launchedG = 0;
 
-			if (prep.needWeaken > 0 || prep.needGrowWeaken > 0) {
+			if (missingWeaken > 0) {
 				const weakenAlloc = allocateThreads(
 					ns,
 					fleet,
 					WEAKEN,
-					weakenWanted,
+					missingWeaken,
 				);
 				launchedW = runAllocations(ns, WEAKEN, weakenAlloc, [target]);
 			}
 
-			if (prep.needGrow > 0) {
+			if (missingGrow > 0) {
 				const fleetAfterW = getFleet(ns, map);
 				const growAlloc = allocateThreads(
 					ns,
 					fleetAfterW,
 					GROW,
-					growWanted,
+					missingGrow,
 				);
 				launchedG = runAllocations(ns, GROW, growAlloc, [target]);
 			}
@@ -76,10 +78,11 @@ export async function main(ns: NS) {
 				ns,
 				`[PREP] target=${target} ` +
 					`needW=${prep.needWeaken} growW=${prep.needGrowWeaken} needG=${prep.needGrow} ` +
-					`launchedW=${launchedW} launchedG=${launchedG}`,
+					`activeW=${jobs.weaken} activeG=${jobs.grow} ` +
+					`launchW=${launchedW} launchG=${launchedG}`,
 			);
 
-			await ns.sleep(Math.max(5000, ns.getWeakenTime(target) * 0.25));
+			await ns.sleep(Math.max(4000, ns.getWeakenTime(target) * 0.2));
 			continue;
 		}
 
@@ -94,32 +97,31 @@ export async function main(ns: NS) {
 
 		const growFactor = 1 / Math.max(0.001, 1 - hackPct);
 		const growThreads = Math.ceil(ns.growthAnalyze(target, growFactor));
-		const growSec = ns.growthAnalyzeSecurity(growThreads, target);
+		const growSec = ns.growthAnalyzeSecurity(growThreads);
 		const growWeaken = Math.ceil(growSec / ns.weakenAnalyze(1));
 
-		let launched = 0;
-
 		if (sec > minSec + 1.5) {
-			const alloc = allocateThreads(
-				ns,
-				fleet,
-				WEAKEN,
-				hackWeaken + growWeaken + 20,
-			);
-			launched = runAllocations(ns, WEAKEN, alloc, [target]);
+			const wantedW = hackWeaken + growWeaken + 20;
+			const missingW = missing(wantedW, jobs.weaken);
+
+			const alloc = allocateThreads(ns, fleet, WEAKEN, missingW);
+			const launched = runAllocations(ns, WEAKEN, alloc, [target]);
 
 			log(
 				ns,
-				`[STABILIZE] target=${target} sec=${
-					sec.toFixed(2)
-				} launchedW=${launched}`,
+				`[STABILIZE] target=${target} sec=${sec.toFixed(2)} ` +
+					`wantedW=${wantedW} activeW=${jobs.weaken} launchW=${launched}`,
 			);
+
 			await ns.sleep(Math.max(3000, ns.getWeakenTime(target) * 0.2));
 			continue;
 		}
 
 		if (money < maxMoney * 0.9) {
-			const growAlloc = allocateThreads(ns, fleet, GROW, growThreads);
+			const missingG = missing(growThreads, jobs.grow);
+			const missingW = missing(growWeaken, jobs.weaken);
+
+			const growAlloc = allocateThreads(ns, fleet, GROW, missingG);
 			const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
 
 			const fleetAfterG = getFleet(ns, map);
@@ -127,7 +129,7 @@ export async function main(ns: NS) {
 				ns,
 				fleetAfterG,
 				WEAKEN,
-				growWeaken,
+				missingW,
 			);
 			const launchedW = runAllocations(ns, WEAKEN, weakAlloc, [target]);
 
@@ -136,29 +138,37 @@ export async function main(ns: NS) {
 				`[RECOVER] target=${target} money=${ns.format.number(money)}/${
 					ns.format.number(maxMoney)
 				} ` +
-					`launchedG=${launchedG} launchedW=${launchedW}`,
+					`activeG=${jobs.grow} activeW=${jobs.weaken} ` +
+					`launchG=${launchedG} launchW=${launchedW}`,
 			);
 
 			await ns.sleep(Math.max(3000, ns.getGrowTime(target) * 0.2));
 			continue;
 		}
 
-		const hackAlloc = allocateThreads(ns, fleet, HACK, hackThreads);
+		const wantedHack = hackThreads;
+		const wantedGrow = growThreads;
+		const wantedWeaken = hackWeaken + growWeaken;
+
+		const missingHack = missing(wantedHack, jobs.hack);
+		const missingGrow = missing(wantedGrow, jobs.grow);
+		const missingWeaken = missing(wantedWeaken, jobs.weaken);
+
+		const hackAlloc = allocateThreads(ns, fleet, HACK, missingHack);
 		const launchedH = runAllocations(ns, HACK, hackAlloc, [target]);
 
 		const fleetAfterH = getFleet(ns, map);
-		const weakAllocH = allocateThreads(ns, fleetAfterH, WEAKEN, hackWeaken);
-		const launchedWH = runAllocations(ns, WEAKEN, weakAllocH, [target]);
+		const weakAlloc = allocateThreads(
+			ns,
+			fleetAfterH,
+			WEAKEN,
+			missingWeaken,
+		);
+		const launchedW = runAllocations(ns, WEAKEN, weakAlloc, [target]);
 
-		const fleetAfterWH = getFleet(ns, map);
-		const growAlloc = allocateThreads(ns, fleetAfterWH, GROW, growThreads);
+		const fleetAfterW = getFleet(ns, map);
+		const growAlloc = allocateThreads(ns, fleetAfterW, GROW, missingGrow);
 		const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
-
-		const fleetAfterG = getFleet(ns, map);
-		const weakAllocG = allocateThreads(ns, fleetAfterG, WEAKEN, growWeaken);
-		const launchedWG = runAllocations(ns, WEAKEN, weakAllocG, [target]);
-
-		launched = launchedH + launchedWH + launchedG + launchedWG;
 
 		log(
 			ns,
@@ -167,9 +177,11 @@ export async function main(ns: NS) {
 					ns.format.number(maxMoney)
 				} ` +
 				`sec=${sec.toFixed(2)}/${minSec.toFixed(2)} ` +
-				`hack=${launchedH} weakH=${launchedWH} grow=${launchedG} weakG=${launchedWG} total=${launched}`,
+				`wanted(h/g/w)=${wantedHack}/${wantedGrow}/${wantedWeaken} ` +
+				`active(h/g/w)=${jobs.hack}/${jobs.grow}/${jobs.weaken} ` +
+				`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
 		);
 
-		await ns.sleep(Math.max(5000, ns.getHackTime(target) * 0.3));
+		await ns.sleep(Math.max(4000, ns.getHackTime(target) * 0.25));
 	}
 }

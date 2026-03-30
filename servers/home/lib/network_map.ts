@@ -70,6 +70,9 @@ export class NetworkMap {
 		const json_txt = JSON.stringify(this, void 0, "\t");
 		ns.write(DB_PATH, json_txt, "w");
 	}
+	static build(ns: NS, start = "home") {
+		return buildNetworkMap(ns, start);
+	}
 }
 
 const DB_PATH = "db/network_map.json";
