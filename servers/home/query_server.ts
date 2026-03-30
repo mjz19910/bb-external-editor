@@ -2,7 +2,7 @@ import { DarknetServer } from "./darknet/misc";
 import { DarknetServerInfo } from "./darknet/types";
 import { ScriptPort } from "./type/ScriptPort";
 
-const utf_special_replacers = {
+export const utf8_bad_chars = {
 	":": String.fromCharCode(61440 + ":".charCodeAt(0)),
 };
 
@@ -34,6 +34,13 @@ export async function main(ns: NS) {
 				},
 			});
 			break;
+		}
+	}
+	const db_host_files = ns.ls("home", "tmp/host/");
+	for (const file of db_host_files) {
+		if (file.includes(":")) {
+			ns.tprint("remove file invalid in ntfs ", file);
+			ns.rm(file);
 		}
 	}
 	const ip_db_files = ns.ls("home", "tmp/ip/");
