@@ -7,7 +7,7 @@ import { write_info_to_fs_db } from "./write_ip_db";
 export async function main(ns: NS) {
 	const port = new ScriptPort(ns, 1);
 	const port2 = new ScriptPort(ns, 2);
-	for await (const { v } of start_read_loop<string>(port2)) {
+	for await (const v of start_read_loop<string>(port2)) {
 		const [query_cmd, query_arg] = v.split(" ");
 		const args = query_arg === "" ? [] : query_arg.split(",");
 		handle_query(ns, port, query_cmd, args);
@@ -51,7 +51,7 @@ function handle_online_check(
 	});
 }
 
-type A<T> = AsyncGenerator<{ v: T }, void, void>;
+type A<T> = AsyncGenerator<T, void, void>;
 type B<T> = ScriptPort<T>;
 async function* start_read_loop<T>(port: B<T>): A<T> {
 	for (;;) {
@@ -60,7 +60,7 @@ async function* start_read_loop<T>(port: B<T>): A<T> {
 			await port.nextWrite();
 			continue;
 		}
-		yield { v: res.value };
+		yield res.value;
 	}
 }
 
