@@ -134,6 +134,7 @@ function handle_object_message(
 				ns.run("darknet/query_security.ts", 1);
 			} else {
 				for (const info of msg.infos) {
+					if (!info.connectedToParent) continue;
 					ns.write(
 						`tmp/ip/${info.server.ip}.txt`,
 						JSON.stringify(info, void 0, "\t"),
