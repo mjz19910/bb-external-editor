@@ -1,4 +1,4 @@
-import { buildNetworkMap } from "../../lib/network_map";
+import { buildNetworkMap } from "../../servers/home/lib/network_map";
 
 /** prep_all.ts
  * Grow all rooted servers to max money and reduce to min security.
