@@ -6,7 +6,9 @@ import {
 	DarknetFoundPassProbeMessage,
 	DarknetProbeMessage,
 	NewWordsMessage,
+	OnlineServersMessage,
 	QuitMessage,
+	TimeoutCheckMsg,
 	WaitMessage,
 } from "./type/helper";
 
@@ -65,14 +67,8 @@ type PortMessage =
 	| NewWordsMessage
 	| DarknetProbeMessage
 	| DarknetFoundPassProbeMessage
-	| { type: "timeout_check" }
-	| {
-		type: "online_servers";
-		result: {
-			darkweb: DarknetServer[];
-			normal: Server[];
-		};
-	};
+	| TimeoutCheckMsg
+	| OnlineServersMessage;
 const pw_db = new Map<string, string>();
 const commonPasswordDictionary: string[] = [];
 const common_pw_dict_parts: string[][] = [commonPasswordDictionary];
@@ -150,7 +146,6 @@ function handle_object_message(
 				}, 30_000);
 				if (ips.length > 0) {
 					s.port2.write<string>("online_check " + ips.join(","));
-					ns.run("query_server.ts", 1);
 				}
 			}
 			return true;
@@ -162,7 +157,6 @@ function handle_object_message(
 			}
 			if (ips.length > 0) {
 				s.port2.write<string>("online_check " + ips.join(","));
-				ns.run("query_server.ts", 1);
 			}
 			return true;
 		}

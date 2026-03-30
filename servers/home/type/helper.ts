@@ -1,3 +1,4 @@
+import { DarknetServer } from "../darknet/misc";
 import { DarknetServerInfo } from "../darknet/types";
 
 const EmptyOptStr = "None";
@@ -37,7 +38,6 @@ export type NewWordsMessage = {
 	from_dict: "commonPasswordDictionary";
 	list: string[];
 };
-export type QuitMessage = { type: "quit" };
 export type OptNone = { type: "None" };
 export type OptSome<T> = { type: "Some"; value: T };
 export type Optional<T> = OptNone | OptSome<T>;
@@ -63,3 +63,14 @@ export function assign_opt<T>(opt: Optional<T>, val: T) {
 	if (isNone(opt)) return;
 	opt.value = val;
 }
+
+export type OnlineServersMessage = {
+	type: "online_servers";
+	result: {
+		darkweb: DarknetServer[];
+		normal: Server[];
+	};
+};
+
+export type QuitMessage = { type: "quit" };
+export type TimeoutCheckMsg = { type: "timeout_check" };

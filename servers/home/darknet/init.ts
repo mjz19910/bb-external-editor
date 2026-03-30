@@ -17,9 +17,13 @@ export async function main(ns: NS) {
 	};
 	const local_probe = ns.dnet.probe();
 	if (local_probe.length == 1 && local_probe[0] == "darkweb") {
+		if (!ns.isRunning("query_server.ts")) {
+			ns.run("query_server.ts", 1);
+			await ns.sleep(80);
+		}
 		if (!ns.isRunning("port_read.ts")) {
 			ns.run("port_read.ts");
-			await ns.sleep(300);
+			await ns.sleep(80);
 		}
 		ns.scp(dnet_files_dyn, "darkweb", "home");
 		const pid = ns.exec(
