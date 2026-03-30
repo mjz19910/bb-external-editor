@@ -1,10 +1,11 @@
 import { getFleet } from "./lib/fleet";
+import { GROW, HACK, WEAKEN } from "./lib/paths";
 import { chooseBestTarget } from "./lib/targeting";
 
 const WORKERS = new Set([
-	"gpt_pause/src/hack_worker.ts",
-	"gpt_pause/src/grow_worker.ts",
-	"gpt_pause/src/weaken_worker.ts",
+	HACK,
+	GROW,
+	WEAKEN,
 ]);
 
 const FARM_SCRIPT = "smart_farm.ts";

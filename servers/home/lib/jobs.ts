@@ -1,4 +1,5 @@
 import { getFleet } from "./fleet";
+import { HACK, GROW, WEAKEN } from "./paths";
 
 export type TargetJobCounts = {
 	target: string;
@@ -15,10 +16,6 @@ export type JobSnapshot = {
 	totalWeaken: number;
 	totalJobs: number;
 };
-
-const HACK = "gpt_pause/src/hack_worker.ts";
-const GROW = "gpt_pause/src/grow_worker.ts";
-const WEAKEN = "gpt_pause/src/weaken_worker.ts";
 
 function ensureTarget(
 	out: Record<string, TargetJobCounts>,
