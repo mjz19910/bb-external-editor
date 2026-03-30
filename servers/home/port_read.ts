@@ -176,7 +176,10 @@ function handle_object_message(
 					ns.tprint("still online ", srv.ip);
 				}
 			}
-			ns.tprint(msg.result);
+			ns.tprint(
+				"decayed servers ",
+				...db.server_map_decay_list.map((v) => v.server.ip + " "),
+			);
 			return true;
 		}
 		case "found_password": {
