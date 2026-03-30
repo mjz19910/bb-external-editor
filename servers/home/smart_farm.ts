@@ -95,7 +95,7 @@ export async function main(ns: NS) {
 					`launchW=${launchedW} launchG=${launchedG}`,
 			);
 
-			await ns.sleep(Math.max(4000, ns.getWeakenTime(target) * 0.2));
+			await ns.sleep(Math.max(0, ns.getWeakenTime(target) * 0.1));
 			continue;
 		}
 
@@ -126,7 +126,7 @@ export async function main(ns: NS) {
 					`wantedW=${wantedW} activeW=${jobs.weaken} launchW=${launched}`,
 			);
 
-			await ns.sleep(Math.max(3000, ns.getWeakenTime(target) * 0.2));
+			await ns.sleep(Math.max(0, ns.getWeakenTime(target) * 0.1));
 			continue;
 		}
 
@@ -155,7 +155,7 @@ export async function main(ns: NS) {
 					`launchG=${launchedG} launchW=${launchedW}`,
 			);
 
-			await ns.sleep(Math.max(3000, ns.getGrowTime(target) * 0.2));
+			await ns.sleep(Math.max(0, ns.getGrowTime(target) * 0.1));
 			continue;
 		}
 
@@ -195,7 +195,7 @@ export async function main(ns: NS) {
 				`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
 		);
 
-		await ns.sleep(Math.max(4000, ns.getHackTime(target) * 0.25));
+		await ns.sleep(Math.max(0, ns.getHackTime(target) * 0.15));
 	}
 }
 
