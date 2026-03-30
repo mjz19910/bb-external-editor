@@ -17,6 +17,10 @@ export async function main(ns: NS) {
 		return;
 	}
 
+	if (!map.nodes[hosts[0]]) {
+		map.addNodes(ns, "home", hosts);
+	}
+
 	const ramSizes = map.ramSizes;
 
 	const sortHosts = () =>

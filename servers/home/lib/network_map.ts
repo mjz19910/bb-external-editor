@@ -54,6 +54,22 @@ export class NetworkMap {
 
 		return best;
 	}
+	addNodes(ns: NS, parent: string, hosts: string[]) {
+		const pn = this.nodes[parent];
+		for (const host of hosts) {
+			this.nodes[host] = {
+				host,
+				parent,
+				depth: pn.depth + 1,
+				neighbors: ns.scan(host),
+			};
+			this.hosts.push(host);
+			this.ramSizes[host] = ns.getServerMaxRam(host);
+		}
+		this.hosts.sort();
+		const json_txt = JSON.stringify(this, void 0, "\t");
+		ns.write(DB_PATH, json_txt, "w");
+	}
 }
 
 const DB_PATH = "db/network_map.json";
