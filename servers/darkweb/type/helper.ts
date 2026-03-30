@@ -1,6 +1,9 @@
 import { DarknetServerInfo } from "../darknet/types";
 import { DarknetResult } from "../NetscriptDefinitions.d";
 
+const EmptyOptStr = "None";
+const ValueOptStr = "Some";
+
 export type WaitMessage = {
 	type: "wait";
 	on: "darknet.nextMutation";
@@ -13,7 +16,6 @@ export type DarknetAuthenticateMessage = {
 	auth: DarknetResult;
 	password: string;
 };
-export type QuitMessage = { type: "quit" };
 export type DarkNetProbeMessage = {
 	type: "darknet.probe";
 	by: string;
@@ -30,3 +32,29 @@ export type NewWordsMessage = {
 	from_dict: "commonPasswordDictionary";
 	list: string[];
 };
+export type QuitMessage = { type: "quit" };
+export type OptNone = { type: "None" };
+export type OptSome<T> = { type: "Some"; value: T };
+export type Optional<T> = OptNone | OptSome<T>;
+
+export function empty_opt(): { type: "None" } {
+	return { type: EmptyOptStr };
+}
+
+export function some_opt<T>(value: T): { type: "Some"; value: T } {
+	return { type: ValueOptStr, value };
+}
+
+export function isSome<T>(val: Optional<T>): val is OptSome<T> {
+	return val.type === ValueOptStr;
+}
+
+export function isNone<T>(val: Optional<T>): val is OptNone {
+	return val.type === EmptyOptStr;
+}
+
+export function assign_opt<T>(opt: Optional<T>, val: T) {
+	opt.type = ValueOptStr;
+	if (isNone(opt)) return;
+	opt.value = val;
+}
