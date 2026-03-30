@@ -155,16 +155,13 @@ class AuthManager {
 
 		for (;;) {
 			let next_factor = null;
-			outer: for (let i = 1; i < 999; i++) {
+			outer: for (let i = 1;; i++) {
 				for (const f of factors) {
 					if (i % f != 0) continue outer;
 				}
 				for (const f of invalidFactors) {
 					if (i % f == 0) continue outer;
 				}
-				if (pw_len == 2 && i >= 100) break;
-				if (pw_len == 3 && i >= 1000) break;
-				if (cur_num == i) continue;
 				next_factor = i;
 				break;
 			}
@@ -197,27 +194,21 @@ class AuthManager {
 						"Invalid heartbleed(Factors) result code=" + data.code,
 					);
 				}
-				ns.tprint(
-					`Factorios bleed status:`,
-					data,
-					`pw=${data.passwordAttempted} num=${cur_num}`,
-				);
+				ns.tprint("Factorios res ", data);
 				let candidate = cur_num;
 				const { data: feedback_raw } = data;
 				const feedback = feedback_raw === "true";
 				if (feedback) {
 					if (!factors.includes(candidate)) {
 						factors.push(candidate);
-						ns.tprint(`New valid factor discovered: ${candidate}`);
+						ns.tprint(`IS divisible by  ${candidate}`);
 					}
 				} else {
 					for (const f of factors) {
 						if (candidate % f == 0) candidate /= f;
 					}
 					invalidFactors.push(candidate);
-					ns.tprint(
-						`Number ruled out as factor: ${candidate}, from ${cur_num}`,
-					);
+					ns.tprint(`NOT divisible by ${candidate}`);
 				}
 			}
 		}

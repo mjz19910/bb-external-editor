@@ -9,6 +9,7 @@ import {
 	QuitMessage,
 	WaitMessage,
 } from "./type/helper";
+import { write_info_to_fs_db } from "./write_ip_db";
 
 export function hasTypeField<T extends { type: string }>(x: unknown): x is T {
 	return (
@@ -137,15 +138,7 @@ function handle_object_message(
 					if (!info.connectedToParent) {
 						continue;
 					}
-					if (info.server.ip === void 0) {
-						ns.tprint("missing ip field on srv.ip ", info);
-						continue;
-					}
-					ns.write(
-						`tmp/ip/${info.server.ip}.txt`,
-						JSON.stringify(info, void 0, "\t"),
-						"w",
-					);
+					write_info_to_fs_db(ns, info);
 					db.server_map.set(info.server.hostname, info);
 				}
 				const infos_timeout = msg.infos;
@@ -179,19 +172,9 @@ function handle_object_message(
 				const info = db.server_map_decay_list[i];
 				const srv = info.server;
 				const host = srv.hostname;
-				if (info.server.ip === void 0) {
-					ns.tprint("missing ip field on srv.ip ", info);
-					db.server_map_decay_list.splice(i, 1);
-					i--;
-					continue;
-				}
 				if (query_map[host]) {
 					info.server = query_map[host];
-					ns.write(
-						`tmp/ip/${info.server.ip}.txt`,
-						JSON.stringify(info, void 0, "\t"),
-						"w",
-					);
+					write_info_to_fs_db(ns, info);
 				}
 				if (
 					query_map[srv.hostname] && query_map[srv.hostname].isOnline
@@ -208,12 +191,6 @@ function handle_object_message(
 			return true;
 		}
 		case "found_password": {
-			const t: DarknetFoundPassProbeMessage = msg;
-			ns.tprintRaw(
-				`got a session to ${
-					t.for.padEnd(13, " ")
-				} with password='${t.password}'`,
-			);
 			return true;
 		}
 		default: {
