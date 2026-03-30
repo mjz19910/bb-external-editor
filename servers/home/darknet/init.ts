@@ -1,4 +1,4 @@
-import { Darknet, WithPort } from "./darknet_paths";
+import { Darknet, WithPort } from "./misc";
 
 const dnet_files_dyn: string[] = [];
 dnet_files_dyn.push("darknet_probe.ts");

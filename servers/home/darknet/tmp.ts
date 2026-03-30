@@ -1,6 +1,5 @@
-import { DarknetServer, isDarknetServer2 } from "./darknet/misc";
-import { Darknet, WithPort } from "./darknet_paths";
-import { isNormalServer } from "./lib/helper";
+import { Darknet, DarknetServer, isDarknetServer2, WithPort } from "./misc";
+import { isNormalServer } from "../lib/helper";
 
 class PortApi {
 	constructor(public ns: NS) {}

@@ -1,11 +1,10 @@
-import { isDarknetServer2 } from "./darknet/misc";
-import { DarknetServerInfo } from "./darknet/types";
-import { Darknet, WithPort } from "./darknet_paths";
+import { Darknet, isDarknetServer2, WithPort } from "./misc";
+import { DarknetServerInfo } from "./types";
 import {
 	DarknetAuthenticateMessage,
 	DarknetFoundPassProbeMessage,
 	DarknetProbeMessage,
-} from "./type/helper";
+} from "../type/helper";
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,
