@@ -114,7 +114,7 @@ export function allocateThreads(
 	return allocations;
 }
 
-export async function deployScriptSet(
+export function deployScriptSet(
 	ns: NS,
 	files: string[],
 	hosts: string[],

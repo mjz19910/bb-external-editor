@@ -46,10 +46,11 @@ export async function main(ns: NS) {
 
 	ns.ui.setTailTitle(`smart_farm:${target}`);
 	tlog(ns, `[SMART_FARM] target=${target} hackPct=${hackPct}`);
+	const fleet = getFleet(ns);
+	deployScriptSet(ns, FILES, fleet.hosts.map((h) => h.host));
 
 	while (true) {
 		const fleet = getFleet(ns);
-		await deployScriptSet(ns, FILES, fleet.hosts.map((h) => h.host));
 
 		const jobs = getTargetJobCounts(ns, target);
 		const prep = calcPrepPlan(ns, target);
