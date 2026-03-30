@@ -4,7 +4,7 @@ export async function main(ns: NS) {
 	const com_port = new ScriptPort(ns, 3);
 	const res = com_port.readOpt<string>();
 	if (res.type === "None") {
-		return ns.tprint("port(2): nothing to query");
+		return ns.tprint("port(3): nothing to query");
 	}
 	const { value: query_str } = res;
 	const [query_cmd, query_arg] = query_str.split(" ");
