@@ -4,8 +4,8 @@ import {
 	deployScriptSet,
 	getFleet,
 	runAllocations,
-} from "./gpt_pause/src/lib/fleet";
-import { getTargetJobCounts } from "./gpt_pause/src/lib/jobs";
+} from "./lib/fleet";
+import { getTargetJobCounts } from "./lib/jobs";
 import { log, tlog } from "./lib/log";
 import {
 	calcHackThreadsForPercent,

@@ -1,6 +1,6 @@
 import { NS } from "./@ns";
-import { getFleet } from "./gpt_pause/src/lib/fleet";
-import { chooseBestTarget } from "./gpt_pause/src/lib/targeting";
+import { getFleet } from "./lib/fleet";
+import { chooseBestTarget } from "./lib/targeting";
 
 const WORKERS = new Set([
 	"gpt_pause/src/hack_worker.ts",

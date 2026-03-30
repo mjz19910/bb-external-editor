@@ -1,5 +1,5 @@
 import { NS } from "./@ns";
-import { getJobSnapshot } from "./gpt_pause/src/lib/jobs";
+import { getJobSnapshot } from "./lib/jobs";
 
 export async function main(ns: NS) {
 	const snap = getJobSnapshot(ns);

@@ -1,4 +1,4 @@
-import { NS, ProcessInfo } from "../@ns";
+import { NS, ProcessInfo } from "./@ns";
 import { getFleet } from "./fleet";
 
 export type TargetJobCounts = {
