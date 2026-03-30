@@ -73,6 +73,9 @@ export class NetworkMap {
 	static build(ns: NS, start = "home") {
 		return buildNetworkMap(ns, start);
 	}
+	update_single_host(ns: NS, host: string) {
+		this.ramSizes[host] = ns.getServerMaxRam(host);
+	}
 }
 
 let saved_map_invalid = false;
@@ -91,6 +94,10 @@ export function buildNetworkMap(ns: NS, start = "home"): NetworkMap {
 			network_map = null;
 			saved_map_invalid = true;
 			break x;
+		}
+		for (let i = 0; i < 3; i++) {
+			const idx = Math.floor(Math.random() * hosts_len);
+			network_map.update_single_host(ns, hosts[idx]);
 		}
 		return network_map;
 	}
