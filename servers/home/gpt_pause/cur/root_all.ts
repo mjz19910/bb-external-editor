@@ -1,4 +1,4 @@
-import { buildNetworkMap } from "../src/lib/network_map";
+import { buildNetworkMap } from "../../lib/network_map";
 import { NS } from "./@ns";
 
 export async function main(ns: NS) {

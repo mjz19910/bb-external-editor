@@ -1,5 +1,5 @@
 import { NS } from "./@ns";
-import { buildNetworkMap } from "./lib/network_map";
+import { buildNetworkMap } from "../../lib/network_map";
 
 export type NetworkRamInfo = {
 	total: number;

@@ -1,5 +1,5 @@
 import { NS } from "./@ns";
-import { buildNetworkMap, classifyServer } from "./network_map";
+import { buildNetworkMap, classifyServer } from "../../../lib/network_map";
 
 export type TargetInfo = {
 	host: string;

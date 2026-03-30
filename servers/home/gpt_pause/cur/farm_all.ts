@@ -2,7 +2,7 @@ import {
 	buildNetworkMap,
 	canRunThreads,
 	runnableHosts,
-} from "../src/lib/network_map";
+} from "../../lib/network_map";
 import { chooseBestTarget } from "./choose_best_target";
 import { log, tlog } from "../src/lib/log";
 import { NS } from "./@ns";

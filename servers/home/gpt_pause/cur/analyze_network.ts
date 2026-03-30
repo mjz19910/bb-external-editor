@@ -4,7 +4,7 @@ import {
 	classifyServer,
 	hubHosts,
 	leafHosts,
-} from "../src/lib/network_map";
+} from "../../lib/network_map";
 
 export async function main(ns: NS) {
 	const map = buildNetworkMap(ns);

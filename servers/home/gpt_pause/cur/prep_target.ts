@@ -1,5 +1,5 @@
-import { canRunThreads, runnableHosts } from "../src/lib/network_map";
-import { buildNetworkMap } from "../src/lib/network_map";
+import { canRunThreads, runnableHosts } from "../../lib/network_map";
+import { buildNetworkMap } from "../../lib/network_map";
 import { log, tlog } from "../src/lib/log";
 import { NS } from "./@ns";
 

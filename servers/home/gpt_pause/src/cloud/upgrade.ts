@@ -1,5 +1,5 @@
 import { NS } from "../@ns";
-import { buildNetworkMap } from "../lib/network_map";
+import { buildNetworkMap } from "../../../lib/network_map";
 
 /** /cloud/upgrade.ts */
 export async function main(ns: NS) {
