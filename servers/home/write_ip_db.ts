@@ -16,9 +16,8 @@ export function write_info_to_fs_db(ns: NS, info: DarknetServerInfo) {
 		ns.tprint("missing hostname for ", info.server.ip);
 		return;
 	}
-	let nt_ok_path = host.replaceAll(/[-:;^&@%$]/g, "_");
+	let nt_ok_path = host.replaceAll(/[:]/g, "_");
 	nt_ok_path = nt_ok_path.replaceAll(/__+/g, "_");
-	nt_ok_path = nt_ok_path.replaceAll("🅱️", "b");
 	const host_save_path = `tmp/host/${nt_ok_path}.txt`;
 	ns.write(host_save_path, new_content, "w");
 }

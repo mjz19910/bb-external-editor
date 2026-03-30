@@ -39,12 +39,6 @@ export async function main(ns: NS) {
 			ns.tprint("remove file invalid in ntfs ", file);
 			ns.rm(file);
 		}
-		if (file.match(/[-:;^&@%$]/)) {
-			ns.rm(file);
-		}
-		if (file.includes("🅱️")) {
-			ns.rm(file);
-		}
 	}
 	const ip_db_files = ns.ls("home", "tmp/ip/");
 	for (const file of ip_db_files) {
