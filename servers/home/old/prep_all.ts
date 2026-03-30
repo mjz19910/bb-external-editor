@@ -12,13 +12,15 @@ import { buildNetworkMap } from "../lib/network_map";
 function formatMoney(ns: NS, n: number) {
 	return "$" + ns.format.number(n, 2);
 }
+
+const all_scripts = ["tmp/prep_weak.ts", "tmp/prep_grow.ts", "@ns.ts"];
 export async function main(ns: NS) {
 	function log(...args: any[]) {
 		ns.tprint(...args);
 		ns.print(...args);
 	}
 
-	ns.disableLog("ALL");
+	// ns.disableLog("ALL");
 	ns.clearLog();
 
 	const reserve = ns.args.includes("--reserve")
@@ -26,6 +28,11 @@ export async function main(ns: NS) {
 		: 32;
 	const map = buildNetworkMap(ns);
 	const hosts = map.hosts.filter((h) => ns.hasRootAccess(h));
+	for (const host of hosts) {
+		if (host != "home") {
+			ns.scp(all_scripts, host);
+		}
+	}
 
 	const maxRamByHost = new Map<string, number>();
 	const serverMaxMoneyMap = new Map<string, number>();
@@ -169,10 +176,6 @@ function launchAcrossNetwork(
 
 		const threads = Math.floor(freeRam / ramPerThread);
 		if (threads <= 0) continue;
-
-		if (host != "home") {
-			ns.scp(script, host);
-		}
 
 		const pid = ns.exec(script, host, threads, target, threads);
 		if (pid !== 0) {
