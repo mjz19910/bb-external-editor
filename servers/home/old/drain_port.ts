@@ -1,5 +1,5 @@
-import { ScriptArg } from "../NetscriptDefinitions.d";
-import { TypedNSP } from "./TypedNetScriptPort";
+import { ScriptArg } from "../NetscriptDefinitions";
+import { ScriptPort } from "../type/ScriptPort";
 
 export async function main(ns: NS) {
 	ns.ui.openTail();
@@ -7,7 +7,7 @@ export async function main(ns: NS) {
 		port: number;
 		_: ScriptArg[];
 	};
-	const port = new TypedNSP(ns, f.port);
+	const port = new ScriptPort(ns, f.port);
 	port.config({ logging: false });
 	for (;;) {
 		const res = port.readOpt("all");

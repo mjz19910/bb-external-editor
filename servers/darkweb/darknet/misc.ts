@@ -1,4 +1,4 @@
-import { DarknetServerData, Server } from "../NetscriptDefinitions";
+import { DarknetServerData, Server } from "../NetscriptDefinitions.d";
 
 export interface DarknetServer extends DarknetServerData {
 	isOnline: boolean;

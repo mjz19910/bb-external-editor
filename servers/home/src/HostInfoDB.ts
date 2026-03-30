@@ -1,5 +1,5 @@
 /** HostInfoDB.ts */
-import { Server } from "../NetscriptDefinitions.d";
+import { Server } from "../NetscriptDefinitions";
 import { DarknetServer } from "../type/helper";
 
 export type HostInfo<T> = {

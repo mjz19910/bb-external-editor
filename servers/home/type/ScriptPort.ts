@@ -1,4 +1,4 @@
-import { assign_opt, empty_opt, Optional, some_opt } from "./helpers";
+import { assign_opt, empty_opt, Optional, some_opt } from "../old/helpers";
 
 export const Null = "NULL PORT DATA" as const;
 export type Null = typeof Null;
@@ -111,7 +111,7 @@ export function rawReadAll<T>(port: NS_Port) {
 	return results;
 }
 
-export class TypedNSP {
+export class ScriptPort {
 	readonly ns: NS;
 	readonly #port_id: number;
 	readonly #port: NS_Port;
@@ -133,7 +133,7 @@ export class TypedNSP {
 
 	private log(
 		user_msg: string | undefined,
-		port: keyof TypedNSP,
+		port: keyof ScriptPort,
 		...args: any[]
 	) {
 		if (!this.logging) return;

@@ -1,5 +1,5 @@
 import { ScriptRequest } from "../src/port";
-import { TypedNSP } from "./TypedNetScriptPort";
+import { ScriptPort } from "../type/ScriptPort";
 
 const free_ports: number[] = [];
 let com_port_num = 3;
@@ -14,7 +14,7 @@ function get_next_open_port() {
 }
 export async function main(ns: NS) {
   ns.disableLog("sleep");
-  const p1 = new TypedNSP(ns, 2);
+  const p1 = new ScriptPort(ns, 2);
   for (let running = true; running;) {
     const res = p1.peek<ScriptRequest>()!;
     if (res !== null) {

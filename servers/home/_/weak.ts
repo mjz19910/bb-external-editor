@@ -1,4 +1,4 @@
-import { AutocompleteData, ScriptArg } from "../NetscriptDefinitions.d";
+import { AutocompleteData, ScriptArg } from "../NetscriptDefinitions";
 
 export async function main(ns: NS) {
 	for (const target of ns.args) {

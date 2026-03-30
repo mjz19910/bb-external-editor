@@ -1,4 +1,4 @@
-import { Server } from "../NetscriptDefinitions.d";
+import { Server } from "../NetscriptDefinitions";
 import { exec } from "./exec2";
 import { HostInfoDB } from "./HostInfoDB";
 const RUN_PATH = "api/loop/grow.ts";

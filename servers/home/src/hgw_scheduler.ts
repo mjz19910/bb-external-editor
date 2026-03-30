@@ -1,5 +1,5 @@
 import { isNormalServer } from "../lib/helper";
-import { Server } from "../NetscriptDefinitions.d";
+import { Server } from "../NetscriptDefinitions";
 
 interface RunnerState {
 	target: string;

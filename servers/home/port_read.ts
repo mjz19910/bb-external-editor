@@ -1,4 +1,4 @@
-import { TypedNSP } from "./old/TypedNetScriptPort";
+import { ScriptPort } from "./type/ScriptPort";
 import {
 	DarknetAuthenticateMessage,
 	DarknetFoundPassProbeMessage,
@@ -73,7 +73,7 @@ function handle_wait_request(ns: NS, msg: WaitMessage) {
 }
 function handle_object_message(
 	ns: NS,
-	s: { running: boolean; runner: string; port2: TypedNSP },
+	s: { running: boolean; runner: string; port2: ScriptPort },
 	msg: PortMessage | {} | null,
 ) {
 	if (msg === null) {
@@ -139,9 +139,9 @@ export async function main(ns: NS) {
 	if (requestPort > 1 && requestPort < 4) {
 		return ns.tprint("port conflict requestPort=", requestPort);
 	}
-	const port = new TypedNSP(ns, requestPort);
-	const port2 = new TypedNSP(ns, REPLY_PORT);
-	const port3 = new TypedNSP(ns, API_PORT);
+	const port = new ScriptPort(ns, requestPort);
+	const port2 = new ScriptPort(ns, REPLY_PORT);
+	const port3 = new ScriptPort(ns, API_PORT);
 	port3.clear("empty before use");
 	ns.run("src/getHostname.ts", 1);
 	await port3.nextWrite("wait for hostname");

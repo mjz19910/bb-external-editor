@@ -3,17 +3,14 @@ import { BitburnerPlugin } from "esbuild-bitburner-plugin";
 
 const ctx = await context({
   entryPoints: [
-    "servers/**/*.js",
-    "servers/**/*.jsx",
     "servers/**/*.ts",
-    "servers/**/*.tsx",
   ],
   outbase: "./servers",
   outdir: "./build",
   plugins: [
     BitburnerPlugin({
       port: 12527,
-      types: void 0,
+      types: "servers/home/NetscriptDefinitions.d.ts",
       mirror: {
         "servers": ["home", "darkweb"],
       },

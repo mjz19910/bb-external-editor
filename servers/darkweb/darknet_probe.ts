@@ -2,7 +2,7 @@ import {
 	DarknetResponseCode,
 	DarknetResult,
 	ScriptArg,
-} from "./NetscriptDefinitions";
+} from "./NetscriptDefinitions.d";
 import { isDarknetServer2 } from "./darknet/misc";
 import { DarknetServerInfo } from "./darknet/types";
 import { Darknet, WithPort } from "./darknet_paths";

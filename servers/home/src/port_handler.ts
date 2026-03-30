@@ -1,6 +1,7 @@
-import { NetscriptPort } from "../NetscriptDefinitions";
+import { NetscriptPort } from "../NetscriptDefinitions.d";
 import { ScriptRequest } from "./port";
-class TypedNetscriptPort<T> {
+
+class ScriptPort<T> {
   port: NetscriptPort;
   port_id: number;
   constructor(public ns: NS, id: number) {
@@ -36,7 +37,7 @@ function get_next_open_port() {
 }
 export async function main(ns: NS) {
   ns.disableLog("sleep");
-  const p1 = new TypedNetscriptPort<ScriptRequest>(ns, 2);
+  const p1 = new ScriptPort<ScriptRequest>(ns, 2);
   for (let running = true; running;) {
     const res = p1.peek()!;
     if (res !== null) {
