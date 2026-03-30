@@ -1,5 +1,5 @@
 import { DarknetServerInfo } from "../darknet/types";
-import { DarknetResult } from "../NetscriptDefinitions";
+import { DarknetResult } from "../NetscriptDefinitions.d";
 
 export type WaitMessage = {
 	type: "wait";

@@ -1,4 +1,4 @@
-import { ScriptArg, Server } from "../NetscriptDefinitions";
+import { ScriptArg, Server } from "../NetscriptDefinitions.d";
 import { HostInfoDB } from "./HostInfoDB";
 
 function resize_tail_with_char_size(ns: NS, width: number, height: number) {

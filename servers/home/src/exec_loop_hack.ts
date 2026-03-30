@@ -1,4 +1,4 @@
-import { Server } from "../NetscriptDefinitions";
+import { Server } from "../NetscriptDefinitions.d";
 import { exec } from "./exec2";
 import { HostInfoDB } from "./HostInfoDB";
 

@@ -1,5 +1,5 @@
 /** scan.ts */
-import { Server } from "../NetscriptDefinitions";
+import { Server } from "../NetscriptDefinitions.d";
 import { DarknetServer } from "../type/helper";
 import { HostInfoDB } from "./HostInfoDB";
 

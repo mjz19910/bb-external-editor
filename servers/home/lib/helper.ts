@@ -1,5 +1,5 @@
 import { DarknetServer } from "../darknet/misc";
-import { Server } from "../NetscriptDefinitions";
+import { Server } from "../NetscriptDefinitions.d";
 
 export function isNormalServer(
 	s: { hostname: string } | Server | DarknetServer,

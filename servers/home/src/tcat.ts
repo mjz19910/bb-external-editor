@@ -1,4 +1,4 @@
-import { AutocompleteData, ScriptArg } from "../NetscriptDefinitions";
+import { AutocompleteData, ScriptArg } from "../NetscriptDefinitions.d";
 import { read_string_arg } from "./arg_parse";
 
 export async function main(ns: NS) {

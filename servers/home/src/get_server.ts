@@ -1,4 +1,4 @@
-import { Server } from "../NetscriptDefinitions";
+import { Server } from "../NetscriptDefinitions.d";
 import { HostInfo, HostInfoDB } from "./HostInfoDB";
 function set_key<U, K extends keyof U>(base: U, updated: U, k: K): U[K] {
 	return base[k] = updated[k];
