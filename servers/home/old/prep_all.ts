@@ -19,7 +19,7 @@ export async function main(ns: NS) {
 
 	const reserve = ns.args.includes("--reserve")
 		? Number(ns.args[ns.args.indexOf("--reserve") + 1] ?? 0)
-		: 0;
+		: 32;
 	const map = buildNetworkMap(ns);
 	const hosts = map.hosts.filter((h) => ns.hasRootAccess(h));
 
