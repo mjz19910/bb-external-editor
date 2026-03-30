@@ -6,6 +6,7 @@ import {
 	DarknetFoundPassProbeMessage,
 	DarknetProbeMessage,
 	NewWordsMessage,
+	OnlineCheckMsg,
 	OnlineServersMessage,
 	QuitMessage,
 	TimeoutCheckMsg,
@@ -78,19 +79,17 @@ function handle_wait_request(ns: NS, msg: WaitMessage) {
 	}
 }
 const db = new class {
-	server_map = new Map<string, {}>();
+	server_map = new Map<string, DarknetServerInfo>();
 	server_map_decay_list: DarknetServerInfo[] = [];
 }();
-function handle_object_message(
-	ns: NS,
-	s: {
-		running: boolean;
-		runner: string;
-		port: ScriptPort<PortMessage>;
-		port2: ScriptPort<string | null>;
-	},
-	msg: PortMessage | {} | null,
-) {
+type StateType = {
+	running: boolean;
+	runner: string;
+	port: ScriptPort<PortMessage>;
+	port2: ScriptPort<OnlineCheckMsg>;
+	port3: ScriptPort<{ type: "query_security" }>;
+};
+function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 	if (msg === null) {
 		ns.tprint("null msg ", msg);
 		return true;
@@ -126,7 +125,7 @@ function handle_object_message(
 				for (const ip of msg.results) {
 					ns.tprint(`found ip ${ip} connected to ${msg.for}`);
 				}
-				s.port2.write<string>("query_ips " + msg.results.join(","));
+				s.port3.write({ type: "query_security", ips: msg.results });
 				ns.run("darknet/query_security.ts", 1);
 			} else {
 				const ips: string[] = [];
@@ -144,8 +143,15 @@ function handle_object_message(
 					}
 					s.port.write({ type: "timeout_check" });
 				}, 30_000);
+				const all_infos = [];
+				for (const item of db.server_map.values()) {
+					all_infos.push(item);
+				}
 				if (ips.length > 0) {
-					s.port2.write<string>("online_check " + ips.join(","));
+					s.port2.write<OnlineCheckMsg>({
+						cmd: "online_check",
+						args: ips,
+					});
 				}
 			}
 			return true;
@@ -156,7 +162,10 @@ function handle_object_message(
 				ips.push(info.server.ip);
 			}
 			if (ips.length > 0) {
-				s.port2.write<string>("online_check " + ips.join(","));
+				s.port2.write<OnlineCheckMsg>({
+					cmd: "online_check",
+					args: ips,
+				});
 			}
 			return true;
 		}
@@ -199,14 +208,11 @@ function handle_object_message(
 		}
 	}
 }
+const REQUEST_PORT = 1;
 const REPLY_PORT = 2;
 const API_PORT = 3;
 export async function main(ns: NS) {
-	const { port: requestPort } = ns.flags([["port", 1]]) as { port: number };
-	if (requestPort > 1 && requestPort < 4) {
-		return ns.tprint("port conflict requestPort=", requestPort);
-	}
-	const port = new ScriptPort(ns, requestPort);
+	const port = new ScriptPort(ns, REQUEST_PORT);
 	const port2 = new ScriptPort(ns, REPLY_PORT);
 	const port3 = new ScriptPort(ns, API_PORT);
 	port3.clear("empty before use");
@@ -214,25 +220,19 @@ export async function main(ns: NS) {
 	await port3.nextWrite("wait for hostname");
 	const v = port3.readOpt<string>("read hostname");
 	if (v.type === "None") return ns.tprint("missing port(3).getHostname()");
-	const s = {
+	const s: StateType = {
 		running: true,
 		runner: v.value,
-		port: port as ScriptPort<PortMessage>,
+		port,
 		port2,
+		port3,
 	};
 	port.config({ logging: false });
 	ns.print("enter read loop");
 	for (; s.running;) {
 		for (; !port.empty("run until empty");) {
-			const res = port.read<PortMessage | {} | null>("read message");
-			if (typeof res === "object") {
-				handle_object_message(ns, s, res);
-				continue;
-			}
-			ns.tprint(
-				"unknown(1) port message ",
-				JSON.stringify(res, void 0, 2),
-			);
+			const res = port.read<PortMessage>("read message");
+			handle_object_message(ns, s, res);
 		}
 		await port.nextWrite("wait for wakeup");
 	}

@@ -74,3 +74,7 @@ export type OnlineServersMessage = {
 
 export type QuitMessage = { type: "quit" };
 export type TimeoutCheckMsg = { type: "timeout_check" };
+export type OnlineCheckMsg = {
+	cmd: "online_check";
+	args: string[];
+};

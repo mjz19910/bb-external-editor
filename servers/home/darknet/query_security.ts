@@ -1,8 +1,8 @@
 import { ScriptPort } from "../type/ScriptPort";
 
 export async function main(ns: NS) {
-	const port2 = new ScriptPort(ns, 2);
-	const res = port2.readOpt<string>();
+	const com_port = new ScriptPort(ns, 3);
+	const res = com_port.readOpt<string>();
 	if (res.type === "None") {
 		return ns.tprint("port(2): nothing to query");
 	}
