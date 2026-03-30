@@ -34,6 +34,11 @@ export async function main(ns: NS) {
 	ns.disableLog("getServerUsedRam");
 	ns.disableLog("getServerMaxRam");
 
+	if (typeof ns.args[0] === "number" && ns.args.length >= 2) {
+		const tmp = ns.args[1];
+		ns.args[1] = ns.args[0];
+		ns.args[0] = tmp;
+	}
 	let target = String(ns.args[0] ?? "");
 	const hackPct = Number(ns.args[1] ?? 0.1);
 
