@@ -1,3 +1,5 @@
+import { DarknetServer } from "./darknet/misc";
+import { DarknetServerInfo } from "./darknet/types";
 import { ScriptPort } from "./type/ScriptPort";
 import {
 	DarknetAuthenticateMessage,
@@ -62,7 +64,15 @@ type PortMessage =
 	| QuitMessage
 	| NewWordsMessage
 	| DarknetProbeMessage
-	| DarknetFoundPassProbeMessage;
+	| DarknetFoundPassProbeMessage
+	| { type: "timeout_check" }
+	| {
+		type: "online_servers";
+		result: {
+			darkweb: DarknetServer[];
+			normal: Server[];
+		};
+	};
 const pw_db = new Map<string, string>();
 const commonPasswordDictionary: string[] = [];
 const common_pw_dict_parts: string[][] = [commonPasswordDictionary];
@@ -71,9 +81,18 @@ function handle_wait_request(ns: NS, msg: WaitMessage) {
 		ns.run("darknet/nextMutation.ts", 1, "--port", msg.reply_port);
 	}
 }
+const db = new class {
+	server_map = new Map<string, {}>();
+	server_map_decay_list: DarknetServerInfo[] = [];
+}();
 function handle_object_message(
 	ns: NS,
-	s: { running: boolean; runner: string; port2: ScriptPort<string | null> },
+	s: {
+		running: boolean;
+		runner: string;
+		port: ScriptPort<PortMessage>;
+		port2: ScriptPort<string | null>;
+	},
 	msg: PortMessage | {} | null,
 ) {
 	if (msg === null) {
@@ -118,6 +137,39 @@ function handle_object_message(
 					if (info.password === null) {
 						ns.tprint("unauth server " + info.server.hostname);
 					}
+					db.server_map.set(info.server.hostname, info);
+				}
+				const infos_timeout = msg.infos;
+				setTimeout(function () {
+					for (const info of infos_timeout) {
+						db.server_map_decay_list.push(info);
+					}
+					s.port.write({ type: "timeout_check" });
+				}, 30_000);
+			}
+			return true;
+		}
+		case "timeout_check": {
+			const ips: string[] = [];
+			for (const info of db.server_map_decay_list) {
+				ips.push(info.server.ip);
+			}
+			s.port2.write<string>("online_check " + ips.join(","));
+			ns.run("query_server.ts", 1);
+			return true;
+		}
+		case "online_servers": {
+			const query_map: Record<string, DarknetServer> = {};
+			for (const srv of msg.result.darkweb) {
+				query_map[srv.hostname] = srv;
+			}
+			for (let i = 0; i < db.server_map_decay_list.length; i++) {
+				const info = db.server_map_decay_list[i];
+				const srv = info.server;
+				if (query_map[srv.hostname].isOnline) {
+					db.server_map_decay_list.splice(i, 1);
+					i--;
+					ns.tprint("still online ", srv.ip);
 				}
 			}
 			return true;
@@ -158,7 +210,7 @@ export async function main(ns: NS) {
 	const s = {
 		running: true,
 		runner: v.value,
-		port,
+		port: port as ScriptPort<PortMessage>,
 		port2,
 	};
 	port.config({ logging: false });

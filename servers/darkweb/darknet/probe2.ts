@@ -1,11 +1,10 @@
-import { isDarknetServer2 } from "./darknet/misc";
-import { DarknetServerInfo } from "./darknet/types";
-import { Darknet, WithPort } from "./darknet_paths";
+import { Darknet, isDarknetServer2, WithPort } from "./misc";
+import { DarknetServerInfo } from "./types";
 import {
 	DarknetAuthenticateMessage,
 	DarknetFoundPassProbeMessage,
-	DarkNetProbeMessage,
-} from "./type/helper";
+	DarknetProbeMessage,
+} from "../type/helper";
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,
@@ -148,11 +147,11 @@ class AuthManager {
 		const factors: number[] = []; // confirmed valid factors >= 100
 		const invalidFactors: number[] = []; // numbers ruled out by data === "false"
 		const { info } = opts;
-		const { server: srv, authDetails: ad } = info;
+		const { server: srv } = info;
 		const { hostname: host } = srv;
-		const { passwordLength: len } = ad;
 
 		ns.tprint(`Starting Factorios auth flow for ${host}`);
+		const pw_len = info.authDetails.passwordLength;
 		let cur_num = 1;
 
 		for (;;) {
@@ -164,8 +163,8 @@ class AuthManager {
 				for (const f of invalidFactors) {
 					if (i % f == 0) continue outer;
 				}
-				if (len == 2 && i >= 100) break;
-				if (len == 3 && i >= 1000) break;
+				if (pw_len == 2 && i >= 100) break;
+				if (pw_len == 3 && i >= 1000) break;
 				if (cur_num == i) continue;
 				next_factor = i;
 				break;
@@ -581,7 +580,7 @@ export async function main(ns: NS) {
 			type: "darknet.probe",
 			by: runner,
 			infos,
-		} as DarkNetProbeMessage);
+		} as DarknetProbeMessage);
 		for (let i = 0; i < infos.length; i++) {
 			let info = infos[i];
 			if (!info.connectedToParent) continue;

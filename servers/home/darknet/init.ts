@@ -1,8 +1,7 @@
 import { Darknet, WithPort } from "./misc";
 
 const dnet_files_dyn: string[] = [];
-dnet_files_dyn.push("darknet_probe.ts");
-dnet_files_dyn.push("darknet_paths.ts");
+dnet_files_dyn.push("darknet/probe2.ts");
 dnet_files_dyn.push("darknet/misc.ts");
 dnet_files_dyn.push("darknet/types.ts");
 dnet_files_dyn.push("NetscriptDefinitions.d.ts");
@@ -24,7 +23,7 @@ export async function main(ns: NS) {
 		}
 		ns.scp(dnet_files_dyn, "darkweb", "home");
 		const pid = ns.exec(
-			"darknet_probe.ts",
+			"darknet/probe2.ts",
 			"darkweb",
 			f.threads,
 			"--port",
