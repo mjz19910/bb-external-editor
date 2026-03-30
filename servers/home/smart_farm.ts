@@ -44,8 +44,6 @@ export async function main(ns: NS) {
 	const map = NetworkMap.build(ns);
 	deployScriptSet(ns, FILES, map.hosts);
 
-	let grow_mul = 1.5;
-
 	while (true) {
 		ns.clearLog();
 		const fleet = getFleet(ns);
@@ -108,22 +106,13 @@ export async function main(ns: NS) {
 
 		const growFactor = 1 / Math.max(0.001, 1 - hackPct);
 		let growThreads = ns.growthAnalyze(target, growFactor);
-		growThreads *= grow_mul;
-		ns.tprint(
-			"grow threads ",
-			Math.floor(growThreads * 50) / 50,
-			" mul ",
-			Math.floor(grow_mul * 50) / 50,
-		);
-		growThreads = Math.ceil(growThreads) + 1;
+		growThreads = Math.ceil(growThreads);
 		const growSec = ns.growthAnalyzeSecurity(growThreads);
 		let growWeaken = growSec / ns.weakenAnalyze(1);
 		growWeaken = Math.ceil(growWeaken);
 
 		if (sec > minSec + 1.5) {
 			let wantedW = hackWeaken + growWeaken + 20;
-			wantedW *= 1.05;
-			wantedW = Math.ceil(wantedW);
 			const missingW = missing(wantedW, jobs.weaken);
 
 			const alloc = allocateThreads(ns, fleet, WEAKEN, missingW);
@@ -135,7 +124,7 @@ export async function main(ns: NS) {
 					`wantedW=${wantedW} activeW=${jobs.weaken} launchW=${launched}`,
 			);
 
-			await ns.sleep(Math.max(0, ns.getWeakenTime(target) + 50));
+			await ns.sleep(Math.max(0, ns.getWeakenTime(target) * 0.5));
 			continue;
 		}
 
@@ -164,8 +153,7 @@ export async function main(ns: NS) {
 					`launchG=${launchedG} launchW=${launchedW}`,
 			);
 
-			await ns.sleep(Math.max(0, ns.getGrowTime(target) + 50));
-			grow_mul *= 1.05;
+			await ns.sleep(Math.max(0, ns.getGrowTime(target) * 0.5));
 			continue;
 		}
 
@@ -205,7 +193,7 @@ export async function main(ns: NS) {
 				`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
 		);
 
-		await ns.sleep(Math.max(0, ns.getHackTime(target) * 4.5));
+		await ns.sleep(Math.max(0, ns.getHackTime(target) * 0.5));
 	}
 }
 
