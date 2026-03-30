@@ -134,9 +134,6 @@ function handle_object_message(
 				ns.run("darknet/query_security.ts", 1);
 			} else {
 				for (const info of msg.infos) {
-					if (info.password === null) {
-						ns.tprint("unauth server " + info.server.hostname);
-					}
 					db.server_map.set(info.server.hostname, info);
 				}
 				const infos_timeout = msg.infos;
