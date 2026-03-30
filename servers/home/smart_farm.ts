@@ -9,9 +9,9 @@ import { chooseBestTarget } from "./lib/targeting";
 import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep";
 import { log, tlog } from "./lib/log";
 
-const HACK = "hack_worker.js";
-const GROW = "grow_worker.js";
-const WEAKEN = "weaken_worker.js";
+const HACK = "hack_worker.ts";
+const GROW = "grow_worker.ts";
+const WEAKEN = "weaken_worker.ts";
 const FILES = [HACK, GROW, WEAKEN];
 
 export async function main(ns: NS) {
