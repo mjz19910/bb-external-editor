@@ -48,8 +48,6 @@ export async function main(ns: NS) {
 		const new_content = JSON.stringify(info, void 0, "\t");
 		if (new_content != content) {
 			ns.write(file, new_content, "w");
-		} else {
-			ns.tprint("data is still the same [", host, "](", srv.ip, ")");
 		}
 	}
 }
