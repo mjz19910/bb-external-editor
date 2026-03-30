@@ -4,7 +4,6 @@ const dnet_files_dyn: string[] = [];
 dnet_files_dyn.push("gpt_pause/src/darknet/probe2.ts");
 dnet_files_dyn.push("gpt_pause/src/darknet/misc.ts");
 dnet_files_dyn.push("gpt_pause/src/darknet/types.ts");
-dnet_files_dyn.push("gpt_pause/src/@ns.ts");
 dnet_files_dyn.push(Darknet.MemoryReallocation);
 dnet_files_dyn.push(WithPort.Read);
 dnet_files_dyn.push("gpt_pause/src/type/helper.ts");

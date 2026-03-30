@@ -7,7 +7,6 @@ import {
 	PortMessage,
 } from "../type/helper";
 import { ScriptPort } from "../type/ScriptPort";
-import { DarknetResult, NS, ScriptArg } from ".././@ns";
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,
@@ -621,7 +620,6 @@ export async function main(ns: NS) {
 	dnet_files_dyn.push(SELF);
 	dnet_files_dyn.push("gpt_pause/src/lib/helper.ts");
 	dnet_files_dyn.push("gpt_pause/src/darknet/misc.ts");
-	dnet_files_dyn.push("gpt_pause/src/@ns.ts");
 	dnet_files_dyn.push(Darknet.MemoryReallocation);
 	dnet_files_dyn.push(WithPort.Read);
 	if (local_probe.length == 1 && local_probe[0] == "darkweb") {

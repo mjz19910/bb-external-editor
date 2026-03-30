@@ -1,4 +1,3 @@
-import { NS } from ".././@ns";
 import { logUpgrade } from "./logging";
 
 export function getFleetStats(ns: NS) {

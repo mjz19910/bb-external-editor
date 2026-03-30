@@ -15,7 +15,6 @@ function formatMoney(ns: NS, n: number) {
 const all_scripts = [
 	"gpt_pause/src/tmp/prep_weak.ts",
 	"gpt_pause/src/tmp/prep_grow.ts",
-	"gpt_pause/src/@ns.ts",
 ];
 export async function main(ns: NS) {
 	function log(...args: any[]) {

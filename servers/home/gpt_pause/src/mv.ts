@@ -1,5 +1,3 @@
-import { NS } from "./@ns"
-
 export function mvExtended(ns: NS, file: string, destPath: string, server: string = "home") {
     const supportedExtensions = [".js", ".ts", ".jsx", ".tsx", ".txt", ".json", ".css"]
     const isSupported = supportedExtensions.some(ext => file.endsWith(ext))
