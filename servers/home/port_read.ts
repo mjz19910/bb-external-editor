@@ -73,7 +73,7 @@ function handle_wait_request(ns: NS, msg: WaitMessage) {
 }
 function handle_object_message(
 	ns: NS,
-	s: { running: boolean; runner: string; port2: ScriptPort },
+	s: { running: boolean; runner: string; port2: ScriptPort<null> },
 	msg: PortMessage | {} | null,
 ) {
 	if (msg === null) {

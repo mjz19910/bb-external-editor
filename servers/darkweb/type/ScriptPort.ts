@@ -111,7 +111,7 @@ export function rawReadAll<T>(port: NS_Port) {
 	return results;
 }
 
-export class ScriptPort {
+export class ScriptPort<BaseType> {
 	readonly ns: NS;
 	readonly #port_id: number;
 	readonly #port: NS_Port;
@@ -133,7 +133,7 @@ export class ScriptPort {
 
 	private log(
 		user_msg: string | undefined,
-		port: keyof ScriptPort,
+		port: keyof ScriptPort<BaseType>,
 		...args: any[]
 	) {
 		if (!this.logging) return;
@@ -145,33 +145,33 @@ export class ScriptPort {
 		);
 	}
 
-	peek<T>(log_msg?: string): T {
+	peek<T extends BaseType = BaseType>(log_msg?: string): T {
 		const data = rawPeek<T>(this.#port);
 		this.log(log_msg, "peek", data);
 		if (data === void 0) throw new PortEmptyError(this.#port_id);
 		return data;
 	}
 
-	read<T>(log_msg?: string): T {
+	read<T extends BaseType = BaseType>(log_msg?: string): T {
 		const data = rawRead<T>(this.#port);
 		this.log(log_msg, "read", data);
 		if (data === void 0) throw new PortEmptyError(this.#port_id);
 		return data;
 	}
 
-	tryRead<T>(log_msg?: string): T | undefined {
+	tryRead<T extends BaseType = BaseType>(log_msg?: string): T | undefined {
 		const data = rawRead<T>(this.#port);
 		this.log(log_msg, "tryRead", data);
 		return data;
 	}
 
-	readOpt<T>(log_msg?: string): Optional<T> {
+	readOpt<T extends BaseType = BaseType>(log_msg?: string): Optional<T> {
 		const data = rawReadOpt<T>(this.#port);
 		this.log(log_msg, "readOpt", data);
 		return data;
 	}
 
-	readAll<T>(log_msg?: string): T[] {
+	readAll<T extends BaseType = BaseType>(log_msg?: string): T[] {
 		const results: T[] = [];
 		for (;;) {
 			const data = rawRead<T>(this.#port);
@@ -182,25 +182,34 @@ export class ScriptPort {
 		return results;
 	}
 
-	write<T>(data: T, log_msg?: string): void {
+	write<T extends BaseType = BaseType>(data: T, log_msg?: string): void {
 		if (this.#port.full()) throw new PortFullError(this.#port_id);
 		const prev = rawWrite<T, Null>(this.#port, data);
 		this.log(log_msg, "write", some_opt(data), "prev", some_opt(prev));
 	}
 
-	writePrev<T>(data: T, log_msg?: string): T | undefined {
+	writePrev<T extends BaseType = BaseType>(
+		data: T,
+		log_msg?: string,
+	): T | undefined {
 		const prev = rawWrite<T>(this.#port, data);
 		this.log(log_msg, "writePrev", some_opt(data), "prev", some_opt(prev));
 		return fromRaw(prev);
 	}
 
-	writePrevOpt<T>(data: T, log_msg?: string): Optional<T> {
+	writePrevOpt<T extends BaseType = BaseType>(
+		data: T,
+		log_msg?: string,
+	): Optional<T> {
 		const prev = rawWriteOpt<T>(this.#port, data);
 		this.log(log_msg, "writePrevOpt", some_opt(data), "prev", prev);
 		return prev;
 	}
 
-	tryWrite<T>(data: T, log_msg?: string): boolean {
+	tryWrite<T extends BaseType = BaseType>(
+		data: T,
+		log_msg?: string,
+	): boolean {
 		const success = this.#port.tryWrite(data);
 		this.log(
 			log_msg,
