@@ -38,7 +38,13 @@ export async function main(ns: NS) {
 		const info: DarknetServerInfo = JSON.parse(content);
 		const srv = ns.getServer(info.server.ip) as DarknetServer;
 		if (!srv.isOnline) {
-			ns.tprint("server offline ", info.server.hostname);
+			ns.tprint(
+				"server offline ",
+				info.server.hostname,
+				"(",
+				info.server.ip,
+				")",
+			);
 			ns.rm(file);
 			continue;
 		}
