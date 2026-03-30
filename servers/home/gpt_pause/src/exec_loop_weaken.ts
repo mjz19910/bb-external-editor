@@ -1,7 +1,7 @@
 import { NS, Server } from "../../@ns";
 import { isNormalServer } from "../lib/helper";
 import { exec } from "./exec2";
-import { HostInfoDB } from "../../src/HostInfoDB";
+import { HostInfoDB } from "./HostInfoDB";
 const RUN_PATH = "api/loop/weaken.ts";
 export async function main(ns: NS) {
 	const runner = "lit";

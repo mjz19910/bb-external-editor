@@ -1,6 +1,6 @@
 import { NS, AutocompleteData, ScriptArg } from "../../@ns";
 import { isNormalServer } from "../lib/helper";
-import { HostInfoDB } from "../../src/HostInfoDB";
+import { HostInfoDB } from "./HostInfoDB";
 
 export async function main(ns: NS) {
 	const target = ns.args[0];

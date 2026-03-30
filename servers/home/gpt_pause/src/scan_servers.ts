@@ -1,5 +1,5 @@
 import { NS, Server } from "../../@ns";
-import { HostInfoDB } from "../../src/HostInfoDB";
+import { HostInfoDB } from "./HostInfoDB";
 import { read_string_arg } from "../../src/arg_parse";
 
 export async function main(ns: NS) {

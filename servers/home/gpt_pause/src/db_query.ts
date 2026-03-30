@@ -1,5 +1,5 @@
 import { NS } from "../../@ns";
-import { HostInfoDB } from "../../src/HostInfoDB";
+import { HostInfoDB } from "./HostInfoDB";
 
 export async function main(ns: NS) {
 	const find_key = ns.args[0];
