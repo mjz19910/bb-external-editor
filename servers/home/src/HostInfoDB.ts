@@ -1,7 +1,6 @@
-/** HostInfoDB.ts */
-import { Server } from "../NetscriptDefinitions.d";
-import { DarknetServer } from "../type/helper";
+import { DarknetServer } from "../darknet/misc";
 
+/** HostInfoDB.ts */
 export type HostInfo<T> = {
 	children: string[];
 	parent: string | null;

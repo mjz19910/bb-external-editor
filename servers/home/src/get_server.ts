@@ -1,5 +1,4 @@
-import { Server } from "../NetscriptDefinitions.d";
-import { HostInfo, HostInfoDB } from "./HostInfoDB";
+import { HostInfoDB } from "./HostInfoDB";
 function set_key<U, K extends keyof U>(base: U, updated: U, k: K): U[K] {
 	return base[k] = updated[k];
 }
@@ -38,7 +37,7 @@ export async function main(ns: NS) {
 					" value ",
 					new_info[kt],
 					" old ",
-					info.server_info[kt],
+					info.server[kt],
 				);
 				set_key(info.server, new_info, kt);
 				db.notify_changed();

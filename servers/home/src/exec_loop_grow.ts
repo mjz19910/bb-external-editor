@@ -1,4 +1,4 @@
-import { Server } from "../NetscriptDefinitions.d";
+import { isNormalServer } from "../lib/helper";
 import { exec } from "./exec2";
 import { HostInfoDB } from "./HostInfoDB";
 const RUN_PATH = "api/loop/grow.ts";
@@ -16,6 +16,10 @@ export async function main(ns: NS) {
 	const srv = targetInfo.server;
 	if (runSrv == void 0) return ns.tprint("missing runSrv");
 	if (srv == void 0) return ns.tprint("missing srv");
+	if (!isNormalServer(srv)) {
+		ns.tprint("!isNormalServer()");
+		return;
+	}
 	if (srv.moneyMax == void 0) return ns.tprint("missing srv.moneyMax");
 	if (srv.moneyAvailable === void 0) {
 		return ns.tprint("missing srv.moneyAvailable");

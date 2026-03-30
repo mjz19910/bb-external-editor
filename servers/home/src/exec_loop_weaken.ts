@@ -1,4 +1,4 @@
-import { Server } from "../NetscriptDefinitions.d";
+import { isNormalServer } from "../lib/helper";
 import { exec } from "./exec2";
 import { HostInfoDB } from "./HostInfoDB";
 const RUN_PATH = "api/loop/weaken.ts";
@@ -14,6 +14,10 @@ export async function main(ns: NS) {
 	const srv = db.find(target).server;
 	if (runSrv == void 0) return ns.tprint("missing runSrv");
 	if (srv == void 0) return ns.tprint("missing srv");
+	if (!isNormalServer(srv)) {
+		ns.tprint("!isNormalServer()");
+		return;
+	}
 	if (srv.hackDifficulty == srv.minDifficulty) {
 		return ns.tprint("unable to weaken target");
 	}

@@ -1,5 +1,4 @@
 import { HostInfoDB } from "../src/HostInfoDB";
-import { Server } from "../NetscriptDefinitions.d";
 import { read_string_arg } from "../src/arg_parse";
 
 export async function main(ns: NS) {

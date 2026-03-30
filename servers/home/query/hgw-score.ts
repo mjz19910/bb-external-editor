@@ -3,7 +3,6 @@
  */
 
 import { isNormalServer } from "../lib/helper";
-import { Player, Server } from "../NetscriptDefinitions.d";
 
 type ScoreRow = {
 	target: string;

@@ -1,4 +1,3 @@
-import { NetscriptPort } from "../NetscriptDefinitions.d";
 import { ScriptRequest } from "./port";
 
 class ScriptPort<T> {

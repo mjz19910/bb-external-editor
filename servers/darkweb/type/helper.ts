@@ -1,5 +1,4 @@
 import { DarknetServerInfo } from "../darknet/types";
-import { DarknetResult } from "../NetscriptDefinitions.d";
 
 const EmptyOptStr = "None";
 const ValueOptStr = "Some";

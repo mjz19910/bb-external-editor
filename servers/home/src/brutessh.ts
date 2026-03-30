@@ -1,3 +1,4 @@
+import { isNormalServer } from "../lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
 
 export async function main(ns: NS) {
@@ -17,6 +18,10 @@ export async function main(ns: NS) {
 		return;
 	}
 	const { server } = info;
+	if (!isNormalServer(server)) {
+		ns.tprint("!isNormalServer()");
+		return;
+	}
 	if (server.sshPortOpen) {
 		ns.tprint(target + " brutessh ignored");
 		return;

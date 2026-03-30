@@ -1,4 +1,4 @@
-import { Server } from "../NetscriptDefinitions.d";
+import { isNormalServer } from "../lib/helper";
 import { exec } from "./exec2";
 import { HostInfoDB } from "./HostInfoDB";
 
@@ -18,6 +18,10 @@ export async function main(ns: NS) {
 	const targetSrv = targetInfo.server;
 	if (runnerSrv == void 0) return ns.tprint("missing runnerSrv");
 	if (targetSrv == void 0) return ns.tprint("missing targetSrv");
+	if (!isNormalServer(targetSrv)) {
+		ns.tprint("!isNormalServer()");
+		return;
+	}
 	if (targetSrv.moneyAvailable === void 0) {
 		return ns.tprint("missing moneyAvailable on targetSrv");
 	}
