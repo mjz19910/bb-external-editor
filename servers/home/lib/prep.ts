@@ -14,14 +14,14 @@ export function calcPrepPlan(ns: NS, target: string): PrepPlan {
 	const money = Math.max(1, ns.getServerMoneyAvailable(target));
 	const maxMoney = Math.max(1, ns.getServerMaxMoney(target));
 
-	const secDiff = Math.max(0, sec - minSec);
+	const secDiff = Math.max(0, sec - minSec - 0.3);
 	const weakenPerThread = ns.weakenAnalyze(1);
 	const needWeaken = Math.ceil(secDiff / weakenPerThread);
 
 	let needGrow = 0;
 	let needGrowWeaken = 0;
 
-	if (money < maxMoney * 0.999) {
+	if (money < maxMoney * 0.35) {
 		const growthFactor = maxMoney / money;
 		needGrow = Math.ceil(ns.growthAnalyze(target, growthFactor));
 		const growSec = ns.growthAnalyzeSecurity(needGrow);

@@ -90,12 +90,12 @@ export async function main(ns: NS) {
 			log(
 				ns,
 				`[PREP] target=${target} ` +
-					`needW=${prep.needWeaken} growW=${prep.needGrowWeaken} needG=${prep.needGrow} ` +
-					`activeW=${jobs.weaken} activeG=${jobs.grow} ` +
-					`launchW=${launchedW} launchG=${launchedG}`,
+				`needW=${prep.needWeaken} growW=${prep.needGrowWeaken} needG=${prep.needGrow} ` +
+				`activeW=${jobs.weaken} activeG=${jobs.grow} ` +
+				`launchW=${launchedW} launchG=${launchedG}`,
 			);
 
-			await ns.sleep(Math.max(0, ns.getWeakenTime(target) * 0.1));
+			await ns.sleep(Math.max(0, ns.getWeakenTime(target) + 50));
 			continue;
 		}
 
@@ -106,15 +106,21 @@ export async function main(ns: NS) {
 
 		const hackThreads = calcHackThreadsForPercent(ns, target, hackPct);
 		const hackSec = ns.hackAnalyzeSecurity(hackThreads, target);
-		const hackWeaken = Math.ceil(hackSec / ns.weakenAnalyze(1));
+		const hackWeaken = Math.ceil(hackSec / ns.weakenAnalyze(1) * 1.05);
 
 		const growFactor = 1 / Math.max(0.001, 1 - hackPct);
-		const growThreads = Math.ceil(ns.growthAnalyze(target, growFactor));
+		let growThreads = ns.growthAnalyze(target, growFactor);
+		growThreads *= 1.15;
+		growThreads = Math.ceil(growThreads);
 		const growSec = ns.growthAnalyzeSecurity(growThreads);
-		const growWeaken = Math.ceil(growSec / ns.weakenAnalyze(1));
+		let growWeaken = growSec / ns.weakenAnalyze(1);
+		growWeaken *= 1.05;
+		growWeaken = Math.ceil(growWeaken);
 
 		if (sec > minSec + 1.5) {
-			const wantedW = Math.ceil((hackWeaken + growWeaken + 20) * 1.25);
+			let wantedW = hackWeaken + growWeaken + 20;
+			wantedW *= 1.05;
+			wantedW = Math.ceil(wantedW);
 			const missingW = missing(wantedW, jobs.weaken);
 
 			const alloc = allocateThreads(ns, fleet, WEAKEN, missingW);
@@ -123,16 +129,16 @@ export async function main(ns: NS) {
 			log(
 				ns,
 				`[STABILIZE] target=${target} sec=${sec.toFixed(2)} ` +
-					`wantedW=${wantedW} activeW=${jobs.weaken} launchW=${launched}`,
+				`wantedW=${wantedW} activeW=${jobs.weaken} launchW=${launched}`,
 			);
 
-			await ns.sleep(Math.max(0, ns.getWeakenTime(target) * 0.1));
+			await ns.sleep(Math.max(0, ns.getWeakenTime(target) + 50));
 			continue;
 		}
 
 		if (money < maxMoney * 0.9) {
 			const missingG = missing(growThreads, jobs.grow);
-			const missingW = missing(Math.ceil(growWeaken * 1.15), jobs.weaken);
+			const missingW = missing(growWeaken, jobs.weaken);
 
 			const growAlloc = allocateThreads(ns, fleet, GROW, missingG);
 			const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
@@ -148,20 +154,19 @@ export async function main(ns: NS) {
 
 			log(
 				ns,
-				`[RECOVER] target=${target} money=${ns.format.number(money)}/${
-					ns.format.number(maxMoney)
+				`[RECOVER] target=${target} money=${ns.format.number(money)}/${ns.format.number(maxMoney)
 				} ` +
-					`activeG=${jobs.grow} activeW=${jobs.weaken} ` +
-					`launchG=${launchedG} launchW=${launchedW}`,
+				`activeG=${jobs.grow} activeW=${jobs.weaken} ` +
+				`launchG=${launchedG} launchW=${launchedW}`,
 			);
 
-			await ns.sleep(Math.max(0, ns.getGrowTime(target) * 0.1));
+			await ns.sleep(Math.max(0, ns.getGrowTime(target) + 50));
 			continue;
 		}
 
 		const wantedHack = hackThreads;
 		const wantedGrow = growThreads;
-		const wantedWeaken = Math.ceil((hackWeaken + growWeaken + 1) * 1.25);
+		const wantedWeaken = hackWeaken + growWeaken;
 
 		const missingHack = missing(wantedHack, jobs.hack);
 		const missingGrow = missing(wantedGrow, jobs.grow);
@@ -186,16 +191,15 @@ export async function main(ns: NS) {
 		log(
 			ns,
 			`[CYCLE] target=${target} ` +
-				`money=${ns.format.number(money)}/${
-					ns.format.number(maxMoney)
-				} ` +
-				`sec=${sec.toFixed(2)}/${minSec.toFixed(2)} ` +
-				`wanted(h/g/w)=${wantedHack}/${wantedGrow}/${wantedWeaken} ` +
-				`active(h/g/w)=${jobs.hack}/${jobs.grow}/${jobs.weaken} ` +
-				`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
+			`money=${ns.format.number(money)}/${ns.format.number(maxMoney)
+			} ` +
+			`sec=${sec.toFixed(2)}/${minSec.toFixed(2)} ` +
+			`wanted(h/g/w)=${wantedHack}/${wantedGrow}/${wantedWeaken} ` +
+			`active(h/g/w)=${jobs.hack}/${jobs.grow}/${jobs.weaken} ` +
+			`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
 		);
 
-		await ns.sleep(Math.max(0, ns.getHackTime(target) * 0.15));
+		await ns.sleep(Math.max(0, ns.getHackTime(target) * 1));
 	}
 }
 
