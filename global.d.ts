@@ -7,7 +7,7 @@ import {
   Player as _Player,
   ScriptArg as _ScriptArg,
   Server as _Server,
-} from "./servers/home/NetscriptDefinitions.d";
+} from "./NetscriptDefinitions";
 
 declare global {
   type AutocompleteData = _AutocompleteData;
