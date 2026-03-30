@@ -124,8 +124,8 @@ function handle_object_message(
 		}
 		case "darknet.probe": {
 			for (const info of msg.infos) {
-				if (info.key === void 0) {
-					console.log("unauth server " + info.server!.hostname);
+				if (info.password === null) {
+					console.log("unauth server " + info.server.hostname);
 				}
 			}
 			return true;
