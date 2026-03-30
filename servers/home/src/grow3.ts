@@ -1,5 +1,5 @@
 import { AutocompleteData, ScriptArg, Server } from "../NetscriptDefinitions.d";
-import { HostInfoDB } from "../type/HostInfoDB";
+import { HostInfoDB } from "./HostInfoDB";
 
 export async function main(ns: NS) {
 	const f = ns.flags([["runner", "home"], ["threads", 1]]) as {
