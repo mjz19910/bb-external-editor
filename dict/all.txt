@@ -95,6 +95,7 @@ outbase
 Prereq
 primarydark
 primarylight
+Procs
 Regen
 relaysmtp
 rootable
