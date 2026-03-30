@@ -1,3 +1,5 @@
+import { NS } from "./@ns";
+
 export async function main(ns: NS) {
 	const hackScript = "src/hack2.ts";
 	const growScript = "src/grow2.ts";

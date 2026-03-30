@@ -27,10 +27,10 @@ export async function main(ns: NS) {
 	tlog(ns, `[FARM] prep target first for best results`);
 
 	const map = buildNetworkMap(ns);
-	const runners = runnableHosts(ns, map.hosts);
+	const runners = runnableHosts(ns, map, map.hosts);
 
 	for (const r of runners) {
-		await ns.scp([HACK, GROW, WEAKEN], r, "home");
+		ns.scp([HACK, GROW, WEAKEN], r, "home");
 	}
 
 	while (true) {
@@ -52,7 +52,7 @@ export async function main(ns: NS) {
 		let launched = 0;
 
 		for (const host of runners) {
-			const threads = canRunThreads(ns, host, script);
+			const threads = canRunThreads(ns, map, host, script);
 			if (threads < 1) continue;
 
 			const pid = ns.exec(script, host, threads, target);

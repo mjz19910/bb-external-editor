@@ -83,7 +83,6 @@ export type OnlineCheckMsg = {
 };
 export type QuerySecurityMsg = {
 	type: "query_security";
-	ips: string[];
 	infos: DarknetServerInfo[];
 };
 export type HostnameReplyMsg = {

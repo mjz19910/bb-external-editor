@@ -128,20 +128,14 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 		}
 		case "darknet.probe": {
 			if (msg.alt === "ip") {
-				for (const ip of msg.results) {
-					ns.tprint(`found ip ${ip} connected to ${msg.for}`);
+				for (const ip of msg.infos) {
+					ns.tprint(`found ip ${ip} connected to ${msg.by}`);
 				}
 				if (!s.is_api_port_busy) {
 					s.is_api_port_busy = true;
 					s.port3.write<QuerySecurityMsg>({
 						type: "query_security",
-						ips: msg.results,
-						infos: msg.results.map((v) => {
-							return {
-								ip: v,
-								connectedToParent: false,
-							};
-						}),
+						infos: msg.infos,
 					});
 					ns.run("darknet/query_security.ts", 1);
 				}

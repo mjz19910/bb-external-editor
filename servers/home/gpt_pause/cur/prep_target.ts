@@ -1,6 +1,6 @@
-import { canRunThreads, runnableHosts } from "../lib/network_map";
-import { buildNetworkMap } from "../lib/network_map";
-import { log, tlog } from "../lib/log";
+import { canRunThreads, runnableHosts } from "../src/lib/network_map";
+import { buildNetworkMap } from "../src/lib/network_map";
+import { log, tlog } from "../src/lib/log";
 import { NS } from "./@ns";
 
 const WEAKEN = "weaken_worker.ts";
@@ -14,10 +14,10 @@ export async function main(ns: NS) {
 	}
 
 	const map = buildNetworkMap(ns);
-	const runners = runnableHosts(ns, map.hosts);
+	const runners = runnableHosts(ns, map, map.hosts);
 
 	for (const r of runners) {
-		await ns.scp([WEAKEN, GROW], r, "home");
+		ns.scp([WEAKEN, GROW], r, "home");
 	}
 
 	while (true) {
@@ -38,7 +38,7 @@ export async function main(ns: NS) {
 		let launched = 0;
 
 		for (const host of runners) {
-			const threads = canRunThreads(ns, host, script);
+			const threads = canRunThreads(ns, map, host, script);
 			if (threads < 1) continue;
 
 			const pid = ns.exec(script, host, threads, target);

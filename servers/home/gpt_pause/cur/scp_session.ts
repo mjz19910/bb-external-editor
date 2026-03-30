@@ -1,3 +1,5 @@
+import { NS } from "./@ns";
+
 export async function main(ns: NS) {
 	const ip_path = `tmp/ip/${ns.args[0]}.txt`;
 	ns.scp(ip_path, "darkweb");
