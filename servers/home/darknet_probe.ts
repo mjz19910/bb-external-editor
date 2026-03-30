@@ -325,7 +325,7 @@ class AuthManager {
 						+m2,
 					);
 					if (num_match > 0) {
-						sym_match_chars.push(char);
+						sym_match_chars.push(char.repeat(num_match));
 					}
 				}
 			}
