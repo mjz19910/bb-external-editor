@@ -1,5 +1,6 @@
 import { NS, ProcessInfo } from "../@ns";
 import { getFleet } from "./fleet";
+import { NetworkMap } from "./network_map";
 
 export type TargetJobCounts = {
 	target: string;
@@ -41,8 +42,8 @@ function firstArgString(p: ProcessInfo): string {
 	return String(p.args?.[0] ?? "");
 }
 
-export function getJobSnapshot(ns: NS): JobSnapshot {
-	const fleet = getFleet(ns);
+export function getJobSnapshot(ns: NS, map: NetworkMap): JobSnapshot {
+	const fleet = getFleet(ns, map);
 	const byTarget: Record<string, TargetJobCounts> = {};
 
 	let totalHack = 0;
@@ -86,8 +87,12 @@ export function getJobSnapshot(ns: NS): JobSnapshot {
 	};
 }
 
-export function getTargetJobCounts(ns: NS, target: string): TargetJobCounts {
-	const snap = getJobSnapshot(ns);
+export function getTargetJobCounts(
+	ns: NS,
+	map: NetworkMap,
+	target: string,
+): TargetJobCounts {
+	const snap = getJobSnapshot(ns, map);
 	return snap.byTarget[target] ?? {
 		target,
 		hack: 0,
@@ -99,10 +104,11 @@ export function getTargetJobCounts(ns: NS, target: string): TargetJobCounts {
 
 export function countTargetScriptThreads(
 	ns: NS,
+	map: NetworkMap,
 	target: string,
 	script: string,
 ): number {
-	const fleet = getFleet(ns);
+	const fleet = getFleet(ns, map);
 	let total = 0;
 
 	for (const host of fleet.hosts) {

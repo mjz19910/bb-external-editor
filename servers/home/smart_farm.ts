@@ -40,7 +40,7 @@ export async function main(ns: NS) {
 		const fleet = getFleet(ns, map);
 		await deployScriptSet(ns, FILES, fleet.hosts.map((h) => h.host));
 
-		const jobs = getTargetJobCounts(ns, target);
+		const jobs = getTargetJobCounts(ns, map, target);
 		const prep = calcPrepPlan(ns, target);
 
 		if (!prep.isPrepped) {
