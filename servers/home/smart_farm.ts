@@ -59,6 +59,7 @@ export function autocomplete(data: AutocompleteData, args: ScriptArg[]) {
 	if (srv_set.has(args[0])) return [];
 	return servers;
 }
+
 async function run_farm_step(ns: NS, target: string, hackPct: number) {
 	const fleet = getFleet(ns);
 
