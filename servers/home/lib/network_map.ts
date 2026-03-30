@@ -10,7 +10,22 @@ export type NetworkMap = {
 	nodes: Record<string, NetworkNode>;
 };
 
+const DB_PATH = "db/network_map.json";
+let network_map: NetworkMap | null = null;
+
 export function buildNetworkMap(ns: NS, start = "home"): NetworkMap {
+	if (network_map) {
+		return network_map;
+	}
+	let save_net_map = false;
+	if (ns.fileExists("db/network_map.json")) {
+		const json_txt = ns.read("db/network_map.json");
+		const net_map: NetworkMap = JSON.parse(json_txt);
+		network_map = net_map;
+		return network_map;
+	} else {
+		save_net_map = true;
+	}
 	const nodes: Record<string, NetworkNode> = {};
 	const queue: string[] = [start];
 	const seen = new Set<string>([start]);
@@ -42,7 +57,12 @@ export function buildNetworkMap(ns: NS, start = "home"): NetworkMap {
 	}
 
 	const hosts = Object.keys(nodes).sort();
-	return { hosts, nodes };
+	network_map = { hosts, nodes };
+	if (save_net_map) {
+		const json_txt = JSON.stringify(network_map, void 0, "\t");
+		ns.write(DB_PATH, json_txt, "w");
+	}
+	return network_map;
 }
 
 export function pathTo(map: NetworkMap, target: string): string[] {
