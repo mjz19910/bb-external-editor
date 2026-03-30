@@ -111,9 +111,9 @@ export async function main(ns: NS) {
 		growThreads *= grow_mul;
 		ns.tprint(
 			"grow threads ",
-			Math.floor(growThreads * 20) / 20,
+			Math.floor(growThreads * 50) / 50,
 			" mul ",
-			Math.floor(grow_mul * 20) / 20,
+			Math.floor(grow_mul * 50) / 50,
 		);
 		growThreads = Math.ceil(growThreads) + 1;
 		const growSec = ns.growthAnalyzeSecurity(growThreads);
