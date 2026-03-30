@@ -95,7 +95,7 @@ export async function main(ns: NS) {
 			const secReady = sec <= minSec + 0.001;
 
 			if (!secReady) {
-				const launched = launchAcrossNetwork(
+				const launched = await launchAcrossNetwork(
 					ns,
 					"tmp/prep_weak.ts",
 					target,
@@ -112,10 +112,10 @@ export async function main(ns: NS) {
 						}`,
 					);
 					// await ns.sleep(waitTime)
-					await ns.sleep(200);
+					await ns.sleep(5000);
 				}
 			} else if (!moneyReady) {
-				const launched = launchAcrossNetwork(
+				const launched = await launchAcrossNetwork(
 					ns,
 					"tmp/prep_grow.ts",
 					target,
@@ -132,7 +132,7 @@ export async function main(ns: NS) {
 						}`,
 					);
 					// await ns.sleep(waitTime)
-					await ns.sleep(200);
+					await ns.sleep(5000);
 				}
 			} else {
 				log(
@@ -143,12 +143,12 @@ export async function main(ns: NS) {
 				done.add(target);
 			}
 		}
-		await ns.sleep(200);
+		await ns.sleep(5000);
 	}
 	log("All servers prepped.");
 }
 
-function launchAcrossNetwork(
+async function launchAcrossNetwork(
 	ns: NS,
 	script: string,
 	target: string,
@@ -180,7 +180,7 @@ function launchAcrossNetwork(
 		const pid = ns.exec(script, host, threads, target, threads);
 		if (pid !== 0) {
 			sum += threads;
-			if (sum > 2000) break;
+			await ns.sleep(50);
 		}
 	}
 	return sum;
