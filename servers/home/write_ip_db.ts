@@ -35,8 +35,11 @@ export function write_info_to_fs_db(
 			delete info.server[k];
 		}
 	}
-	if(info.server.isOnline === false) {
+	if (info.server.isOnline === false) {
 		info.authDetails = null;
+		ns.rm(ip_save_path);
+		ns.rm(host_save_path);
+		return;
 	}
 	const new_content = JSON.stringify(info, void 0, "\t");
 	if (new_content !== cur_data) {
