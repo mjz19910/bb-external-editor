@@ -149,8 +149,10 @@ function handle_object_message(
 					}
 					s.port.write({ type: "timeout_check" });
 				}, 30_000);
-				s.port2.write<string>("online_check " + ips.join(","));
-				ns.run("query_server.ts", 1);
+				if (ips.length > 0) {
+					s.port2.write<string>("online_check " + ips.join(","));
+					ns.run("query_server.ts", 1);
+				}
 			}
 			return true;
 		}
