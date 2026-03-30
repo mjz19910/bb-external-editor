@@ -134,6 +134,11 @@ function handle_object_message(
 				ns.run("darknet/query_security.ts", 1);
 			} else {
 				for (const info of msg.infos) {
+					ns.write(
+						`tmp/ip/${info.server.ip}.txt`,
+						JSON.stringify(info, void 0, "\t"),
+						"w",
+					);
 					db.server_map.set(info.server.hostname, info);
 				}
 				const infos_timeout = msg.infos;
@@ -169,6 +174,11 @@ function handle_object_message(
 				const host = srv.hostname;
 				if (query_map[host]) {
 					info.server = query_map[host];
+					ns.write(
+						`tmp/ip/${info.server.ip}.txt`,
+						JSON.stringify(info, void 0, "\t"),
+						"w",
+					);
 				}
 				if (
 					query_map[srv.hostname] && query_map[srv.hostname].isOnline
