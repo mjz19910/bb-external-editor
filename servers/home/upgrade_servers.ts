@@ -44,5 +44,5 @@ export async function main(ns: NS) {
 		return;
 	}
 
-	ns.tprint(`[UPGRADED] ${succuss} now ${ns.format.ram(ram)}`);
+	ns.tprint(`[UPGRADED] ${worst.host} now ${ns.format.ram(ram)}`);
 }
