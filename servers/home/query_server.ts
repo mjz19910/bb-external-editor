@@ -33,35 +33,12 @@ export async function main(ns: NS) {
 			break;
 		}
 	}
-	const db_host_files = ns.ls("home", "tmp/host/");
-	for (const file of db_host_files) {
-		if (file.includes(":")) {
-			ns.tprint("remove file invalid in ntfs ", file);
-			ns.rm(file);
-		}
-	}
 	const ip_db_files = ns.ls("home", "tmp/ip/");
 	for (const file of ip_db_files) {
 		const file_data = ns.read(file);
 		const info: DarknetServerInfo = JSON.parse(file_data);
-		const oSrv = info.server;
-		if (oSrv === void 0) {
-			ns.tprint("missing info.server field ", file);
-			ns.rm(file);
-			continue;
-		}
-		const host = oSrv.hostname;
-		if (!host) {
-			ns.tprint("missing hostname field ", oSrv);
-			continue;
-		}
-		const srv = ns.getServer(info.server.ip) as DarknetServer;
-		if (!srv.isOnline) {
-			oSrv.isOnline = false;
-			write_info_to_fs_db(ns, info);
-			continue;
-		}
+		const srv = ns.getServer(info.ip) as DarknetServer;
 		info.server = srv;
-		write_info_to_fs_db(ns, info);
+		write_info_to_fs_db(ns, info, file_data);
 	}
 }

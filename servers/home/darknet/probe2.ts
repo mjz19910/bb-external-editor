@@ -520,6 +520,8 @@ function post_dnet_probe(
 		if (!isDarknetServer2(srv)) continue;
 		const ad = ns.dnet.getServerAuthDetails(trg);
 		const info: DarknetServerInfo = {
+			ip: srv.ip,
+			host: trg,
 			parent: runner,
 			server: srv,
 			authDetails: ad,
