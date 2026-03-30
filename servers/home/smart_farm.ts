@@ -11,10 +11,10 @@ import { getTargetJobCounts } from "./lib/jobs";
 import { log, tlog } from "./lib/log";
 import { NetworkMap } from "./lib/network_map";
 
-const HACK = "hack_worker.js";
-const GROW = "grow_worker.js";
-const WEAKEN = "weaken_worker.js";
-const FILES = [HACK, GROW, WEAKEN];
+const HACK = "hack_worker.ts";
+const GROW = "grow_worker.ts";
+const WEAKEN = "weaken_worker.ts";
+const FILES = [HACK, GROW, WEAKEN, "@ns.ts"];
 
 function missing(wanted: number, active: number): number {
 	return Math.max(0, wanted - active);
