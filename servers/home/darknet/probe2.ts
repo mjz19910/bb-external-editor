@@ -581,11 +581,6 @@ export async function main(ns: NS) {
 	const am = new AuthManager(ns);
 	for (;;) {
 		post_dnet_probe(ns, infos, infos_idx_map, runner);
-		ns.writePort(port, {
-			type: "darknet.probe",
-			by: runner,
-			infos,
-		} as DarknetProbeMessage);
 		for (let i = 0; i < infos.length; i++) {
 			let info = infos[i];
 			if (!info.connectedToParent) continue;
@@ -644,6 +639,17 @@ export async function main(ns: NS) {
 				password: info.password,
 			} as DarknetFoundPassProbeMessage);
 		}
+		const online_infos = [];
+		for (const info of infos) {
+			if (info.server.isOnline) {
+				online_infos.push(info);
+			}
+		}
+		ns.writePort(port, {
+			type: "darknet.probe",
+			by: runner,
+			infos: online_infos,
+		} as DarknetProbeMessage);
 		if (infos.length === 0) {
 			ns.tprint("no results");
 			break;
