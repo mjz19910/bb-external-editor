@@ -22,23 +22,27 @@ export async function main(ns: NS) {
 
 	if (ram <= worst.ram) {
 		ns.tprint(
-			`No worthwhile upgrade. Worst=${worst.host} ${worst.ram}GB, affordable=${ram}GB`,
+			`No worthwhile upgrade. Worst=${worst.host} ${
+				ns.format.ram(worst.ram)
+			}, affordable=${ns.format.ram(ram)}`,
 		);
 		return;
 	}
 
 	const cost = ns.cloud.getServerUpgradeCost(worst.host, ram);
 	ns.tprint(
-		`Upgrading ${worst.host} from ${worst.ram}GB -> ${ram}GB for ${
-			ns.format.number(cost)
-		}`,
+		`Upgrading ${worst.host} from ${ns.format.ram(worst.ram)} -> ${
+			ns.format.ram(ram)
+		} for ${ns.format.number(cost)}`,
 	);
 
 	const succuss = ns.cloud.upgradeServer(worst.host, ram);
 	if (!succuss) {
-		ns.tprint(`[FAIL] Could not upgrade ${worst.host} to ${ram}GB`);
+		ns.tprint(
+			`[FAIL] Could not upgrade ${worst.host} to ${ns.format.ram(ram)}`,
+		);
 		return;
 	}
 
-	ns.tprint(`[UPGRADED] ${succuss} now ${ram}GB`);
+	ns.tprint(`[UPGRADED] ${succuss} now ${ns.format.ram(ram)}`);
 }
