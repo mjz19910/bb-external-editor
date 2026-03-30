@@ -562,6 +562,7 @@ const SELF = "darknet_probe.ts";
 
 export async function main(ns: NS) {
 	ns.disableLog("dnet.probe");
+	ns.disableLog("dnet.authenticate");
 	const infos: DarknetServerInfo[] = [];
 	const infos_idx_map = new Map<string, number>();
 
