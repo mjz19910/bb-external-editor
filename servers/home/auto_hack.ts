@@ -1,16 +1,14 @@
 import { buildNetworkMap } from "./lib/network_map";
+import { GROW, HACK, WEAKEN } from "./lib/paths";
 
 export async function main(ns: NS) {
 	ns.disableLog("ALL");
 	ns.clearLog();
 
 	const host = ns.getHostname();
-	const hackScript = "gpt_pause/src/_/hack.ts";
-	const growScript = "gpt_pause/src/_/grow.ts";
-	const weakenScript = "gpt_pause/src/_/weak.ts";
-	const hackRam = ns.getScriptRam(hackScript);
-	const growRam = ns.getScriptRam(growScript);
-	const weakenRam = ns.getScriptRam(weakenScript);
+	const hackRam = ns.getScriptRam(HACK);
+	const growRam = ns.getScriptRam(GROW);
+	const weakenRam = ns.getScriptRam(WEAKEN);
 	let time_offset = 1.5;
 	let did_launch = false;
 	let cur_pid = -1;
@@ -39,20 +37,20 @@ export async function main(ns: NS) {
 			freeRam -= 32;
 		}
 
-		let script = weakenScript;
+		let script = WEAKEN;
 		let threads = 1;
 		let wait_ms = 500;
 
 		if (sec > minSec + 5) {
-			script = weakenScript;
+			script = WEAKEN;
 			threads = Math.floor(freeRam / weakenRam);
 			wait_ms = ns.getWeakenTime(target) + time_offset;
 		} else if (money < maxMoney * 0.75) {
-			script = growScript;
+			script = GROW;
 			threads = Math.floor(freeRam / growRam);
 			wait_ms = ns.getGrowTime(target) + time_offset;
 		} else {
-			script = hackScript;
+			script = HACK;
 			threads = Math.floor(freeRam / hackRam);
 			wait_ms = ns.getHackTime(target) + time_offset;
 		}

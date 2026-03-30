@@ -120,6 +120,10 @@ export function deployScriptSet(
 ) {
 	for (const host of hosts) {
 		if (host === "home") continue;
+		const scripts = ns.ls(host, ".ts");
+		for (const file of scripts) {
+			ns.rm(file, host);
+		}
 		ns.scp(files, host, "home");
 	}
 }

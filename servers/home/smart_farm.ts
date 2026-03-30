@@ -8,13 +8,12 @@ import { getTargetJobCounts } from "./lib/jobs";
 import { log, tlog } from "./lib/log";
 import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep";
 import { chooseBestTarget } from "./choose_best_target";
-const HACK = "gpt_pause/src/hack_worker.ts";
-const GROW = "gpt_pause/src/grow_worker.ts";
-const WEAKEN = "gpt_pause/src/weaken_worker.ts";
+import { NetworkMap } from "./lib/network_map";
+import { GROW, HACK, WEAKEN } from "./lib/paths";
 const FILES = [
 	HACK,
 	GROW,
-	WEAKEN
+	WEAKEN,
 ];
 
 function missing(wanted: number, active: number): number {
@@ -42,8 +41,8 @@ export async function main(ns: NS) {
 
 	ns.ui.setTailTitle(`smart_farm:${target}`);
 	tlog(ns, `[SMART_FARM] target=${target} hackPct=${hackPct}`);
-	const fleet = getFleet(ns);
-	deployScriptSet(ns, FILES, fleet.hosts.map((h) => h.host));
+	const map = NetworkMap.build(ns);
+	deployScriptSet(ns, FILES, map.hosts);
 
 	while (true) {
 		ns.clearLog();
@@ -86,9 +85,9 @@ export async function main(ns: NS) {
 			log(
 				ns,
 				`[PREP] target=${target} ` +
-				`needW=${prep.needWeaken} growW=${prep.needGrowWeaken} needG=${prep.needGrow} ` +
-				`activeW=${jobs.weaken} activeG=${jobs.grow} ` +
-				`launchW=${launchedW} launchG=${launchedG}`,
+					`needW=${prep.needWeaken} growW=${prep.needGrowWeaken} needG=${prep.needGrow} ` +
+					`activeW=${jobs.weaken} activeG=${jobs.grow} ` +
+					`launchW=${launchedW} launchG=${launchedG}`,
 			);
 
 			await ns.sleep(Math.max(0, ns.getWeakenTime(target) + 50));
@@ -125,7 +124,7 @@ export async function main(ns: NS) {
 			log(
 				ns,
 				`[STABILIZE] target=${target} sec=${sec.toFixed(2)} ` +
-				`wantedW=${wantedW} activeW=${jobs.weaken} launchW=${launched}`,
+					`wantedW=${wantedW} activeW=${jobs.weaken} launchW=${launched}`,
 			);
 
 			await ns.sleep(Math.max(0, ns.getWeakenTime(target) + 50));
@@ -150,10 +149,11 @@ export async function main(ns: NS) {
 
 			log(
 				ns,
-				`[RECOVER] target=${target} money=${ns.format.number(money)}/${ns.format.number(maxMoney)
+				`[RECOVER] target=${target} money=${ns.format.number(money)}/${
+					ns.format.number(maxMoney)
 				} ` +
-				`activeG=${jobs.grow} activeW=${jobs.weaken} ` +
-				`launchG=${launchedG} launchW=${launchedW}`,
+					`activeG=${jobs.grow} activeW=${jobs.weaken} ` +
+					`launchG=${launchedG} launchW=${launchedW}`,
 			);
 
 			await ns.sleep(Math.max(0, ns.getGrowTime(target) + 50));
@@ -187,12 +187,13 @@ export async function main(ns: NS) {
 		log(
 			ns,
 			`[CYCLE] target=${target} ` +
-			`money=${ns.format.number(money)}/${ns.format.number(maxMoney)
-			} ` +
-			`sec=${sec.toFixed(2)}/${minSec.toFixed(2)} ` +
-			`wanted(h/g/w)=${wantedHack}/${wantedGrow}/${wantedWeaken} ` +
-			`active(h/g/w)=${jobs.hack}/${jobs.grow}/${jobs.weaken} ` +
-			`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
+				`money=${ns.format.number(money)}/${
+					ns.format.number(maxMoney)
+				} ` +
+				`sec=${sec.toFixed(2)}/${minSec.toFixed(2)} ` +
+				`wanted(h/g/w)=${wantedHack}/${wantedGrow}/${wantedWeaken} ` +
+				`active(h/g/w)=${jobs.hack}/${jobs.grow}/${jobs.weaken} ` +
+				`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
 		);
 
 		await ns.sleep(Math.max(0, ns.getHackTime(target) * 1));

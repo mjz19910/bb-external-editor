@@ -5,10 +5,7 @@ import {
 } from "./lib/network_map";
 import { chooseBestTarget } from "./choose_best_target";
 import { log, tlog } from "./lib/log";
-
-const HACK = "gpt_pause/src/hack_worker.ts";
-const GROW = "gpt_pause/src/grow_worker.ts";
-const WEAKEN = "gpt_pause/src/weaken_worker.ts";
+import { GROW, HACK, WEAKEN } from "./lib/paths";
 
 export async function main(ns: NS) {
 	let target = String(ns.args[0] ?? "");
