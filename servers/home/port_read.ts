@@ -134,11 +134,12 @@ function handle_object_message(
 				s.port2.write<string>("query_ips " + msg.results.join(","));
 				ns.run("darknet/query_security.ts", 1);
 			} else {
+				const ips: string[] = [];
 				for (const info of msg.infos) {
+					ips.push(info.server.ip);
 					if (!info.connectedToParent) {
 						continue;
 					}
-					write_info_to_fs_db(ns, info);
 					db.server_map.set(info.server.hostname, info);
 				}
 				const infos_timeout = msg.infos;
@@ -148,6 +149,8 @@ function handle_object_message(
 					}
 					s.port.write({ type: "timeout_check" });
 				}, 30_000);
+				s.port2.write<string>("online_check " + ips.join(","));
+				ns.run("query_server.ts", 1);
 			}
 			return true;
 		}
@@ -174,7 +177,6 @@ function handle_object_message(
 				const host = srv.hostname;
 				if (query_map[host]) {
 					info.server = query_map[host];
-					write_info_to_fs_db(ns, info);
 				}
 				if (
 					query_map[srv.hostname] && query_map[srv.hostname].isOnline
