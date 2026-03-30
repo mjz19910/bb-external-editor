@@ -1,5 +1,5 @@
 import { NS } from "./@ns";
-import { getFleet } from "../src/lib/fleet";
+import { getFleet } from "./gpt_pause/src/lib/fleet";
 
 const WORKERS = new Set([
 	"gpt_pause/src/hack_worker.ts",
@@ -8,18 +8,23 @@ const WORKERS = new Set([
 ]);
 
 export async function main(ns: NS) {
+	const target = String(ns.args[0] ?? "");
+	if (!target) {
+		ns.tprint("Usage: run kill_target_jobs.ts <target>");
+		return;
+	}
+
 	const fleet = getFleet(ns);
 
-	let killedThreads = 0;
-	let killedProcs = 0;
+	let killed = 0;
 
 	for (const host of fleet.hosts) {
 		for (const p of ns.ps(host.host)) {
 			if (!WORKERS.has(p.filename)) continue;
+			if (String(p.args?.[0] ?? "") !== target) continue;
 
 			if (ns.kill(p.pid)) {
-				killedThreads += p.threads ?? 1;
-				killedProcs++;
+				killed += p.threads ?? 1;
 				ns.tprint(
 					`[KILLED] ${host.host} pid=${p.pid} ${p.filename} x${p.threads}`,
 				);
@@ -27,7 +32,5 @@ export async function main(ns: NS) {
 		}
 	}
 
-	ns.tprint(
-		`Killed ${killedProcs} worker processes / ${killedThreads} threads total.`,
-	);
+	ns.tprint(`Killed ${killed} worker threads for target=${target}`);
 }

@@ -29,6 +29,12 @@ function missing(wanted: number, active: number): number {
 }
 
 export async function main(ns: NS) {
+	ns.disableLog("sleep");
+	ns.disableLog("scp");
+	ns.disableLog("exec");
+	ns.disableLog("getServerUsedRam");
+	ns.disableLog("getServerMaxRam");
+
 	let target = String(ns.args[0] ?? "");
 	const hackPct = Number(ns.args[1] ?? 0.1);
 
@@ -41,6 +47,7 @@ export async function main(ns: NS) {
 		target = best.host;
 	}
 
+	ns.ui.setTailTitle(`smart_farm:${target}`);
 	tlog(ns, `[SMART_FARM] target=${target} hackPct=${hackPct}`);
 
 	while (true) {
