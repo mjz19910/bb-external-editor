@@ -37,12 +37,12 @@ export async function main(ns: NS) {
 		const content = ns.read(file);
 		const info: DarknetServerInfo = JSON.parse(content);
 		const srv = ns.getServer(info.server.ip) as DarknetServer;
-		info.server = srv;
 		if (!srv.isOnline) {
 			ns.tprint("server offline ", info.server.hostname);
 			ns.rm(file);
 			continue;
 		}
+		info.server = srv;
 		const new_content = JSON.stringify(info, void 0, "\t");
 		if (new_content != content) {
 			ns.write(file, new_content, "w");
