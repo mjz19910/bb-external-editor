@@ -2,7 +2,7 @@ import { BitburnerPlugin } from "esbuild-bitburner-plugin";
 
 await BitburnerPlugin({
   port: 12527,
-  types: "servers/home/NetscriptDefinitions.d.ts",
+  types: "NetscriptDefinitions.d.ts",
   mirror: {
     "servers": ["home", "darkweb"],
   },
