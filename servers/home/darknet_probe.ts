@@ -292,6 +292,7 @@ class AuthManager {
 		const pw_arr = Array.from<string | null>({ length: len }).fill(
 			null,
 		);
+		let sym_match_chars = [];
 		for (const char of chars) {
 			const pw = pw_arr.map((v) => v === null ? char : v).join("");
 			const auth: DarknetResult = await ns.dnet.authenticate(host, pw);
@@ -312,9 +313,24 @@ class AuthManager {
 				if (data.code != 401) {
 					throw new Error("Invalid bleed result code=" + data.code);
 				}
+				const bleed_sym_matches = data.message.match(/(\d+).+(\d+)/);
 				ns.tprint("heartbleed log ", data.message);
+				if (bleed_sym_matches) {
+					const [, m1, m2] = bleed_sym_matches;
+					const num_match = +m1;
+					ns.tprint(
+						"sym that match ",
+						+m1,
+						" sym in wrong place ",
+						+m2,
+					);
+					if (num_match > 0) {
+						sym_match_chars.push(char);
+					}
+				}
 			}
 		}
+		ns.tprint("deep green pw includes chars ", sym_match_chars);
 	}
 	async CloudBlare(opts: AuthFlowState) {
 		const { info } = opts;
