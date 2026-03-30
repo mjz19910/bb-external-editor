@@ -44,12 +44,6 @@ export async function main(ns: NS) {
 			ns.rm(file);
 			continue;
 		}
-		for (const kx of Object.keys(srv)) {
-			const k = kx as keyof DarknetServer;
-			if (oSrv[k] !== srv[k]) {
-				ns.tprint("diff ", k, " a=", oSrv[k], " b=", srv[k]);
-			}
-		}
 		info.server = srv;
 		const new_content = JSON.stringify(info, void 0, "\t");
 		if (new_content != content) {
