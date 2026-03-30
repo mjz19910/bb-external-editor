@@ -15,6 +15,7 @@ export type DarknetAuthenticateMessage = {
 	for: string;
 	auth: DarknetResult;
 	password: string;
+	info: DarknetServerInfo;
 };
 export type DarknetProbeMessage = {
 	type: "darknet.probe";
@@ -32,6 +33,7 @@ export type DarknetFoundPassProbeMessage = {
 	by: string;
 	for: string;
 	password: string;
+	info: DarknetServerInfo;
 };
 export type NewWordsMessage = {
 	type: "new_words";

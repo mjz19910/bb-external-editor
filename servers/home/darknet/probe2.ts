@@ -4,7 +4,9 @@ import {
 	DarknetAuthenticateMessage,
 	DarknetFoundPassProbeMessage,
 	DarknetProbeMessage,
+	PortMessage,
 } from "../type/helper";
+import { ScriptPort } from "../type/ScriptPort";
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,
@@ -58,7 +60,7 @@ function permute<T>(arr: T[]): T[][] {
 type AuthFlowState = {
 	runner: string;
 	host: string;
-	port: number;
+	port: ScriptPort<PortMessage>;
 	info: DarknetServerInfo;
 };
 const logging = false;
@@ -124,13 +126,14 @@ class AuthManager {
 			);
 		}
 		info.password = password;
-		ns.writePort(port, {
+		port.write<DarknetAuthenticateMessage>({
 			type: "darknet.authenticate",
 			by: runner,
 			for: host,
 			auth,
 			password,
-		} as DarknetAuthenticateMessage);
+			info,
+		});
 		return auth.success;
 	}
 	async doAuth(opts: AuthFlowState, password: string) {
@@ -600,7 +603,7 @@ export async function main(ns: NS) {
 		return;
 	}
 	const runner = f.runner;
-	const port = f.port;
+	const port = ScriptPort.open_request_port(ns);
 	const local_probe = ns.dnet.probe();
 	const dnet_files_dyn: string[] = [];
 	dnet_files_dyn.push(SELF);
@@ -615,6 +618,12 @@ export async function main(ns: NS) {
 	const am = new AuthManager(ns);
 	for (;;) {
 		post_dnet_probe(ns, infos, infos_idx_map, runner);
+		port.write<DarknetProbeMessage>({
+			type: "darknet.probe",
+			alt: "names",
+			by: runner,
+			infos,
+		});
 		for (let i = 0; i < infos.length; i++) {
 			let info = infos[i];
 			if (!info.connectedToParent) continue;
@@ -668,12 +677,13 @@ export async function main(ns: NS) {
 				}
 			}
 			if (info.password === null) continue;
-			ns.writePort(port, {
+			port.write<DarknetFoundPassProbeMessage>({
 				type: "found_password",
 				by: runner,
 				for: host,
 				password: info.password,
-			} as DarknetFoundPassProbeMessage);
+				info,
+			});
 		}
 		const online_infos = [];
 		for (const info of infos) {
@@ -681,11 +691,6 @@ export async function main(ns: NS) {
 				online_infos.push(info);
 			}
 		}
-		ns.writePort(port, {
-			type: "darknet.probe",
-			by: runner,
-			infos: online_infos,
-		} as DarknetProbeMessage);
 		if (infos.length === 0) {
 			ns.tprint("no results");
 			break;

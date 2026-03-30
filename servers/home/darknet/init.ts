@@ -11,9 +11,8 @@ dnet_files_dyn.push("type/helper.ts");
 dnet_files_dyn.push("type/ScriptPort.ts");
 
 export async function main(ns: NS) {
-	const f = ns.flags([["threads", 1], ["port", 1]]) as {
+	const f = ns.flags([["threads", 1]]) as {
 		threads: number;
-		port: number;
 	};
 	const local_probe = ns.dnet.probe();
 	if (local_probe.length == 1 && local_probe[0] == "darkweb") {
@@ -30,8 +29,6 @@ export async function main(ns: NS) {
 			"darknet/probe2.ts",
 			"darkweb",
 			f.threads,
-			"--port",
-			f.port,
 			"--threads",
 			f.threads,
 			"--runner",
