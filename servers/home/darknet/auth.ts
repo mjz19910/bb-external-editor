@@ -1,4 +1,4 @@
-import { NS } from "../../@ns";
+import { NS } from "../@ns";
 
 type AuthResult = {
 	success: never;
@@ -6,17 +6,17 @@ type AuthResult = {
 	message: string;
 };
 export async function main(ns: NS) {
-	const [h, w] = ns.args as [string, string]
-	const result = await ns.dnet.authenticate(h, w) as AuthResult
+	const [h, w] = ns.args as [string, string];
+	const result = await ns.dnet.authenticate(h, w) as AuthResult;
 	switch (result.code) {
 		default:
-			ns.tprint("auth result unknown ", result)
-			break
+			ns.tprint("auth result unknown ", result);
+			break;
 	}
 	ns.writePort(1, {
 		type: "dnet.authenticate",
 		host: h,
 		password: w,
 		result,
-	})
+	});
 }

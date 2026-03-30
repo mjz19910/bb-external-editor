@@ -1,5 +1,5 @@
-import { NS, ScriptArg } from "../../@ns";
-import { DarknetServerInfo } from "../../darknet/types";
+import { NS, ScriptArg } from "../@ns";
+import { DarknetServerInfo } from "./types";
 
 function post_dnet_probe(ns: NS, runner: string, port: number) {
 	const infos: DarknetServerInfo[] = [];
