@@ -2,14 +2,10 @@ import { DarknetServer } from "./darknet/misc";
 import { DarknetServerInfo } from "./darknet/types";
 import { ScriptPort } from "./type/ScriptPort";
 import {
-	DarknetAuthenticateMessage,
-	DarknetFoundPassProbeMessage,
-	DarknetProbeMessage,
-	NewWordsMessage,
+	HostnameReplyMsg,
 	OnlineCheckMsg,
-	OnlineServersMessage,
-	QuitMessage,
-	TimeoutCheckMsg,
+	PortMessage,
+	QuerySecurityMsg,
 	WaitMessage,
 } from "./type/helper";
 
@@ -61,15 +57,6 @@ export function mergeSequencesInPlace(parts: string[][], minOverlap = 4) {
 	}
 }
 
-type PortMessage =
-	| DarknetAuthenticateMessage
-	| WaitMessage
-	| QuitMessage
-	| NewWordsMessage
-	| DarknetProbeMessage
-	| DarknetFoundPassProbeMessage
-	| TimeoutCheckMsg
-	| OnlineServersMessage;
 const pw_db = new Map<string, string>();
 const commonPasswordDictionary: string[] = [];
 const common_pw_dict_parts: string[][] = [commonPasswordDictionary];
@@ -87,7 +74,8 @@ type StateType = {
 	runner: string;
 	port: ScriptPort<PortMessage>;
 	port2: ScriptPort<OnlineCheckMsg>;
-	port3: ScriptPort<{ type: "query_security" }>;
+	port3: ScriptPort<QuerySecurityMsg>;
+	is_api_port_busy: boolean;
 };
 function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 	if (msg === null) {
@@ -125,8 +113,14 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 				for (const ip of msg.results) {
 					ns.tprint(`found ip ${ip} connected to ${msg.for}`);
 				}
-				s.port3.write({ type: "query_security", ips: msg.results });
-				ns.run("darknet/query_security.ts", 1);
+				if (!s.is_api_port_busy) {
+					s.is_api_port_busy = true;
+					s.port3.write<QuerySecurityMsg>({
+						type: "query_security",
+						ips: msg.results,
+					});
+					ns.run("darknet/query_security.ts", 1);
+				}
 			} else {
 				const ips: string[] = [];
 				for (const info of msg.infos) {
@@ -199,6 +193,11 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 		case "found_password": {
 			return true;
 		}
+		case "port_release":
+			if (msg.port === 3) {
+				s.is_api_port_busy = false;
+			}
+			return true;
 		default: {
 			ns.tprint(
 				"new handler required for " + (msg as { type: string }).type,
@@ -208,24 +207,21 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 		}
 	}
 }
-const REQUEST_PORT = 1;
-const REPLY_PORT = 2;
-const API_PORT = 3;
 export async function main(ns: NS) {
-	const port = new ScriptPort(ns, REQUEST_PORT);
-	const port2 = new ScriptPort(ns, REPLY_PORT);
-	const port3 = new ScriptPort(ns, API_PORT);
+	const port = ScriptPort.open_request_port(ns);
+	const port2 = ScriptPort.open_reply_port(ns);
+	const port3 = ScriptPort.open_api_port(ns);
 	port3.clear("empty before use");
 	ns.run("src/getHostname.ts", 1);
 	await port3.nextWrite("wait for hostname");
-	const v = port3.readOpt<string>("read hostname");
-	if (v.type === "None") return ns.tprint("missing port(3).getHostname()");
+	const v = port3.read<HostnameReplyMsg>("read hostname");
 	const s: StateType = {
 		running: true,
-		runner: v.value,
+		runner: v.hostname,
 		port,
 		port2,
 		port3,
+		is_api_port_busy: false,
 	};
 	port.config({ logging: false });
 	ns.print("enter read loop");

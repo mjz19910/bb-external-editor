@@ -1,4 +1,13 @@
-import { assign_opt, empty_opt, Optional, some_opt } from "./helper";
+import { API_PORT, REPLY_PORT, REQUEST_PORT } from "../const/port";
+import {
+	ApiMessage,
+	assign_opt,
+	empty_opt,
+	OnlineCheckMsg,
+	Optional,
+	PortMessage,
+	some_opt,
+} from "./helper";
 
 export const Null = "NULL PORT DATA" as const;
 export type Null = typeof Null;
@@ -112,19 +121,24 @@ export function rawReadAll<T>(port: NS_Port) {
 }
 
 export class ScriptPort<BaseType> {
+	static open_api_port(ns: NS) {
+		return new ScriptPort<ApiMessage>(ns, API_PORT);
+	}
+	static open_reply_port(ns: NS) {
+		return new ScriptPort<OnlineCheckMsg>(ns, REPLY_PORT);
+	}
+	static open_request_port(ns: NS) {
+		return new ScriptPort<PortMessage>(ns, REQUEST_PORT);
+	}
 	readonly ns: NS;
-	readonly #port_id: number;
+	port_id: number;
 	readonly #port: NS_Port;
 	private logging = false;
 
 	constructor(ns: NS, port_id: number) {
 		this.ns = ns;
-		this.#port_id = port_id;
+		this.port_id = port_id;
 		this.#port = ns.getPortHandle(port_id);
-	}
-
-	get port_id() {
-		return this.#port_id;
 	}
 
 	config({ logging }: { logging: boolean }) {
@@ -138,7 +152,7 @@ export class ScriptPort<BaseType> {
 	) {
 		if (!this.logging) return;
 		this.ns.tprint(
-			`port(${this.#port_id}).${port}()${
+			`port(${this.port_id}).${port}()${
 				user_msg == null ? "" : ` ${user_msg}`
 			}`,
 			...args,
@@ -148,14 +162,14 @@ export class ScriptPort<BaseType> {
 	peek<T extends BaseType = BaseType>(log_msg?: string): T {
 		const data = rawPeek<T>(this.#port);
 		this.log(log_msg, "peek", data);
-		if (data === void 0) throw new PortEmptyError(this.#port_id);
+		if (data === void 0) throw new PortEmptyError(this.port_id);
 		return data;
 	}
 
 	read<T extends BaseType = BaseType>(log_msg?: string): T {
 		const data = rawRead<T>(this.#port);
 		this.log(log_msg, "read", data);
-		if (data === void 0) throw new PortEmptyError(this.#port_id);
+		if (data === void 0) throw new PortEmptyError(this.port_id);
 		return data;
 	}
 
@@ -183,7 +197,7 @@ export class ScriptPort<BaseType> {
 	}
 
 	write<T extends BaseType = BaseType>(data: T, log_msg?: string): void {
-		if (this.#port.full()) throw new PortFullError(this.#port_id);
+		if (this.#port.full()) throw new PortFullError(this.port_id);
 		const prev = rawWrite<T, Null>(this.#port, data);
 		this.log(log_msg, "write", some_opt(data), "prev", some_opt(prev));
 	}

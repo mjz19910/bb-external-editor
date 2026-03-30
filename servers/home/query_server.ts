@@ -1,14 +1,14 @@
 import { DarknetServer } from "./darknet/misc";
 import { DarknetServerInfo } from "./darknet/types";
-import { OnlineCheckMsg, OnlineServersMessage } from "./type/helper";
+import { OnlineServersMessage } from "./type/helper";
 import { ScriptPort } from "./type/ScriptPort";
 import { write_info_to_fs_db } from "./write_ip_db";
 
 export async function main(ns: NS) {
-	const port = new ScriptPort(ns, 1);
-	const port2 = new ScriptPort<OnlineCheckMsg>(ns, 2);
+	const port = ScriptPort.open_request_port(ns);
+	const port2 = ScriptPort.open_reply_port(ns);
 	for await (const v of start_read_loop(port2)) {
-		const {cmd, args} = v;
+		const { cmd, args } = v;
 		handle_query(ns, port, cmd, args);
 	}
 }

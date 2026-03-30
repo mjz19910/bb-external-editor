@@ -78,3 +78,26 @@ export type OnlineCheckMsg = {
 	cmd: "online_check";
 	args: string[];
 };
+export type QuerySecurityMsg = {
+	type: "query_security";
+	ips: string[];
+};
+export type HostnameReplyMsg = {
+	type: "getHostname";
+	hostname: string;
+};
+export type PortReleaseMsg = {
+	type: "port_release";
+	port: number;
+};
+export type PortMessage =
+	| DarknetAuthenticateMessage
+	| DarknetFoundPassProbeMessage
+	| DarknetProbeMessage
+	| NewWordsMessage
+	| OnlineServersMessage
+	| PortReleaseMsg
+	| QuitMessage
+	| TimeoutCheckMsg
+	| WaitMessage;
+export type ApiMessage = QuerySecurityMsg | HostnameReplyMsg;
