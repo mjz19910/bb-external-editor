@@ -6,9 +6,6 @@ import { write_info_to_fs_db } from "./write_ip_db";
 export const utf8_bad_chars = {
 	":": String.fromCharCode(61440 + ":".charCodeAt(0)),
 };
-const em_chars = [
-	"🅱️",
-];
 
 export async function main(ns: NS) {
 	const port = new ScriptPort(ns, 1);
