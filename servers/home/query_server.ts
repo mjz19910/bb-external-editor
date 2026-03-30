@@ -54,8 +54,8 @@ function handle_online_check(
 type A<T> = AsyncGenerator<T, void, void>;
 type B<T> = ScriptPort<T>;
 async function* start_read_loop<T>(port: B<T>): A<T> {
-	for (; ;) {
-		for (; !port.empty();) {
+	for (;;) {
+		while (!port.empty()) {
 			yield port.read<T>();
 		}
 		await port.nextWrite();
