@@ -1,3 +1,4 @@
+import { NS } from "./@ns";
 import {
 	buildNetworkMap,
 	classifyServer,
@@ -21,13 +22,13 @@ export async function main(ns: NS) {
 
 		ns.tprint(
 			`${host.padEnd(20)} ` +
-			`depth=${String(node.depth).padStart(2)} ` +
-			`deg=${String(node.neighbors.length).padStart(2)} ` +
-			`hack=${String(reqHack).padStart(4)} ` +
-			`ports=${reqPorts} ` +
-			`${rooted.padEnd(7)} ` +
-			`${cls.padEnd(8)} ` +
-			`money=${ns.format.number(money)}`
+				`depth=${String(node.depth).padStart(2)} ` +
+				`deg=${String(node.neighbors.length).padStart(2)} ` +
+				`hack=${String(reqHack).padStart(4)} ` +
+				`ports=${reqPorts} ` +
+				`${rooted.padEnd(7)} ` +
+				`${cls.padEnd(8)} ` +
+				`money=${ns.format.number(money)}`,
 		);
 	}
 

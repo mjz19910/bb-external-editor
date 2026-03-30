@@ -2,6 +2,7 @@
  * Rank rooted servers for HGW XP / money using Formulas.exe
  */
 
+import { NS, Player, Server } from "../@ns";
 import { isNormalServer } from "../lib/helper";
 import { buildNetworkMap } from "../lib/network_map";
 
@@ -131,7 +132,7 @@ function scoreTarget(
 	availableRam = 100,
 ): ScoreRow | null {
 	const player = ns.getPlayer();
-	const srv = ns.getServer(target);
+	const srv = ns.getServer(target) as Server;
 
 	if (!isNormalServer(srv)) return null;
 

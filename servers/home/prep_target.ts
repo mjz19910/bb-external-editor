@@ -1,6 +1,7 @@
 import { canRunThreads, runnableHosts } from "./lib/network_map";
 import { buildNetworkMap } from "./lib/network_map";
 import { log, tlog } from "./lib/log";
+import { NS } from "./@ns";
 
 const WEAKEN = "weaken_worker.js";
 const GROW = "grow_worker.js";

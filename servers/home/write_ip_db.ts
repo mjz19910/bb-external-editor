@@ -1,3 +1,4 @@
+import { NS } from "./@ns";
 import { DarknetServerInfo } from "./darknet/types";
 const default_server = {
 	"isOnline": false,

@@ -1,6 +1,7 @@
 // weaken.ts
-import { parseHgwRequest, HgwRequest } from "../lib/hgw-message";
+import { HgwRequest, parseHgwRequest } from "../lib/hgw-message";
 import { handleRequest } from "../lib/handleRequest";
+import { NS } from "../@ns";
 
 export async function main(ns: NS) {
 	const req = parseHgwRequest(ns);

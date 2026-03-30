@@ -1,3 +1,4 @@
+import { NS } from "./@ns";
 import {
 	allocateThreads,
 	deployScriptSet,
@@ -5,9 +6,9 @@ import {
 	runAllocations,
 	totalThreadsForScript,
 } from "./lib/fleet";
-import { chooseBestTarget } from "./lib/targeting";
-import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep";
 import { log, tlog } from "./lib/log";
+import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep";
+import { chooseBestTarget } from "./lib/targeting";
 
 const HACK = "hack_worker.ts";
 const GROW = "grow_worker.ts";

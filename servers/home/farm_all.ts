@@ -5,6 +5,7 @@ import {
 } from "./lib/network_map";
 import { chooseBestTarget } from "./choose_best_target";
 import { log, tlog } from "./lib/log";
+import { NS } from "./@ns";
 
 const HACK = "hack_worker.js";
 const GROW = "grow_worker.js";

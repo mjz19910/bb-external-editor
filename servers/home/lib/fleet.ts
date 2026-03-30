@@ -1,3 +1,4 @@
+import { NS } from "../@ns";
 import { buildNetworkMap, freeRam } from "./network_map";
 
 export type FleetHost = {
