@@ -144,4 +144,5 @@ servers/*/src/*.json
 servers/*/*.json
 servers/**/*.js
 servers/*/tmp/ip/*.txt
+servers/*/tmp/host/*.txt
 servers/darkweb

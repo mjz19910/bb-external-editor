@@ -2,6 +2,10 @@ import { DarknetServer } from "./darknet/misc";
 import { DarknetServerInfo } from "./darknet/types";
 import { ScriptPort } from "./type/ScriptPort";
 
+const utf_special_replacers = {
+	":": String.fromCharCode(61440 + ":".charCodeAt(0)),
+};
+
 export async function main(ns: NS) {
 	const port = new ScriptPort(ns, 1);
 	const port2 = new ScriptPort(ns, 2);
@@ -39,15 +43,24 @@ export async function main(ns: NS) {
 		const oSrv = info.server;
 		const host = oSrv.hostname;
 		const srv = ns.getServer(info.server.ip) as DarknetServer;
+		const nt_ok_path = oSrv.hostname.replaceAll(":", "_");
+		const host_save_path = `tmp/host/${nt_ok_path}.txt`;
 		if (!srv.isOnline) {
 			ns.tprint("server offline ", host, "(", oSrv.ip, ")");
 			ns.rm(file);
+			oSrv.isOnline = false;
+			const new_content = JSON.stringify(info, void 0, "\t");
+			ns.write(host_save_path, new_content, "w");
 			continue;
 		}
 		info.server = srv;
 		const new_content = JSON.stringify(info, void 0, "\t");
 		if (new_content != content) {
 			ns.write(file, new_content, "w");
+			ns.write(host_save_path, new_content, "w");
+		}
+		if (!ns.fileExists(host_save_path)) {
+			ns.write(host_save_path, new_content, "w");
 		}
 	}
 }
