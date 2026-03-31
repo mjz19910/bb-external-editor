@@ -237,7 +237,7 @@ async function run_farm_step(
 		);
 	}
 
-	if (s.steps % 8 == 0) {
-		await ns.sleep(10);
+	if (s.steps % 20 == 0) {
+		await ns.sleep(50);
 	}
 }
