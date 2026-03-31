@@ -76,13 +76,11 @@ export type Allocation = {
 };
 
 export function allocateThreads(
-	ns: NS,
 	fleet: Fleet,
-	script: string,
+	ramPerThread: number,
 	wantedThreads: number,
 	reserveHomeRam = 32,
 ): Allocation[] {
-	const ramPerThread = ns.getScriptRam(script, "home");
 	if (ramPerThread <= 0 || wantedThreads <= 0) return [];
 
 	const allocations: Allocation[] = [];

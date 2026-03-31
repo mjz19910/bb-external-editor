@@ -68,6 +68,8 @@ export async function main(ns: NS) {
 		hackPct,
 		steps,
 		fleet,
+		wgMem: 1.75,
+		hMem: 1.7,
 	};
 	while (true) {
 		ns.clearLog();
@@ -78,9 +80,16 @@ export async function main(ns: NS) {
 
 async function run_farm_step(
 	ns: NS,
-	state: { target: string; hackPct: number; steps: number; fleet: Fleet },
+	state: {
+		target: string;
+		hackPct: number;
+		steps: number;
+		fleet: Fleet;
+		wgMem: number;
+		hMem: number;
+	},
 ) {
-	const { target, hackPct, fleet } = state;
+	const { target, hackPct, fleet, wgMem, hMem } = state;
 	const jobs = getTargetJobCounts(ns, target);
 	const prep = calcPrepPlan(ns, target);
 
@@ -88,30 +97,19 @@ async function run_farm_step(
 		const wantedWeaken = prep.totalWeaken;
 		const wantedGrow = prep.needGrow;
 
-		const missingWeaken = missing(wantedWeaken, jobs.weaken);
-		const missingGrow = missing(wantedGrow, jobs.grow);
+		const noWeak = missing(wantedWeaken, jobs.weaken);
+		const noGrow = missing(wantedGrow, jobs.grow);
 
 		let launchedW = 0;
 		let launchedG = 0;
 
-		if (missingWeaken > 0) {
-			const weakenAlloc = allocateThreads(
-				ns,
-				fleet,
-				WEAKEN,
-				missingWeaken,
-			);
+		if (noWeak > 0) {
+			const weakenAlloc = allocateThreads(fleet, wgMem, noWeak);
 			launchedW = runAllocations(ns, WEAKEN, weakenAlloc, [target]);
 		}
 
-		if (missingGrow > 0) {
-			const fleetAfterW = getFleet(ns);
-			const growAlloc = allocateThreads(
-				ns,
-				fleetAfterW,
-				GROW,
-				missingGrow,
-			);
+		if (noGrow > 0) {
+			const growAlloc = allocateThreads(fleet, wgMem, noGrow);
 			launchedG = runAllocations(ns, GROW, growAlloc, [target]);
 		}
 
@@ -133,7 +131,6 @@ async function run_farm_step(
 	const maxMoney = ns.getServerMaxMoney(target);
 
 	let hackThreads = calcHackThreadsForPercent(ns, target, hackPct);
-	hackThreads++;
 	const hackSec = ns.hackAnalyzeSecurity(hackThreads, target);
 	let hackWeaken = Math.ceil(hackSec / ns.weakenAnalyze(1));
 	hackWeaken = Math.ceil(hackWeaken);
@@ -150,7 +147,7 @@ async function run_farm_step(
 		let missingW = missing(wantedW, jobs.weaken);
 		missingW = wantedW;
 
-		const alloc = allocateThreads(ns, fleet, WEAKEN, missingW);
+		const alloc = allocateThreads(fleet, wgMem, missingW);
 		const launched = runAllocations(ns, WEAKEN, alloc, [target]);
 
 		log(
@@ -169,16 +166,10 @@ async function run_farm_step(
 		missingG = growThreads;
 		missingW = growWeaken;
 
-		const growAlloc = allocateThreads(ns, fleet, GROW, missingG);
+		const growAlloc = allocateThreads(fleet, wgMem, missingG);
 		const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
 
-		const fleetAfterG = getFleet(ns);
-		const weakAlloc = allocateThreads(
-			ns,
-			fleetAfterG,
-			WEAKEN,
-			missingW,
-		);
+		const weakAlloc = allocateThreads(fleet, wgMem, missingW);
 		const launchedW = runAllocations(ns, WEAKEN, weakAlloc, [target]);
 
 		log(
@@ -206,20 +197,13 @@ async function run_farm_step(
 	missingGrow = wantedGrow;
 	missingWeaken = wantedWeaken;
 
-	const hackAlloc = allocateThreads(ns, fleet, HACK, missingHack);
+	const hackAlloc = allocateThreads(fleet, hMem, missingHack);
 	const launchedH = runAllocations(ns, HACK, hackAlloc, [target]);
 
-	const fleetAfterH = getFleet(ns);
-	const weakAlloc = allocateThreads(
-		ns,
-		fleetAfterH,
-		WEAKEN,
-		missingWeaken,
-	);
+	const weakAlloc = allocateThreads(fleet, wgMem, missingWeaken);
 	const launchedW = runAllocations(ns, WEAKEN, weakAlloc, [target]);
 
-	const fleetAfterW = getFleet(ns);
-	const growAlloc = allocateThreads(ns, fleetAfterW, GROW, missingGrow);
+	const growAlloc = allocateThreads(fleet, wgMem, missingGrow);
 	const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
 
 	log(
