@@ -123,24 +123,26 @@ async function run_farm_step(
 	}
 
 	if (can_run && !prep.isPrepped) {
-		const wantedWeaken = prep.totalWeaken;
 		const wantedGrow = prep.needGrow;
+		const wantedWeaken = prep.totalWeaken;
 
-		const missingWeaken = missing(wantedWeaken, jobs.weaken);
-		const missingGrow = missing(wantedGrow, jobs.grow);
+		let missingGrow = missing(wantedGrow, jobs.grow);
+		let missingWeaken = missing(wantedWeaken, jobs.weaken);
 
-		let launchedW = 0;
+		missingGrow = wantedGrow;
+		missingWeaken = wantedWeaken;
+
 		let launchedG = 0;
+		let launchedW = 0;
+
+		if (missingGrow > 0) {
+			const growAlloc = allocateThreads(fleet, wgMem, missingGrow);
+			launchedG = runAllocations(ns, GROW, growAlloc, [target]);
+		}
 
 		if (missingWeaken > 0) {
 			const weakenAlloc = allocateThreads(fleet, wgMem, missingWeaken);
 			launchedW = runAllocations(ns, WEAKEN, weakenAlloc, [target]);
-		}
-
-		if (missingGrow > 0) {
-			const fleetAfterW = getFleet(ns);
-			const growAlloc = allocateThreads(fleetAfterW, wgMem, missingGrow);
-			launchedG = runAllocations(ns, GROW, growAlloc, [target]);
 		}
 
 		log(
@@ -158,14 +160,16 @@ async function run_farm_step(
 	const maxMoney = ns.getServerMaxMoney(target);
 
 	if (can_run && money < maxMoney * 0.9) {
-		const missingG = missing(growThreads, jobs.grow);
-		const missingW = missing(growWeaken, jobs.weaken);
+		let missingG = missing(growThreads, jobs.grow);
+		let missingW = missing(growWeaken, jobs.weaken);
+
+		missingG = growThreads;
+		missingW = growWeaken;
 
 		const growAlloc = allocateThreads(fleet, wgMem, missingG);
 		const launchedG = runAllocations(ns, GROW, growAlloc, [target]);
 
-		const fleetAfterG = getFleet(ns);
-		const weakAlloc = allocateThreads(fleetAfterG, wgMem, missingW);
+		const weakAlloc = allocateThreads(fleet, wgMem, missingW);
 		const launchedW = runAllocations(ns, WEAKEN, weakAlloc, [target]);
 
 		log(
@@ -215,8 +219,7 @@ async function run_farm_step(
 		);
 	}
 
-	if (s.steps % 3 == 0) {
-		await ns.sleep(20);
-		ns.clearLog();
+	if (s.steps % 8 == 0) {
+		await ns.sleep(10);
 	}
 }
