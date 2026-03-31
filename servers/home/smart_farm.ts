@@ -68,6 +68,9 @@ export async function main(ns: NS) {
 		wgMem: 1.75,
 		hMem: 1.7,
 		minSec: ns.getServerMinSecurityLevel(target),
+		prepped: false,
+		stable: false,
+		recovered: false,
 	};
 	while (true) {
 		await run_farm_step(ns, state);
@@ -84,6 +87,9 @@ async function run_farm_step(
 		wgMem: number;
 		hMem: number;
 		minSec: number;
+		prepped: boolean;
+		stable: boolean;
+		recovered: boolean;
 	},
 ) {
 	const { target, hackPct, wgMem, hMem } = s;
@@ -105,7 +111,7 @@ async function run_farm_step(
 	let growWeaken = growSec / ns.weakenAnalyze(1);
 	growWeaken = Math.ceil(growWeaken);
 
-	if (can_run && sec > s.minSec + 1.5) {
+	if (!s.stable && can_run && sec > s.minSec + 1.5) {
 		const wantedW = hackWeaken + growWeaken + 20;
 		let missingW = missing(wantedW, jobs.weaken);
 		missingW = wantedW;
@@ -122,7 +128,15 @@ async function run_farm_step(
 		can_run = false;
 	}
 
-	if (can_run && !prep.isPrepped) {
+	if (sec < s.minSec + 1.5) {
+		s.stable = true;
+	}
+
+	if (prep.isPrepped) {
+		s.prepped = true;
+	}
+
+	if (!s.prepped && can_run && !prep.isPrepped) {
 		const wantedGrow = prep.needGrow;
 		const wantedWeaken = prep.totalWeaken;
 
@@ -159,7 +173,7 @@ async function run_farm_step(
 	const money = ns.getServerMoneyAvailable(target);
 	const maxMoney = ns.getServerMaxMoney(target);
 
-	if (can_run && money < maxMoney * 0.9) {
+	if (!s.recovered && can_run && money < maxMoney * 0.9) {
 		let missingG = missing(growThreads, jobs.grow);
 		let missingW = missing(growWeaken, jobs.weaken);
 
@@ -182,6 +196,10 @@ async function run_farm_step(
 		);
 
 		can_run = false;
+	}
+
+	if (money > maxMoney * 0.9) {
+		s.recovered = true;
 	}
 
 	if (can_run) {
