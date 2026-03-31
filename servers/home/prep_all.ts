@@ -25,7 +25,7 @@ export async function main(ns: NS) {
 	ns.clearLog();
 
 	const reserve = ns.args.includes("--reserve")
-		? Number(ns.args[ns.args.indexOf("--reserve") + 1] ?? 0)
+		? Number(ns.args[ns.args.indexOf("--reserve") + 1] ?? 32)
 		: 32;
 	const map = buildNetworkMap(ns);
 	const hosts = map.hosts.filter((h) => ns.hasRootAccess(h));
