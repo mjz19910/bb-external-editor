@@ -61,18 +61,16 @@ export async function main(ns: NS) {
 		WEAKEN,
 	];
 	deployScriptSet(ns, FILES, map.hosts);
-	let steps = 0;
 	const state = {
 		target,
 		hackPct,
-		steps,
+		steps: 0,
 		wgMem: 1.75,
 		hMem: 1.7,
 	};
 	while (true) {
-		ns.clearLog();
 		await run_farm_step(ns, state);
-		steps++;
+		state.steps++;
 	}
 }
 
@@ -137,7 +135,8 @@ async function run_farm_step(
 			`active(h/g/w)=${jobs.hack}/${jobs.grow}/${jobs.weaken} ` +
 			`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
 	);
-	if (state.steps % 7 == 0) {
-		await ns.sleep(0);
+	if (state.steps % 3 == 0) {
+		await ns.sleep(20);
+		ns.clearLog();
 	}
 }
