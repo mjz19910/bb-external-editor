@@ -247,7 +247,7 @@ async function run_farm_step(
 	if (s.launch_counter === 0) {
 		await ns.sleep(500);
 	}
-	if (s.steps % 50 == 0) {
+	if (s.steps % 3 == 0) {
 		s.launch_counter = 0;
 	}
 }
