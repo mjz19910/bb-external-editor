@@ -88,13 +88,16 @@ export async function main(ns: NS) {
 		if (serverMaxMoneyMap.get(target)! <= 0) continue;
 		if (target == "home") continue;
 		const waitTime = ns.getWeakenTime(target);
-		log(`${target}: weaken ETA ${ns.format.time(waitTime)}`);
 		serverWeakenTime.set(target, waitTime);
 	}
 
 	const targets = hosts
 		.filter((h) => h !== "home" && serverMaxMoneyMap.get(h)! > 0)
 		.sort((a, b) => serverWeakenTime.get(a)! - serverWeakenTime.get(b)!);
+	for (const target of targets) {
+		const waitTime = serverWeakenTime.get(target)!;
+		log(`${target}: weaken ETA ${ns.format.time(waitTime)}`);
+	}
 
 	log("\n");
 	log(`Preparing ${targets.length} servers in parallel...`);
@@ -130,7 +133,7 @@ export async function main(ns: NS) {
 							ns.format.time(waitTime)
 						}`,
 					);
-					await ns.sleep(waitTime)
+					await ns.sleep(waitTime);
 					// await ns.sleep(5000);
 				}
 			} else if (!moneyReady) {
@@ -150,7 +153,7 @@ export async function main(ns: NS) {
 							ns.format.time(waitTime)
 						}`,
 					);
-					await ns.sleep(waitTime)
+					await ns.sleep(waitTime);
 					// await ns.sleep(5000);
 				}
 			} else {
