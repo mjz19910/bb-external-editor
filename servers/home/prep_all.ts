@@ -1,5 +1,3 @@
-import { buildNetworkMap } from "../../servers/home/lib/network_map";
-
 /** prep_all.ts
  * Grow all rooted servers to max money and reduce to min security.
  *
@@ -7,14 +5,15 @@ import { buildNetworkMap } from "../../servers/home/lib/network_map";
  *   run prep_all.ts
  *   run prep_all.ts --reserve 32
  */
+import { buildNetworkMap } from "./lib/network_map";
 
 function formatMoney(ns: NS, n: number) {
 	return "$" + ns.format.number(n, 2);
 }
 
 const all_scripts = [
-	"gpt_pause/src/tmp/prep_weak.ts",
-	"gpt_pause/src/tmp/prep_grow.ts",
+	"lib/prep_weak.ts",
+	"lib/prep_grow.ts",
 ];
 export async function main(ns: NS) {
 	function log(...args: any[]) {
