@@ -18,6 +18,37 @@ const all_scripts = [
 	GROW,
 	WEAK,
 ];
+
+export function getPrepSortKey(
+	ns: NS,
+	target: string,
+	serverMaxMoneyMap: Map<string, number>,
+	serverMinSecMap: Map<string, number>,
+): number {
+	const weaken1 = ns.weakenAnalyze(1);
+	const maxMoney = serverMaxMoneyMap.get(target)!;
+	const money = Math.max(1, ns.getServerMoneyAvailable(target));
+	const sec = serverMinSecMap.get(target)!;
+	const minSec = ns.getServerMinSecurityLevel(target);
+
+	const weakenThreads = Math.ceil(Math.max(0, sec - minSec) / weaken1);
+
+	const growThreads = money >= maxMoney
+		? 0
+		: Math.ceil(ns.growthAnalyze(target, maxMoney / money));
+
+	const weakenForGrow = Math.ceil(
+		ns.growthAnalyzeSecurity(growThreads, target) / weaken1,
+	);
+
+	const weakenTime = ns.getWeakenTime(target);
+	const growTime = ns.getGrowTime(target);
+
+	return weakenThreads * weakenTime +
+		growThreads * growTime * 0.05 +
+		weakenForGrow * weakenTime;
+}
+
 export async function main(ns: NS) {
 	function log(...args: any[]) {
 		ns.tprint(...args);
@@ -52,37 +83,9 @@ export async function main(ns: NS) {
 		serverMinSecMap.set(target, ns.getServerMinSecurityLevel(target));
 	}
 
-	hosts.sort((a, b) => serverMinSecMap.get(a)! - serverMinSecMap.get(b)!);
-
-	const weaken1 = ns.weakenAnalyze(1);
-
-	function getPrepSortKey(ns: NS, target: string): number {
-		const maxMoney = serverMaxMoneyMap.get(target)!;
-		const money = Math.max(1, ns.getServerMoneyAvailable(target));
-		const sec = serverMinSecMap.get(target)!;
-		const minSec = ns.getServerMinSecurityLevel(target);
-
-		const weakenThreads = Math.ceil(Math.max(0, sec - minSec) / weaken1);
-
-		const growThreads = money >= maxMoney
-			? 0
-			: Math.ceil(ns.growthAnalyze(target, maxMoney / money));
-
-		const weakenForGrow = Math.ceil(
-			ns.growthAnalyzeSecurity(growThreads, target) / weaken1,
-		);
-
-		const weakenTime = ns.getWeakenTime(target);
-		const growTime = ns.getGrowTime(target);
-
-		return weakenThreads * weakenTime +
-			growThreads * growTime * 0.05 +
-			weakenForGrow * weakenTime;
-	}
-
 	const targets = hosts
 		.filter((h) => h !== "home" && serverMaxMoneyMap.get(h)! > 0)
-		.sort((a, b) => getPrepSortKey(ns, a) - getPrepSortKey(ns, b));
+		.sort((a, b) => serverMinSecMap.get(a)! - serverMinSecMap.get(b)!);
 
 	log(`Preparing ${targets.length} servers in parallel...`);
 
