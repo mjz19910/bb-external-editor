@@ -1,6 +1,7 @@
 import {
 	allocateThreads,
 	deployScriptSet,
+	Fleet,
 	getFleet,
 	runAllocations,
 } from "./lib/fleet";
@@ -60,22 +61,26 @@ export async function main(ns: NS) {
 		WEAKEN,
 	];
 	deployScriptSet(ns, FILES, map.hosts);
+	const fleet = getFleet(ns);
 	let steps = 0;
+	const state = {
+		target,
+		hackPct,
+		steps,
+		fleet,
+	};
 	while (true) {
 		ns.clearLog();
-		await run_farm_step(ns, target, hackPct, steps);
+		await run_farm_step(ns, state);
 		steps++;
 	}
 }
 
 async function run_farm_step(
 	ns: NS,
-	target: string,
-	hackPct: number,
-	steps: number,
+	state: { target: string; hackPct: number; steps: number; fleet: Fleet },
 ) {
-	const fleet = getFleet(ns);
-
+	const { target, hackPct, fleet } = state;
 	const jobs = getTargetJobCounts(ns, target);
 	const prep = calcPrepPlan(ns, target);
 
@@ -226,7 +231,7 @@ async function run_farm_step(
 			`active(h/g/w)=${jobs.hack}/${jobs.grow}/${jobs.weaken} ` +
 			`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
 	);
-	if (steps % 5 == 0) {
-		await ns.sleep(40);
+	if (state.steps % 6 == 0) {
+		await ns.sleep(100);
 	}
 }
