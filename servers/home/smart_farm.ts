@@ -208,7 +208,7 @@ async function run_farm_step(
 				`money=${ns.format.number(money)}/${
 					ns.format.number(maxMoney)
 				} ` +
-				`sec=${sec.toFixed(2)}/${minSec.toFixed(2)} ` +
+				`sec=${sec.toFixed(2)}/${s.minSec.toFixed(2)} ` +
 				`wanted(h/g/w)=${wantedHack}/${wantedGrow}/${wantedWeaken} ` +
 				`active(h/g/w)=${jobs.hack}/${jobs.grow}/${jobs.weaken} ` +
 				`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
