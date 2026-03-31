@@ -241,13 +241,13 @@ async function run_farm_step(
 		s.launch_counter += launchedG;
 		s.launch_counter += launchedW;
 	}
-	if (s.steps % 50 == 0) {
-		s.launch_counter = 0;
-	}
 	if (s.steps % 20 == 0) {
 		await ns.sleep(50);
 	}
 	if (s.launch_counter === 0) {
 		await ns.sleep(500);
+	}
+	if (s.steps % 50 == 0) {
+		s.launch_counter = 0;
 	}
 }
