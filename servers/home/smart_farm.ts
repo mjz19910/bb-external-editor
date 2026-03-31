@@ -71,6 +71,7 @@ export async function main(ns: NS) {
 		prepped: false,
 		stable: false,
 		recovered: false,
+		launch_counter: 0,
 	};
 	while (true) {
 		await run_farm_step(ns, state);
@@ -90,6 +91,7 @@ async function run_farm_step(
 		prepped: boolean;
 		stable: boolean;
 		recovered: boolean;
+		launch_counter: number;
 	},
 ) {
 	const { target, hackPct, wgMem, hMem } = s;
@@ -235,9 +237,17 @@ async function run_farm_step(
 				`active(h/g/w)=${jobs.hack}/${jobs.grow}/${jobs.weaken} ` +
 				`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
 		);
+		s.launch_counter += launchedH;
+		s.launch_counter += launchedG;
+		s.launch_counter += launchedW;
 	}
-
+	if (s.steps % 50 == 0) {
+		s.launch_counter = 0;
+	}
 	if (s.steps % 20 == 0) {
 		await ns.sleep(50);
+	}
+	if (s.launch_counter === 0) {
+		await ns.sleep(500);
 	}
 }
