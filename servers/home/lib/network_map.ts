@@ -215,7 +215,7 @@ export function classifyServer(ns: NS, host: string): ServerClass {
 	const myPorts = countPortOpeners(ns);
 
 	if (!rooted && reqHack <= myHack && reqPorts <= myPorts) return "rootable";
-	if (rooted && maxMoney > 0 && reqHack <= myHack / 2) return "farmable";
+	if (rooted && maxMoney > 0 && reqHack <= myHack) return "farmable";
 	if (maxMoney <= 0) return "useless";
 	return "future";
 }

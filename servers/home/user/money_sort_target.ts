@@ -35,14 +35,14 @@ export async function main(ns: NS) {
 		});
 	}
 
-	targets.sort((a, b) => a.minSec - b.minSec);
+	targets.sort((a, b) => a.maxMoney - b.maxMoney);
 
 	if (targets.length === 0) {
 		ns.tprint("No farmable targets found.");
 		return;
 	}
 
-	ns.tprint("=== TARGETS (Minimum Security) ===");
+	ns.tprint("=== TARGETS ===");
 	if (typeof ns.args[0] != "number") ns.args[0] = 15;
 	for (const t of targets.slice(0, ns.args[0] ?? 15)) {
 		ns.tprint(
