@@ -61,13 +61,11 @@ export async function main(ns: NS) {
 		WEAKEN,
 	];
 	deployScriptSet(ns, FILES, map.hosts);
-	const fleet = getFleet(ns);
 	let steps = 0;
 	const state = {
 		target,
 		hackPct,
 		steps,
-		fleet,
 		wgMem: 1.75,
 		hMem: 1.7,
 	};
@@ -84,13 +82,13 @@ async function run_farm_step(
 		target: string;
 		hackPct: number;
 		steps: number;
-		fleet: Fleet;
 		wgMem: number;
 		hMem: number;
 	},
 ) {
-	const { target, hackPct, fleet, wgMem, hMem } = state;
-	const jobs = getTargetJobCounts(ns, target);
+	const { target, hackPct, wgMem, hMem } = state;
+	const fleet = getFleet(ns);
+	const jobs = getTargetJobCounts(ns, fleet, target);
 
 	const sec = ns.getServerSecurityLevel(target);
 	const minSec = ns.getServerMinSecurityLevel(target);
@@ -139,7 +137,7 @@ async function run_farm_step(
 			`active(h/g/w)=${jobs.hack}/${jobs.grow}/${jobs.weaken} ` +
 			`launch(h/g/w)=${launchedH}/${launchedG}/${launchedW}`,
 	);
-	if (state.steps % 6 == 0) {
-		await ns.sleep(50);
+	if (state.steps % 7 == 0) {
+		await ns.sleep(0);
 	}
 }

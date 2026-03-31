@@ -1,5 +1,5 @@
-import { getFleet } from "./fleet";
-import { HACK, GROW, WEAKEN } from "./paths";
+import { Fleet, getFleet } from "./fleet";
+import { GROW, HACK, WEAKEN } from "./paths";
 
 export type TargetJobCounts = {
 	target: string;
@@ -37,8 +37,7 @@ function firstArgString(p: ProcessInfo): string {
 	return String(p.args?.[0] ?? "");
 }
 
-export function getJobSnapshot(ns: NS): JobSnapshot {
-	const fleet = getFleet(ns);
+export function getJobSnapshot(ns: NS, fleet: Fleet): JobSnapshot {
 	const byTarget: Record<string, TargetJobCounts> = {};
 
 	let totalHack = 0;
@@ -84,9 +83,10 @@ export function getJobSnapshot(ns: NS): JobSnapshot {
 
 export function getTargetJobCounts(
 	ns: NS,
+	fleet: Fleet,
 	target: string,
 ): TargetJobCounts {
-	const snap = getJobSnapshot(ns);
+	const snap = getJobSnapshot(ns, fleet);
 	return snap.byTarget[target] ?? {
 		target,
 		hack: 0,
