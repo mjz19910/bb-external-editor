@@ -73,6 +73,7 @@ export async function main(ns: NS) {
 	const serverMaxMoneyMap = new Map<string, number>();
 	const serverMinSecMap = new Map<string, number>();
 	const scriptRamMap = new Map<string, number>();
+	const serverWeakenTime = new Map<string, number>();
 
 	for (const host of hosts) {
 		maxRamByHost.set(host, map.ramSizes[host]);
@@ -83,10 +84,19 @@ export async function main(ns: NS) {
 		serverMinSecMap.set(target, ns.getServerMinSecurityLevel(target));
 	}
 
+	for (const target of hosts) {
+		if (serverMaxMoneyMap.get(target)! <= 0) continue;
+		if (target == "home") continue;
+		const waitTime = ns.getWeakenTime(target);
+		log(`${target}: weaken ETA ${ns.format.time(waitTime)}`);
+		serverWeakenTime.set(target, waitTime);
+	}
+
 	const targets = hosts
 		.filter((h) => h !== "home" && serverMaxMoneyMap.get(h)! > 0)
-		.sort((a, b) => serverMinSecMap.get(a)! - serverMinSecMap.get(b)!);
+		.sort((a, b) => serverWeakenTime.get(a)! - serverWeakenTime.get(b)!);
 
+	log("\n");
 	log(`Preparing ${targets.length} servers in parallel...`);
 
 	const done = new Set<string>();
@@ -120,8 +130,8 @@ export async function main(ns: NS) {
 							ns.format.time(waitTime)
 						}`,
 					);
-					// await ns.sleep(waitTime)
-					await ns.sleep(5000);
+					await ns.sleep(waitTime)
+					// await ns.sleep(5000);
 				}
 			} else if (!moneyReady) {
 				const launched = await launchAcrossNetwork(
@@ -140,8 +150,8 @@ export async function main(ns: NS) {
 							ns.format.time(waitTime)
 						}`,
 					);
-					// await ns.sleep(waitTime)
-					await ns.sleep(5000);
+					await ns.sleep(waitTime)
+					// await ns.sleep(5000);
 				}
 			} else {
 				log(
