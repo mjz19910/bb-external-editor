@@ -107,7 +107,8 @@ async function run_farm_step(
 
 	if (can_run && sec > s.minSec + 1.5) {
 		const wantedW = hackWeaken + growWeaken + 20;
-		const missingW = missing(wantedW, jobs.weaken);
+		let missingW = missing(wantedW, jobs.weaken);
+		missingW = wantedW;
 
 		const alloc = allocateThreads(fleet, wgMem, missingW);
 		const launched = runAllocations(ns, WEAKEN, alloc, [target]);
