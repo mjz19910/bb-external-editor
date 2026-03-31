@@ -69,33 +69,34 @@ export async function main(ns: NS) {
 		}
 	}
 
+	const srvWeakenTime = new Map<string, number>();
+	const srvMaxMoney = new Map<string, number>();
+	const srvMinSec = new Map<string, number>();
+
 	const maxRamByHost = new Map<string, number>();
-	const serverMaxMoneyMap = new Map<string, number>();
-	const serverMinSecMap = new Map<string, number>();
 	const scriptRamMap = new Map<string, number>();
-	const serverWeakenTime = new Map<string, number>();
 
 	for (const host of hosts) {
 		maxRamByHost.set(host, map.ramSizes[host]);
 	}
 
 	for (const target of hosts) {
-		serverMaxMoneyMap.set(target, ns.getServerMaxMoney(target));
-		serverMinSecMap.set(target, ns.getServerMinSecurityLevel(target));
+		srvMaxMoney.set(target, ns.getServerMaxMoney(target));
+		srvMinSec.set(target, ns.getServerMinSecurityLevel(target));
 	}
 
 	for (const target of hosts) {
-		if (serverMaxMoneyMap.get(target)! <= 0) continue;
 		if (target == "home") continue;
 		const waitTime = ns.getWeakenTime(target);
-		serverWeakenTime.set(target, waitTime);
+		srvWeakenTime.set(target, waitTime);
 	}
 
-	const targets = hosts
-		.filter((h) => h !== "home" && serverMaxMoneyMap.get(h)! > 0)
-		.sort((a, b) => serverWeakenTime.get(a)! - serverWeakenTime.get(b)!);
+	const targets = hosts.filter((h) =>
+		h !== "home" && srvMaxMoney.get(h)! > 0
+	);
+	targets.sort((a, b) => srvWeakenTime.get(a)! - srvWeakenTime.get(b)!);
 	for (const target of targets) {
-		const waitTime = serverWeakenTime.get(target)!;
+		const waitTime = srvWeakenTime.get(target)!;
 		log(`${target}: weaken ETA ${ns.format.time(waitTime)}`);
 	}
 
@@ -110,8 +111,8 @@ export async function main(ns: NS) {
 
 			const money = ns.getServerMoneyAvailable(target);
 			const sec = ns.getServerSecurityLevel(target);
-			const maxMoney = serverMaxMoneyMap.get(target)!;
-			const minSec = serverMinSecMap.get(target)!;
+			const maxMoney = srvMaxMoney.get(target)!;
+			const minSec = srvMinSec.get(target)!;
 
 			const moneyReady = money >= maxMoney;
 			const secReady = sec <= minSec + 0.001;
