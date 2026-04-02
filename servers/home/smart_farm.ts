@@ -191,11 +191,12 @@ export class MultiTargetFarm {
 	/** Launch a single script with memory allocation */
 	private launchOne(fleet: Fleet, target: string, script: string, memPerThread: number, threads: number, duration: number) {
 		if (threads <= 0) return { threads: 0, pids: [], endTime: 0 }
+		let pids: number[] = []
 		let myErrors = 0
 		duration += 50
 		this.ns.asleep(duration).then(() => {
 			if (this.disabled) return
-			res.pids.forEach(pid => this.workerPids.delete(pid))
+			pids.forEach(pid => this.workerPids.delete(pid))
 			this.finishJobOnHost(target)
 			this.errorCount -= myErrors
 		})
@@ -212,6 +213,7 @@ export class MultiTargetFarm {
 			return { threads: 0, pids: [], endTime: 0 }
 		}
 		const res = runAllocationsTracked(this.ns, script, alloc, [target])
+		pids = res.pids
 		myErrors += res.failedAllocs.length
 		this.errorCount += myErrors
 		const endTime = Date.now() + duration
