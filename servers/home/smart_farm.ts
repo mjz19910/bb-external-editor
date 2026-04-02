@@ -295,11 +295,6 @@ class SmartFarm {
 				missing++;
 			}
 		}
-
-		tlog(
-			ns,
-			`[SMART_FARM_EXIT] target=${this.target} tracked=${this.workerPids.size} killed=${killed} missing=${missing}`,
-		);
 	}
 
 	kill() {
