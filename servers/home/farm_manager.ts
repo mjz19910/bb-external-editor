@@ -83,11 +83,6 @@ class RoundRobinTargetLogger {
 		})()
 	}
 
-	targetEventCount = 2
-	setFarms(farms: MultiTargetFarm[]) {
-		this.targetEventCount = farms.length
-	}
-
 	private flushOne() {
 		const now = Date.now()
 
@@ -105,8 +100,6 @@ class RoundRobinTargetLogger {
 			const hottest = this.chooseMostActive()
 			if (hottest) chosen = hottest
 		}
-
-		if (chosen.eventCount < this.targetEventCount) return
 
 		const age = now - chosen.lastSeen
 		this.ns.tprint(`[Farm Activity] target=${chosen.target} phase=${chosen.phase} events=${chosen.eventCount} hack=${chosen.hackThreads} grow=${chosen.growThreads} weaken=${chosen.weakenThreads} lastSeen=${this.ns.format.time(age)} ago`)
@@ -174,7 +167,6 @@ export async function main(ns: NS) {
 	function addFarm(farm: MultiTargetFarm, logger: RoundRobinTargetLogger) {
 		farm.setLogger(logger)
 		farms.push(farm)
-		logger.setFarms(farms)
 	}
 
 	for (let i = 0; i < 5; i++) {
