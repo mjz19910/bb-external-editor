@@ -1,124 +1,181 @@
+// ram_widget_full.ts
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
 
 	const doc = eval("document") as Document
 	const widgetId = "ram-widget"
 
-	// Remove old widget if already running
 	const old = doc.getElementById(widgetId)
 	if (old) old.remove()
 
-	// Create widget
 	const box = doc.createElement("div")
 	box.id = widgetId
-	box.style.position = "fixed"
-	box.style.top = "80px"
-	box.style.right = "20px"
-	box.style.zIndex = "999999"
-	box.style.background = "rgba(20,20,20,0.92)"
-	box.style.color = "#00ff9c"
-	box.style.padding = "12px 14px"
-	box.style.border = "1px solid #00ff9c"
-	box.style.borderRadius = "10px"
-	box.style.fontFamily = "monospace"
-	box.style.fontSize = "13px"
-	box.style.whiteSpace = "pre"
-	box.style.boxShadow = "0 0 12px rgba(0,255,156,0.25)"
-	box.style.minWidth = "280px"
-	box.style.cursor = "move"
-	box.style.userSelect = "none"
-
-	box.innerText = "Loading RAM..."
+	Object.assign(box.style, {
+		position: "fixed",
+		top: "8px",
+		right: "240px",
+		zIndex: "1500",
+		background: "rgba(20,20,20,0.92)",
+		color: "#00ff9c",
+		padding: "12px 14px",
+		border: "1px solid #00ff9c",
+		borderRadius: "10px",
+		fontFamily: "monospace",
+		fontSize: "13px",
+		whiteSpace: "pre",
+		boxShadow: "0 0 12px rgba(0,255,156,0.25)",
+		minWidth: "280px",
+		cursor: "move",
+		userSelect: "none",
+	})
 	doc.body.appendChild(box)
 
-	// Close button
 	const closeBtn = doc.createElement("div")
 	closeBtn.innerText = "✖"
-	closeBtn.style.position = "absolute"
-	closeBtn.style.top = "4px"
-	closeBtn.style.right = "6px"
-	closeBtn.style.cursor = "pointer"
-	closeBtn.style.color = "#ff4b4b"
-	closeBtn.style.fontWeight = "bold"
-	closeBtn.style.userSelect = "none"
+	Object.assign(closeBtn.style, {
+		position: "absolute",
+		top: "4px",
+		right: "6px",
+		cursor: "pointer",
+		color: "#ff4b4b",
+		fontSize: "19px",
+		fontWeight: "bold",
+		userSelect: "none",
+	})
 	box.appendChild(closeBtn)
 
+	let running = true
 	closeBtn.addEventListener("click", () => {
 		box.remove()
-		running = false // stop the update loop
+		running = false
 	})
 
-	// Drag support
 	makeDraggable(box)
 
-	// Rolling buffers for max RAM over last 60 seconds
-	const homeHistory = []
-	const totalHistory = []
+	// --- Header ---
+	const title = doc.createElement("div")
+	title.innerText = "RAM MONITOR"
+	box.appendChild(title)
 
-	let running = true
+	const sep = doc.createElement("div")
+	sep.innerText = "========================"
+	box.appendChild(sep)
 
-	try {
-		while (running) {
-			const servers = getAllServers(ns)
-
-			const homeMax = ns.getServerMaxRam("home")
-			const homeUsed = ns.getServerUsedRam("home")
-			const homeFree = homeMax - homeUsed
-
-			const totalMax = servers.reduce((sum, s) => sum + ns.getServerMaxRam(s), 0)
-			const totalUsed = servers.reduce((sum, s) => sum + ns.getServerUsedRam(s), 0)
-			const totalFree = totalMax - totalUsed
-
-			// Update rolling history
-			homeHistory.push(homeUsed)
-			if (homeHistory.length > 60) homeHistory.shift()
-
-			totalHistory.push(totalUsed)
-			if (totalHistory.length > 60) totalHistory.shift()
-
-			const homeMax1min = Math.max(...homeHistory)
-			const totalMax1min = Math.max(...totalHistory)
-
-			const ranked = servers
-				.map(s => ({
-					name: s,
-					max: ns.getServerMaxRam(s),
-					used: ns.getServerUsedRam(s),
-					free: ns.getServerMaxRam(s) - ns.getServerUsedRam(s)
-				}))
-				.filter(s => s.max > 0)
-				.sort((a, b) => b.free - a.free)
-				.slice(0, 8)
-
-			let text = ""
-			text += "RAM MONITOR\n"
-			text += "========================\n"
-			text += `HOME    ${bar(homeUsed, homeMax)}\n`
-			text += `        ${fmt(homeUsed)} / ${fmt(homeMax)}\n`
-			text += `        FREE: ${fmt(homeFree)}\n\n`
-			text += `        MAX 1min: ${fmt(homeMax1min)}\n\n`
-
-			text += `TOTAL   ${bar(totalUsed, totalMax)}\n`
-			text += `        ${fmt(totalUsed)} / ${fmt(totalMax)}\n`
-			text += `        FREE: ${fmt(totalFree)}\n\n`
-			text += `        MAX 1min: ${fmt(totalMax1min)}\n\n`
-
-			text += "TOP FREE SERVERS\n"
-			text += "------------------------\n"
-			for (const s of ranked) {
-				text += `${truncate(s.name, 14).padEnd(14)} ${fmtShort(s.free).padStart(7)}\n`
-			}
-
-			box.innerText = text
-			box.appendChild(closeBtn)
-
-			await ns.sleep(1000)
-		}
-	} finally {
-		const el = doc.getElementById(widgetId)
-		if (el) el.remove()
+	// --- Home / Total RAM ---
+	const createRow = (label: string) => {
+		const div = doc.createElement("div")
+		const span = doc.createElement("span")
+		div.innerText = label
+		div.appendChild(span)
+		box.appendChild(div)
+		return span
 	}
 
+	const homeBarSpan = createRow("HOME    ")
+	const homeUsedSpan = createRow("        Used: ")
+	const homeFreeSpan = createRow("        Free: ")
+	const homeMax1Span = createRow("        MAX 1min: ")
+
+	const totalBarSpan = createRow("TOTAL   ")
+	const totalUsedSpan = createRow("        Used: ")
+	const totalFreeSpan = createRow("        Free: ")
+	const totalMax1Span = createRow("        MAX 1min: ")
+
+	// --- TOP FREE SERVERS container ---
+	const topTitle = doc.createElement("div")
+	topTitle.innerText = "\nTOP FREE SERVERS"
+	box.appendChild(topTitle)
+
+	const topContainer = doc.createElement("div")
+	Object.assign(topContainer.style, {
+		maxHeight: "180px",
+		overflowY: "auto",
+	})
+	box.appendChild(topContainer)
+
+	// Map serverName -> row { nameSpan, freeSpan }
+	const serverRows: Record<string, { div: HTMLDivElement; nameSpan: HTMLSpanElement; freeSpan: HTMLSpanElement }> = {}
+
+	// --- Rolling buffers ---
+	const homeHistory: number[] = []
+	const totalHistory: number[] = []
+
+	// --- Update loop ---
+	while (running) {
+		const servers = getAllServers(ns)
+
+		const homeMax = ns.getServerMaxRam("home")
+		const homeUsed = ns.getServerUsedRam("home")
+		const homeFree = homeMax - homeUsed
+
+		const totalMax = servers.reduce((sum, s) => sum + ns.getServerMaxRam(s), 0)
+		const totalUsed = servers.reduce((sum, s) => sum + ns.getServerUsedRam(s), 0)
+		const totalFree = totalMax - totalUsed
+
+		homeHistory.push(homeUsed)
+		if (homeHistory.length > 60) homeHistory.shift()
+		totalHistory.push(totalUsed)
+		if (totalHistory.length > 60) totalHistory.shift()
+
+		const homeMax1 = Math.max(...homeHistory)
+		const totalMax1 = Math.max(...totalHistory)
+
+		// --- Update spans for home / total RAM ---
+		homeBarSpan.innerText = bar(homeUsed, homeMax)
+		homeUsedSpan.innerText = `${fmt(homeUsed)} / ${fmt(homeMax)}`
+		homeFreeSpan.innerText = fmt(homeFree)
+		homeMax1Span.innerText = fmt(homeMax1)
+
+		totalBarSpan.innerText = bar(totalUsed, totalMax)
+		totalUsedSpan.innerText = `${fmt(totalUsed)} / ${fmt(totalMax)}`
+		totalFreeSpan.innerText = fmt(totalFree)
+		totalMax1Span.innerText = fmt(totalMax1)
+
+		// --- Update top servers ---
+		const ranked = servers
+			.map(s => ({
+				name: s,
+				max: ns.getServerMaxRam(s),
+				used: ns.getServerUsedRam(s),
+				free: ns.getServerMaxRam(s) - ns.getServerUsedRam(s),
+			}))
+			.filter(s => s.max > 0)
+			.sort((a, b) => b.free - a.free)
+
+		// Create new rows if server not yet in DOM
+		for (const s of ranked) {
+			if (!serverRows[s.name]) {
+				const div = doc.createElement("div")
+				const nameSpan = doc.createElement("span")
+				const freeSpan = doc.createElement("span")
+				Object.assign(freeSpan.style, { float: "right" })
+				nameSpan.innerText = truncate(s.name, 14)
+				freeSpan.innerText = fmtShort(s.free)
+				div.appendChild(nameSpan)
+				div.appendChild(freeSpan)
+				topContainer.appendChild(div)
+				serverRows[s.name] = { div, nameSpan, freeSpan }
+			} else {
+				serverRows[s.name].freeSpan.innerText = fmtShort(s.free)
+			}
+		}
+
+		// Reorder DOM based on free RAM
+		let prev: HTMLDivElement | null = null
+		for (const s of ranked) {
+			const row = serverRows[s.name].div
+			if (prev === null) {
+				topContainer.insertBefore(row, topContainer.firstChild)
+			} else if (row !== prev.nextSibling) {
+				topContainer.insertBefore(row, prev.nextSibling)
+			}
+			prev = row
+		}
+
+		await ns.sleep(1000)
+	}
+
+	// --- Helpers ---
 	function makeDraggable(el: HTMLDivElement) {
 		let isDragging = false
 		let offsetX = 0
