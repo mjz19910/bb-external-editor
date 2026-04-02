@@ -13,7 +13,6 @@ function formatMoney(ns: NS, n: number) {
 
 const GROW = "lib/prep_grow.ts"
 const WEAK = "lib/prep_weak.ts"
-
 const all_scripts = [GROW, WEAK]
 
 export async function main(ns: NS) {
@@ -37,99 +36,97 @@ export async function main(ns: NS) {
 		if (host !== "home") ns.scp(all_scripts, host)
 	}
 
-	// Server state maps
-	const srvWeakenTime = new Map<string, number>()
+	// Maps for server state
 	const srvMaxMoney = new Map<string, number>()
 	const srvMinSec = new Map<string, number>()
 	const maxRamByHost = new Map<string, number>()
+	const scriptRamMap = new Map<string, number>()
 
 	for (const host of hosts) maxRamByHost.set(host, map.ramSizes[host])
 	for (const target of hosts) {
 		srvMaxMoney.set(target, ns.getServerMaxMoney(target))
 		srvMinSec.set(target, ns.getServerMinSecurityLevel(target))
-		if (target !== "home") srvWeakenTime.set(target, ns.getWeakenTime(target))
 	}
 
 	const targets = hosts.filter((h) => h !== "home" && srvMaxMoney.get(h)! > 0)
-	targets.sort((a, b) => (srvWeakenTime.get(a)! - srvWeakenTime.get(b)!))
 
-	for (const target of targets) {
-		const waitTime = srvWeakenTime.get(target)!
-		log(`${target}: weaken ETA ${ns.format.time(waitTime)}`)
+	// Inline function to calculate needed threads
+	function threadsNeeded(target: string, script: string): number {
+		if (script === WEAK) {
+			const sec = ns.getServerSecurityLevel(target)
+			const minSec = srvMinSec.get(target)!
+			if (sec <= minSec) return 0
+			return Math.ceil((sec - minSec) / ns.weakenAnalyze(1))
+		} else if (script === GROW) {
+			const money = Math.max(1, ns.getServerMoneyAvailable(target))
+			const maxMoney = srvMaxMoney.get(target)!
+			if (money >= maxMoney) return 0
+			return Math.ceil(ns.growthAnalyze(target, maxMoney / money))
+		}
+		return 0
 	}
 
-	log(`\nPreparing ${targets.length} servers in parallel...`)
+	log(`Starting prep of ${targets.length} servers in parallel...`)
 
-	const scriptRamMap = new Map<string, number>()
-	const done = new Set<string>()
+	// Launch all jobs in one go
+	for (const target of targets) {
+		let sec = ns.getServerSecurityLevel(target)
+		let money = ns.getServerMoneyAvailable(target)
+		const minSec = srvMinSec.get(target)!
+		const maxMoney = srvMaxMoney.get(target)!
 
-	while (done.size < targets.length) {
-		for (const target of targets) {
-			if (done.has(target)) continue
+		// Determine what needs to run
+		const needsWeaken = sec > minSec
+		const needsGrow = money < maxMoney
 
-			const money = ns.getServerMoneyAvailable(target)
-			const sec = ns.getServerSecurityLevel(target)
-			const maxMoney = srvMaxMoney.get(target)!
-			const minSec = srvMinSec.get(target)!
+		if (!needsWeaken && !needsGrow) {
+			log(`${target}: READY (${formatMoney(ns, money)} / ${formatMoney(ns, maxMoney)}, sec ${sec.toFixed(2)})`)
+			continue
+		}
 
-			const moneyReady = money >= maxMoney
-			const secReady = sec <= minSec + 0.001
+		const tasks: { script: string; threads: number }[] = []
+		if (needsWeaken) tasks.push({ script: WEAK, threads: threadsNeeded(target, WEAK) })
+		if (needsGrow) tasks.push({ script: GROW, threads: threadsNeeded(target, GROW) })
 
-			// Determine script and threads needed
-			let script = ""
-			let threadsNeeded = 0
+		for (const task of tasks) {
+			if (!scriptRamMap.has(task.script)) scriptRamMap.set(task.script, ns.getScriptRam(task.script))
+			const ramPerThread = scriptRamMap.get(task.script)!
+			let threadsLeft = task.threads
 
-			if (!secReady) {
-				script = WEAK
-				const weakenPerThread = ns.weakenAnalyze(1)
-				threadsNeeded = Math.ceil(Math.max(0, sec - minSec) / weakenPerThread)
-			} else if (!moneyReady) {
-				script = GROW
-				threadsNeeded = Math.ceil(ns.growthAnalyze(target, maxMoney / Math.max(1, money)))
-			} else {
-				log(
-					`${target}: READY (${formatMoney(ns, money)} / ${formatMoney(ns, maxMoney)}, sec ${sec.toFixed(
-						2
-					)})`
-				)
-				done.add(target)
-				continue
-			}
-
-			if (!scriptRamMap.has(script)) scriptRamMap.set(script, ns.getScriptRam(script))
-			const ramPerThread = scriptRamMap.get(script)!
-
-			// Inline launch across network
-			let launchedThreads = 0
+			// Distribute across all hosts
 			const sortedHosts = hosts
 				.filter((h) => ns.hasRootAccess(h) && (maxRamByHost.get(h) ?? 0) > 0)
 				.sort((a, b) => (maxRamByHost.get(b)! - maxRamByHost.get(a)!))
 
 			for (const host of sortedHosts) {
-				if (threadsNeeded <= 0) break
+				if (threadsLeft <= 0) break
 
 				const maxRam = maxRamByHost.get(host)!
 				const usedRam = ns.getServerUsedRam(host)
 				const freeRam = host === "home" ? Math.max(0, maxRam - usedRam - reserve) : Math.max(0, maxRam - usedRam)
+				const hostThreads = Math.min(Math.floor(freeRam / ramPerThread), threadsLeft)
 
-				const hostThreads = Math.min(Math.floor(freeRam / ramPerThread), threadsNeeded)
 				if (hostThreads <= 0) continue
 
-				const pid = ns.exec(script, host, hostThreads, target, hostThreads)
+				const pid = ns.exec(task.script, host, hostThreads, target, hostThreads)
 				if (pid !== 0) {
-					launchedThreads += hostThreads
-					threadsNeeded -= hostThreads
-					await ns.sleep(50) // small stagger
+					threadsLeft -= hostThreads
 				}
 			}
 
-			if (launchedThreads > 0) {
-				const waitTime = script === WEAK ? ns.getWeakenTime(target) : ns.getGrowTime(target)
-				log(`${target}: ${script === WEAK ? "weaken" : "grow"} x${launchedThreads}, ETA ${ns.format.time(waitTime)}`)
-				await ns.sleep(waitTime)
-			}
+			log(`${target}: launched ${task.script} x${task.threads - threadsLeft}`)
 		}
-		await ns.sleep(5000) // loop pause
+	}
+
+	log("All prep jobs started. Waiting for completion...")
+
+	// Wait for all targets to finish
+	for (const target of targets) {
+		const weakenTime = ns.getWeakenTime(target)
+		const growTime = ns.getGrowTime(target)
+		const waitTime = Math.max(weakenTime, growTime)
+		log(`${target}: waiting up to ${ns.format.time(waitTime)} for prep`)
+		await ns.sleep(waitTime + 500) // small buffer
 	}
 
 	log("All servers prepped.")
