@@ -23,7 +23,12 @@ type TargetState = {
 	prep: PrepPlan
 }
 
-class MultiTargetFarm {
+export class MultiTargetFarm {
+	shutdown() {
+		this.cleanupWorkers()
+		this.disabled = true
+	}
+
 	workerPids = new Map<number, number>() // pid -> expected end time
 	jobsPerHost = new Map<string, number>();
 	hMem: number
@@ -84,7 +89,7 @@ class MultiTargetFarm {
 		return { hackThreads, growThreads, hackWeaken, growWeaken }
 	}
 
-	getOrInsertJob(host: string, newValue: number) {
+	private getOrInsertJob(host: string, newValue: number) {
 		if (this.jobsPerHost.has(host)) {
 			return this.jobsPerHost.get(host)!
 		}
@@ -92,7 +97,7 @@ class MultiTargetFarm {
 		return newValue
 	}
 
-	getJob(host: string) {
+	private getJob(host: string) {
 		return this.jobsPerHost.get(host)!
 	}
 
@@ -157,12 +162,12 @@ class MultiTargetFarm {
 		return { ...res, endTime }
 	}
 
-	addJobToHost(host: string) {
+	private addJobToHost(host: string) {
 		const curCount = this.getOrInsertJob(host, 0)
 		this.jobsPerHost.set(host, curCount + 1)
 	}
 
-	finishJobOnHost(host: string) {
+	private finishJobOnHost(host: string) {
 		if (this.jobsPerHost.has(host)) {
 			let curCount = this.getJob(host)
 			this.jobsPerHost.set(host, curCount - 1)
@@ -182,7 +187,7 @@ class MultiTargetFarm {
 	}
 
 	/** Run one iteration for all targets */
-	async runOnce() {
+	private async runOnce() {
 		const ns = this.ns
 		const fleet = getFleet(ns)
 		const targetStates = this.initTargets()
@@ -201,13 +206,18 @@ class MultiTargetFarm {
 	}
 
 	/** Kill all tracked workers on exit */
-	cleanupWorkers() {
+	private cleanupWorkers() {
 		for (const pid of this.workerPids.keys()) this.ns.kill(pid)
 		this.workerPids.clear()
-		this.disabled = true
 	}
 
-	disabled = false;
+	async runForever() {
+		for (; ;) {
+			await this.runOnce()
+		}
+	}
+
+	private disabled = false;
 }
 
 /** Main entry point */
@@ -235,10 +245,6 @@ export async function main(ns: NS) {
 	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.hosts)
 
 	const farm = new MultiTargetFarm(ns, hackPct, map)
-	ns.atExit(() => farm.cleanupWorkers())
-
-	while (true) {
-		if (farm.disabled) return
-		await farm.runOnce()
-	}
+	ns.atExit(() => farm.shutdown())
+	await farm.runForever()
 }
