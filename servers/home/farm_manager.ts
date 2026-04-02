@@ -44,6 +44,7 @@ export async function main(ns: NS) {
 				raceArr.push((async () => {
 					const farm = new MultiTargetFarm(ns, hackPct, map)
 					farms.push(farm)
+					await ns.asleep(2000)
 					tlog(ns, `[Farm;id=${farms.length}] Starting`)
 					return await farm.runForever()
 				})())
