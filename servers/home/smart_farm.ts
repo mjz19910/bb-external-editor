@@ -44,6 +44,7 @@ class MultiTargetFarm {
 		const ns = this.ns
 		return this.map.hosts
 			.filter(host => {
+				if (!ns.hasRootAccess(host)) return false
 				if (ns.getServerMaxMoney(host) <= 0) return false
 				if (ns.getServerRequiredHackingLevel(host) > this.hackingLevel) return false
 				return true
