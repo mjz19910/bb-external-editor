@@ -1,0 +1,682 @@
+You’ve already got the bones of a **real Bitburner automation framework**, not just a pile of scripts. At this point, the biggest gains usually come from **coordination, visibility, and optimization**, not “yet another hack script.”
+
+If I were extending this codebase, I’d prioritize **systems that make the rest of your scripts smarter**.
+
+---
+
+# What you should add next (highest value first)
+
+## 1) A **central scheduler / orchestrator**
+
+You already have pieces like:
+
+* `farm_manager.ts`
+* `manage_empire.ts`
+* `jobs_report.ts`
+* `retarget_farm.ts`
+
+…but I’d bet they’re still somewhat **script-driven** rather than **state-driven**.
+
+### Add:
+
+`./orchestrator.ts`
+
+### What it should do:
+
+* Maintain a global view of:
+
+  * all rooted servers
+  * available RAM per worker
+  * active jobs
+  * best targets
+  * prep state per target
+* Decide whether each target should be:
+
+  * **prep**
+  * **batch**
+  * **cooldown**
+  * **ignore**
+* Assign jobs based on:
+
+  * RAM efficiency
+  * hack level
+  * current security/money state
+  * profitability
+
+### Why this matters:
+
+Right now your scripts probably “do things.”
+The orchestrator should instead answer:
+
+> “Given the entire network right now, what is the most profitable use of every GB of RAM?”
+
+That’s the leap from “automation” to “engine.”
+
+---
+
+## 2) A **true HWGW batch engine**
+
+I see:
+
+* `hack.ts`
+* `grow.ts`
+* `weaken.ts`
+* `prep.ts`
+
+That’s good. But if you haven’t already, you want a proper:
+
+### Add:
+
+* `./batch_manager.ts`
+* `./lib/batch.ts`
+* `./lib/timing.ts`
+
+### Goal:
+
+Run **synchronized Hack → Weaken → Grow → Weaken** batches with precise offsets.
+
+### Core features:
+
+* compute thread counts
+* compute exact launch delays
+* prevent overlap collisions
+* reserve RAM before dispatch
+* handle drift / timing failures
+* auto-fallback to prep mode if target drifts
+
+### Why this is huge:
+
+Once your servers are mostly prepped, **batching is where the money explodes**.
+
+If you’re not batching yet, this is **the** next feature.
+
+---
+
+## 3) A **persistent state system**
+
+You already have:
+
+* `./lib/db/network_map.json`
+
+Good start. But you likely want more than a network map.
+
+### Add:
+
+* `./lib/db/state.json`
+* `./lib/state.ts`
+
+### Track things like:
+
+* target health:
+
+  * money %
+  * sec delta
+  * prep status
+* per-host capabilities:
+
+  * RAM
+  * cores
+  * rooted?
+* active job reservations
+* historical profitability
+* last known best target
+* batch failures / collisions
+
+### Why:
+
+A lot of Bitburner scripts become fragile because they constantly recompute everything from scratch and forget context.
+
+State lets your system become **stable** instead of merely **reactive**.
+
+---
+
+## 4) A **RAM reservation / resource allocator**
+
+This is one of the most underrated upgrades.
+
+### Add:
+
+`./lib/ram_allocator.ts`
+
+### Problem it solves:
+
+Without centralized RAM accounting, your scripts will:
+
+* overbook servers
+* collide with each other
+* underuse free RAM
+* randomly fail launches
+
+### It should:
+
+* reserve RAM before a job launches
+* release RAM on completion
+* pack jobs efficiently across hosts
+* support priorities:
+
+  * critical weaken > prep grow > hack > optional utility
+
+### Nice extra:
+
+Add **fragmentation-aware packing**:
+
+* put large jobs on big servers
+* use leftovers for small utility jobs
+
+This alone can noticeably increase income.
+
+---
+
+## 5) A **real-time dashboard / control panel**
+
+You have `ram_widget.ts` and `jobs_report.ts`, which is promising.
+
+Now go one level up.
+
+### Add:
+
+`./dashboard.ts`
+
+### Display:
+
+* current best targets
+* target states:
+
+  * money %
+  * security delta
+  * prep/batch status
+* total RAM / used RAM / wasted RAM
+* active jobs by type
+* income/sec estimate
+* hacknet stats
+* purchased server status
+* “why target X was chosen”
+
+### Why:
+
+You can’t optimize what you can’t see.
+
+A good dashboard turns your project from:
+
+> “I think it’s working?”
+
+into:
+
+> “I know exactly what’s bottlenecking.”
+
+---
+
+## 6) A **simulation / planner tool**
+
+This is a very “late-midgame coder” move, and it’s worth it.
+
+### Add:
+
+`./sim_target.ts`
+
+### What it does:
+
+For a target, calculate:
+
+* ideal hack %
+* expected income per batch
+* weaken/grow/hack thread requirements
+* cycle time
+* RAM cost
+* $/sec per GB
+
+### Output:
+
+Something like:
+
+```txt
+Target: n00dles
+Hack %: 3.2%
+Batch income: $1.24m
+Batch RAM: 182 GB
+Cycle time: 12.4s
+Yield: $100k/sec
+Efficiency: $549/sec/GB
+```
+
+### Why:
+
+This helps you choose targets scientifically instead of by “feels profitable.”
+
+It also helps tune your batch parameters.
+
+---
+
+## 7) A **target scoring model that’s actually smart**
+
+You’ve already got:
+
+* `best_target.ts`
+* `choose_best_target.ts`
+* `money_sort_target.ts`
+* `min_sec_target.ts`
+* `hack_lvl_target.ts`
+
+That’s good, but these sound like **heuristics**, not a unified scoring model.
+
+### Add:
+
+`./lib/score_target.ts`
+
+### Instead of:
+
+* “highest money”
+* “lowest security”
+* “lowest hack level”
+
+### Use:
+
+A weighted score like:
+
+```ts
+score =
+  (expectedMoneyPerSec / ramCost)
+  * successChance
+  * prepReadiness
+  * stabilityFactor
+```
+
+### Include:
+
+* weaken time
+* grow cost
+* max money
+* min security
+* current state
+* chance to hack
+* available RAM in your fleet
+
+### Why:
+
+The “best target” changes based on your **current infrastructure**, not just server stats.
+
+That’s where most scripts stay too simplistic.
+
+---
+
+# Strong “quality of life” additions
+
+## 8) Add a **config system**
+
+Right now, I’d guess a lot of your tuning is hardcoded.
+
+### Add:
+
+* `./config.ts`
+* `./lib/db/config.json`
+
+### Store:
+
+* reserved home RAM
+* max purchased servers
+* preferred hack %
+* prep thresholds
+* dashboard refresh rate
+* logging verbosity
+* auto-buy toggles
+* auto-upgrade toggles
+
+### Why:
+
+You’ll stop editing source code every time you want to tweak behavior.
+
+That’s a big quality jump.
+
+---
+
+## 9) Add a **messaging/event bus**
+
+You already have:
+
+* `farm_send_message.ts`
+* `ScriptPort.ts`
+
+That’s a good sign.
+
+Now formalize it.
+
+### Add:
+
+`./lib/events.ts`
+
+### Events like:
+
+* `TARGET_PREPPED`
+* `BATCH_FAILED`
+* `SERVER_ROOTED`
+* `RAM_LOW`
+* `NEW_BEST_TARGET`
+* `SERVER_PURCHASED`
+
+### Why:
+
+Instead of scripts polling each other awkwardly, they can react to events.
+
+This makes your system cleaner and easier to debug.
+
+---
+
+## 10) Add a **failsafe / recovery manager**
+
+Bitburner systems drift. Timing breaks. Jobs die. Purchased servers change.
+
+### Add:
+
+`./recovery.ts`
+
+### It should:
+
+* detect stale jobs
+* detect impossible reservations
+* reset stuck targets
+* kill orphaned worker scripts
+* re-prep damaged targets
+* reassign jobs after server upgrades
+
+### Why:
+
+This saves you from “everything worked for 20 minutes and then quietly fell apart.”
+
+That’s classic Bitburner.
+
+---
+
+# If you want “big unlock” features after that
+
+These are more ambitious, but very worth it.
+
+## 11) Corporation manager
+
+If/when you’re there:
+
+### Add:
+
+`./corp_manager.ts`
+
+Automate:
+
+* divisions
+* upgrades
+* materials
+* product cycles
+* employee assignments
+
+This becomes a whole subsystem of its own.
+
+---
+
+## 12) Stock market integration
+
+You already have:
+
+* `algo_stock.ts`
+
+So I’d probably extend it into a more serious strategy.
+
+### Add:
+
+* `./stock_manager.ts`
+* `./lib/stocks.ts`
+
+### Integrate with hacking:
+
+* long companies you’re about to grow
+* short companies you’re about to damage (if available in your run rules)
+* use forecast/volatility scoring
+* automate reserve cash strategy
+
+This can become absurdly profitable.
+
+---
+
+## 13) Coding Contract automation
+
+### Add:
+
+* `./contracts_scan.ts`
+* `./contracts_solve.ts`
+* `./lib/contracts/*`
+
+This is one of the best “extra utility” systems.
+
+Even if you don’t solve every contract, automating:
+
+* scan
+* locate
+* classify
+* queue
+
+is already valuable.
+
+---
+
+# What I would build **first** in your exact repo
+
+If this were my repo, I’d do these **in order**:
+
+## Phase 1 — immediate power
+
+1. `lib/ram_allocator.ts`
+2. `lib/score_target.ts`
+3. `batch_manager.ts`
+4. `lib/timing.ts`
+
+## Phase 2 — stability
+
+5. `lib/state.ts`
+6. `orchestrator.ts`
+7. `recovery.ts`
+
+## Phase 3 — usability
+
+8. `dashboard.ts`
+9. `config.ts`
+10. `sim_target.ts`
+
+That progression gives you:
+
+* more money first
+* then more reliability
+* then better visibility
+
+Correct order. Otherwise you end up making a pretty dashboard for a chaotic engine.
+
+---
+
+# My strongest recommendation
+
+If you’re asking **“what should I add next?”**, the most likely right answer is:
+
+## Build a proper **batching + RAM allocation system**
+
+That’s the biggest multiplier for a repo like yours.
+
+Because once you already have:
+
+* rooting
+* mapping
+* target selection
+* prep
+* worker deployment
+* server buying
+
+…the real game becomes:
+
+> “How precisely can I convert RAM into money?”
+
+That’s what batching solves.
+
+---
+
+If you want, I can do one of these next:
+
+1. **Recommend an improved folder structure** for your current repo
+2. **Design the next 10 scripts/files** you should add with exact responsibilities
+3. **Write you a clean `batch_manager.ts` + `ram_allocator.ts` starter architecture** in TypeScript for Bitburner
+
+If you want the most useful one, pick **#3**.
+
+## Phase 1
+
+Good call. **Phase 1** is where your repo stops being “a set of scripts” and starts behaving like an actual **hacking engine**.
+
+We’ll build this in the right dependency order:
+
+# Phase 1 plan
+
+## 1. `lib/ram_allocator.ts`
+
+Centralized RAM packing + reservations
+
+## 2. `lib/score_target.ts`
+
+Pick targets based on **real yield**, not vibes
+
+## 3. `lib/timing.ts`
+
+Precise scheduling helpers for HWGW
+
+## 4. `batch_manager.ts`
+
+Use the above to launch real batches
+
+---
+
+Since **everything else depends on RAM scheduling**, we start with:
+
+# Step 1 — `lib/ram_allocator.ts`
+
+This version is designed to work with your current style:
+
+* uses your fleet host structure
+* supports **packing threads across multiple servers**
+* tracks **temporary reservations**
+* can be used for:
+
+  * prep jobs
+  * batch jobs
+  * utility jobs
+
+---
+
+## `lib/ram_allocator.ts`
+---
+
+# What this gives you immediately
+
+You can now do things like:
+
+```ts
+const allocator = new RamAllocator(fleet, 128)
+
+const weakenAlloc = allocator.allocate({
+	label: "weaken-foodnstuff",
+	scriptRam: ns.getScriptRam("/lib/weaken.js"),
+	threads: 500,
+})
+
+if (weakenAlloc.success) {
+	// launch across all reserved hosts
+}
+```
+
+Instead of:
+
+* guessing free RAM
+* overbooking hosts
+* wasting capacity
+* stepping on your own jobs like a clown in steel boots
+
+---
+
+# Step 2 — add a tiny launcher helper
+
+This is the **missing bridge** between allocation and actually running scripts.
+
+## `lib/run_alloc.ts`
+---
+
+# Why this matters
+
+Now your system can do:
+
+1. **plan**
+2. **reserve**
+3. **launch**
+
+That’s the correct separation.
+
+Without this, `batch_manager.ts` becomes a spaghetti goblin.
+
+---
+
+# Step 3 — test script
+
+Before we build target scoring and timing, test the allocator in isolation.
+
+## `ram_alloc_test.ts`
+---
+
+# Next file to build
+
+Once this is in and working, the correct next step is:
+
+## `lib/score_target.ts`
+
+That will answer:
+
+> “Which targets deserve RAM first?”
+
+Then we’ll do:
+
+* `lib/timing.ts`
+* `batch_manager.ts`
+
+and your repo becomes **actually dangerous**.
+
+---
+
+# Important note before continuing
+
+Your current repo has a likely naming mismatch:
+
+You showed files like:
+
+* `./lib/hack.ts`
+* `./lib/grow.ts`
+* `./lib/weaken.ts`
+
+but the test uses:
+
+```ts
+ns.getScriptRam("/lib/weaken.js")
+```
+
+If your actual runtime files are **`.ts`**, use:
+
+```ts
+ns.getScriptRam("/lib/weaken.ts")
+```
+
+Same for hack/grow.
+
+Bitburner is annoyingly literal about this.
+
+---
+
+If you want, I can continue immediately with:
+
+## `lib/score_target.ts`
+
+and make it fit your current codebase so it plugs into:
+
+* `choose_best_target.ts`
+* `best_target.ts`
+* `farm_manager.ts`
+
+That’s the right next move.
