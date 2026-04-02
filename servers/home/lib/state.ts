@@ -21,7 +21,7 @@ export type PersistentState = {
 	lastUpdated: number
 }
 
-const STATE_FILE = "state.json"
+const STATE_FILE = "/lib/db/state.json"
 
 export class StateManager {
 	ns: NS
