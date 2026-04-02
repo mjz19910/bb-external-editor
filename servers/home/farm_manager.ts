@@ -46,6 +46,7 @@ export async function main(ns: NS) {
 		if (results instanceof ScriptPort) {
 			const msgs = results.readAll()
 			ns.tprint("got messages ", msgs)
+			const nextWriteResult = results.nextWrite()
 			raceArr.push((async () => {
 				for (const _msg of msgs) {
 					raceArr.push((async () => {
@@ -56,7 +57,7 @@ export async function main(ns: NS) {
 					})())
 					await ns.asleep(2000)
 				}
-				raceArr.push(results.nextWrite().then(() => results))
+				raceArr.push(nextWriteResult.then(() => results))
 			})())
 		}
 	}
