@@ -162,16 +162,11 @@ export async function main(ns: NS) {
 	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.hosts)
 
 	const logger = new RoundRobinTargetLogger(ns, map.hosts)
-
+	const raceArr: Promise<null | void>[] = []
 	const farms: MultiTargetFarm[] = []
 	function addFarm(farm: MultiTargetFarm, logger: RoundRobinTargetLogger) {
 		farm.setLogger(logger)
 		farms.push(farm)
-	}
-
-	for (let i = 0; i < 26; i++) {
-		const farm = new MultiTargetFarm(ns, hackPct, map)
-		addFarm(farm, logger)
 	}
 
 	ns.atExit(() => {
@@ -184,10 +179,18 @@ export async function main(ns: NS) {
 		msg: true
 		hackPct?: number
 	}>(ns, 1)
-	const raceArr: Promise<null | void>[] = [port.nextWrite().then(() => null)]
-	for (const farm of farms) {
-		raceArr.push(farm.runForever())
+	raceArr.push(port.nextWrite().then(() => null))
+
+	async function slowStart() {
+		for (let i = 0; i < 25; i++) {
+			const farm = new MultiTargetFarm(ns, hackPct, map)
+			addFarm(farm, logger)
+			raceArr.push(farm.runForever())
+			await ns.asleep(1000)
+		}
 	}
+	raceArr.push(slowStart())
+
 	for (; ;) {
 		const { idx, result } = await Promise.race(raceArr.map(async (promise, idx) => ({ idx, result: await promise })))
 		raceArr.splice(idx, 1)
