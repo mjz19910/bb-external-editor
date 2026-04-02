@@ -198,12 +198,12 @@ export async function main(ns: NS) {
 		// 3 = 63.64% of pserv-01
 		// 40 = 11
 
-		for (let i = 0; i < 1; i++) {
+		for (let i = 0; i < 2; i++) {
 			addFarm(farms, hackPct, logger, true)
 		}
+		await ns.asleep(15_000)
 
 		for (let i = 0; i < 60; i++) {
-			await ns.asleep(4_000)
 			addFarm(farms, hackPct, logger)
 			ns.print("added farm id=", farms.length)
 			do {
