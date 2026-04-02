@@ -40,26 +40,37 @@ class MultiTargetFarm {
 	/** Initialize all target states */
 	private initTargets(): TargetState[] {
 		const ns = this.ns
-		return this.targets.map(host => {
-			const minSec = ns.getServerMinSecurityLevel(host)
-			const moneyMax = ns.getServerMaxMoney(host)
-			const plan: CyclePlan = this.calcCyclePlan(host)
-			const prep: PrepPlan = calcPrepPlan(ns, host)
-			const jobs = getTargetJobCounts(ns, getFleet(ns), host)
-			return { host, hackPct: this.hackPct, minSec, moneyMax, plan, prep, jobs }
-		})
+		return this.targets
+			.filter(host => ns.getServerMaxMoney(host) > 0) // skip servers with 0 money
+			.map(host => {
+				const minSec = ns.getServerMinSecurityLevel(host)
+				const moneyMax = ns.getServerMaxMoney(host)
+				const plan: CyclePlan = this.calcCyclePlan(host)
+				const prep: PrepPlan = calcPrepPlan(ns, host)
+				const jobs = getTargetJobCounts(ns, getFleet(ns), host)
+				return { host, hackPct: this.hackPct, minSec, moneyMax, plan, prep, jobs }
+			})
 	}
 
-	/** Calculate cycle plan for a target */
+	/** Calculate cycle plan for a target with safety checks */
 	private calcCyclePlan(target: string): CyclePlan {
 		const ns = this.ns
-		const hackThreads = Math.ceil(calcHackThreadsForPercent(ns, target, this.hackPct))
-		const hackSec = ns.hackAnalyzeSecurity(hackThreads, target)
-		const hackWeaken = Math.ceil(hackSec / ns.weakenAnalyze(1))
-		const growFactor = 1 / Math.max(0.001, 1 - this.hackPct)
-		const growThreads = Math.ceil(ns.growthAnalyze(target, growFactor))
-		const growSec = ns.growthAnalyzeSecurity(growThreads)
-		const growWeaken = Math.ceil(growSec / ns.weakenAnalyze(1))
+		const hackPct = Math.max(0, Math.min(this.hackPct, 1)) // clamp 0..1
+		const maxMoney = ns.getServerMaxMoney(target)
+		const availMoney = ns.getServerMoneyAvailable(target)
+
+		if (maxMoney <= 0 || availMoney <= 0) {
+			return { hackThreads: 0, growThreads: 0, hackWeaken: 0, growWeaken: 0 }
+		}
+
+		const hackThreads = Math.max(0, Math.ceil(calcHackThreadsForPercent(ns, target, hackPct)))
+		const hackSec = hackThreads > 0 ? ns.hackAnalyzeSecurity(hackThreads, target) : 0
+		const hackWeaken = hackSec > 0 ? Math.ceil(hackSec / ns.weakenAnalyze(1)) : 0
+
+		const growFactor = 1 / Math.max(0.001, 1 - hackPct)
+		const growThreads = Math.max(0, Math.ceil(ns.growthAnalyze(target, growFactor)))
+		const growSec = growThreads > 0 ? ns.growthAnalyzeSecurity(growThreads) : 0
+		const growWeaken = growSec > 0 ? Math.ceil(growSec / ns.weakenAnalyze(1)) : 0
 
 		return { hackThreads, growThreads, hackWeaken, growWeaken }
 	}
@@ -168,9 +179,10 @@ export async function main(ns: NS) {
 
 	const hackPct = Number(ns.args[0] ?? 0.1)
 
-	// Get all hackable targets
+	// Get all hackable targets with money
 	const allTargets = ns.scan()
 		.filter(s => ns.getServerRequiredHackingLevel(s) <= ns.getHackingLevel())
+		.filter(s => ns.getServerMaxMoney(s) > 0)
 
 	if (allTargets.length === 0) {
 		ns.tprint("No hackable targets found.")
