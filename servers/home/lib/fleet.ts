@@ -84,8 +84,11 @@ export function allocateThreads(
 	ramPerThread: number,
 	wantedThreads: number,
 	reserveHomeRam = 32,
-): Allocation[] {
-	if (ramPerThread <= 0 || wantedThreads <= 0) return []
+): {
+	allocations: Allocation[]
+	remaining: number
+} | null {
+	if (ramPerThread <= 0 || wantedThreads <= 0) return null
 
 	const allocations: Allocation[] = []
 	let remaining = wantedThreads
@@ -114,7 +117,10 @@ export function allocateThreads(
 		if (remaining <= 0) break
 	}
 
-	return allocations
+	return {
+		allocations,
+		remaining,
+	}
 }
 
 export function deployScriptSet(
