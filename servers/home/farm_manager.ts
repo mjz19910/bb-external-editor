@@ -164,9 +164,15 @@ export async function main(ns: NS) {
 	const logger = new RoundRobinTargetLogger(ns, map.hosts)
 	const raceArr: Promise<null | void>[] = []
 	const farms: MultiTargetFarm[] = []
-	function addFarm(farm: MultiTargetFarm, logger: RoundRobinTargetLogger) {
+	let farmIdBase = 1
+
+	function addFarm(hackPct: number, logger: RoundRobinTargetLogger) {
+		tlog(ns, `[Farm;id=${farmIdBase}] Starting`)
+		const farm = new MultiTargetFarm(ns, hackPct, map)
 		farm.setLogger(logger)
 		farms.push(farm)
+		raceArr.push(farm.runForever())
+		farmIdBase++
 	}
 
 	ns.atExit(() => {
@@ -183,9 +189,7 @@ export async function main(ns: NS) {
 
 	async function slowStart() {
 		for (let i = 0; i < 25; i++) {
-			const farm = new MultiTargetFarm(ns, hackPct, map)
-			addFarm(farm, logger)
-			raceArr.push(farm.runForever())
+			addFarm(hackPct, logger)
 			await ns.asleep(1000)
 		}
 	}
@@ -199,10 +203,7 @@ export async function main(ns: NS) {
 		ns.tprint("got messages ", msgs)
 		raceArr.push(port.nextWrite().then(() => null))
 		for (const msg of msgs) {
-			const farm = new MultiTargetFarm(ns, msg.hackPct ?? hackPct, map)
-			addFarm(farm, logger)
-			tlog(ns, `[Farm;id=${farms.length}] Starting`)
-			raceArr.push(farm.runForever())
+			addFarm(msg.hackPct ?? hackPct, logger)
 		}
 	}
 }
