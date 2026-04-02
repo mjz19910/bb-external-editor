@@ -8,293 +8,154 @@ import {
 import { getTargetJobCounts, TargetJobCounts } from "./lib/jobs"
 import { log } from "./lib/log"
 import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep"
-import { chooseBestTarget } from "./choose_best_target"
 import { NetworkMap } from "./lib/network_map"
 import { GROW, HACK, WEAKEN } from "./lib/paths"
 
-export function autocomplete(
-	data: AutocompleteData,
-	args: ScriptArg[],
-): string[] {
-	const servers = data.servers
-	const srv_set = new Set(servers)
-	for (const arg of args) {
-		srv_set.delete(arg as string)
-	}
-	return [...srv_set]
-}
-
-function missing(wanted: number, active: number): number {
-	return Math.max(0, Math.ceil(wanted) - active)
-}
-
-type LaunchOrder = {
-	hack: number
-	grow: number
-	weaken: number
-}
-
-type CyclePlan = {
-	hackThreads: number
-	growThreads: number
-	hackWeaken: number
-	growWeaken: number
-}
-
+type LaunchOrder = { hack: number; grow: number; weaken: number }
+type CyclePlan = { hackThreads: number; growThreads: number; hackWeaken: number; growWeaken: number }
 type PrepPlan = ReturnType<typeof calcPrepPlan>
 
-type StepCtx = {
-	fleet: Fleet
-	jobs: TargetJobCounts
-	sec: number
-	money: number
+type TargetState = {
+	host: string
+	hackPct: number
+	minSec: number
+	moneyMax: number
 	plan: CyclePlan
 	prep: PrepPlan
+	jobs: TargetJobCounts
 }
 
-type FarmPhase = "stabilize" | "prep" | "cycle" | "idle"
-
-class SmartFarm {
+class MultiTargetFarm {
+	workerPids = new Map<number, number>() // pid -> expected end time
 	hMem: number
 	gMem: number
 	wMem: number
 
-	minSec: number
-	moneyMax: number
-
-	constructor(public ns: NS, public target: string, public hackPct: number) {
+	constructor(public ns: NS, public hackPct: number, public targets: string[]) {
 		this.hMem = ns.getScriptRam(HACK)
 		this.gMem = ns.getScriptRam(GROW)
 		this.wMem = ns.getScriptRam(WEAKEN)
-
-		this.minSec = ns.getServerMinSecurityLevel(target)
-		this.moneyMax = ns.getServerMaxMoney(target)
 	}
 
-	private initStep(): StepCtx {
+	/** Initialize all target states */
+	private initTargets(): TargetState[] {
 		const ns = this.ns
-		const target = this.target
-
-		const fleet = getFleet(ns)
-		const jobs = getTargetJobCounts(ns, fleet, target)
-		const sec = ns.getServerSecurityLevel(target)
-		const money = ns.getServerMoneyAvailable(target)
-		const plan = this.calcCyclePlan(ns)
-		const prep = calcPrepPlan(ns, target)
-
-		return {
-			fleet,
-			jobs,
-			sec,
-			money,
-			plan,
-			prep,
-		}
+		return this.targets.map(host => {
+			const minSec = ns.getServerMinSecurityLevel(host)
+			const moneyMax = ns.getServerMaxMoney(host)
+			const plan: CyclePlan = this.calcCyclePlan(host)
+			const prep: PrepPlan = calcPrepPlan(ns, host)
+			const jobs = getTargetJobCounts(ns, getFleet(ns), host)
+			return { host, hackPct: this.hackPct, minSec, moneyMax, plan, prep, jobs }
+		})
 	}
 
-	private calcCyclePlan(ns: NS): CyclePlan {
-		const hackThreads = Math.ceil(calcHackThreadsForPercent(ns, this.target, this.hackPct))
-
-		const hackSec = ns.hackAnalyzeSecurity(hackThreads, this.target)
+	/** Calculate cycle plan for a target */
+	private calcCyclePlan(target: string): CyclePlan {
+		const ns = this.ns
+		const hackThreads = Math.ceil(calcHackThreadsForPercent(ns, target, this.hackPct))
+		const hackSec = ns.hackAnalyzeSecurity(hackThreads, target)
 		const hackWeaken = Math.ceil(hackSec / ns.weakenAnalyze(1))
-
 		const growFactor = 1 / Math.max(0.001, 1 - this.hackPct)
-		const growThreads = Math.ceil(ns.growthAnalyze(this.target, growFactor))
+		const growThreads = Math.ceil(ns.growthAnalyze(target, growFactor))
 		const growSec = ns.growthAnalyzeSecurity(growThreads)
 		const growWeaken = Math.ceil(growSec / ns.weakenAnalyze(1))
 
-		return {
-			hackThreads,
-			growThreads,
-			hackWeaken,
-			growWeaken,
-		}
+		return { hackThreads, growThreads, hackWeaken, growWeaken }
 	}
 
-	private getPhase(ctx: StepCtx): FarmPhase {
-		if (ctx.sec >= this.minSec + 1.5) {
-			return "stabilize"
-		}
-
-		if (!ctx.prep.isPrepped) {
-			return "prep"
-		}
-
-		const order = this.planCycle(ctx)
-		if (this.hasWork(order)) {
-			return "cycle"
-		}
-
+	/** Determine phase for a target */
+	private getPhase(target: TargetState): "stabilize" | "prep" | "cycle" | "idle" {
+		if (this.ns.getServerSecurityLevel(target.host) >= target.minSec + 1.5) return "stabilize"
+		if (!target.prep.isPrepped) return "prep"
+		const order = this.planCycle(target)
+		if (order.hack + order.grow + order.weaken > 0) return "cycle"
 		return "idle"
 	}
 
-	private planPhaseWork(ctx: StepCtx, phase: FarmPhase): LaunchOrder {
+	/** Plan launch order per phase */
+	private planPhaseWork(target: TargetState, phase: string): LaunchOrder {
 		switch (phase) {
 			case "stabilize":
-				return this.planStabilize(ctx)
+				const wantedW = target.plan.hackWeaken + target.plan.growWeaken + 20
+				return { hack: 0, grow: 0, weaken: Math.max(0, wantedW - target.jobs.weaken) }
 			case "prep":
-				return this.planPrep(ctx)
+				return { hack: 0, grow: Math.max(0, target.prep.needGrow - target.jobs.grow), weaken: Math.max(0, target.prep.totalWeaken - target.jobs.weaken) }
 			case "cycle":
-				return this.planCycle(ctx)
+				return this.planCycle(target)
 			case "idle":
-				return this.emptyOrder()
+			default:
+				return { hack: 0, grow: 0, weaken: 0 }
 		}
 	}
 
-	private runLaunchOrder(ctx: StepCtx, order: LaunchOrder): boolean {
-		if (!this.hasWork(order)) {
-			return false
+	/** Plan cycle order for a target */
+	private planCycle(target: TargetState): LaunchOrder {
+		return {
+			hack: Math.max(0, target.plan.hackThreads - target.jobs.hack),
+			grow: Math.max(0, target.plan.growThreads - target.jobs.grow),
+			weaken: Math.max(0, target.plan.hackWeaken + target.plan.growWeaken - target.jobs.weaken),
 		}
-		const launched = this.launchThreads(ctx.fleet, order)
-		return launched.hack > 0 || launched.grow > 0 || launched.weaken > 0
 	}
 
-	private get hackTime() {
-		return this.ns.getHackTime(this.target) + 50
+	/** Launch threads for a target, respecting memory limits */
+	private launchThreads(fleet: Fleet, order: LaunchOrder, target: string): LaunchOrder {
+		const h = this.launchOne(fleet, HACK, this.hMem, order.hack, this.ns.getHackTime(target) + 50)
+		const g = this.launchOne(fleet, GROW, this.gMem, order.grow, this.ns.getGrowTime(target) + 50)
+		const w = this.launchOne(fleet, WEAKEN, this.wMem, order.weaken, this.ns.getWeakenTime(target) + 50)
+		return { hack: h.threads, grow: g.threads, weaken: w.threads }
 	}
 
-	private get growTime() {
-		return this.ns.getGrowTime(this.target) + 50
-	}
-
-	private get weakenTime() {
-		return this.ns.getWeakenTime(this.target) + 50
-	}
-
-	private launchOne(
-		fleet: Fleet,
-		script: string,
-		memPerThread: number,
-		threads: number,
-		duration: number,
-	): { threads: number; pids: number[] } {
-		if (threads <= 0) {
-			return { threads: 0, pids: [] }
-		}
-
+	/** Launch a single script with memory allocation */
+	private launchOne(fleet: Fleet, script: string, memPerThread: number, threads: number, duration: number) {
+		if (threads <= 0) return { threads: 0, pids: [], endTime: 0 }
 		const alloc = allocateThreads(fleet, memPerThread, threads)
-		const res = runAllocationsTracked(this.ns, script, alloc, [this.target])
-
+		const res = runAllocationsTracked(this.ns, script, alloc, [script])
 		const endTime = Date.now() + duration
-		this.trackPids(res.pids, endTime)
-
-		this.ns.asleep(duration).then(() => this.notifyEndPids(res.pids))
-
-		return res
+		for (const pid of res.pids) if (pid > 0) this.workerPids.set(pid, endTime)
+		this.ns.asleep(duration).then(() => res.pids.forEach(pid => this.workerPids.delete(pid)))
+		return { ...res, endTime }
 	}
 
-	private launchThreads(
-		fleet: Fleet,
-		order: LaunchOrder,
-	): LaunchOrder {
-		const h = this.launchOne(fleet, HACK, this.hMem, order.hack, this.hackTime)
-		const g = this.launchOne(fleet, GROW, this.gMem, order.grow, this.growTime)
-		const w = this.launchOne(fleet, WEAKEN, this.wMem, order.weaken, this.weakenTime)
-
-		return {
-			hack: h.threads,
-			grow: g.threads,
-			weaken: w.threads,
-		}
-	}
-
-	private planStabilize(ctx: StepCtx): LaunchOrder {
-		const wantedW = ctx.plan.hackWeaken + ctx.plan.growWeaken + 20
-		return {
-			hack: 0,
-			grow: 0,
-			weaken: missing(wantedW, ctx.jobs.weaken),
-		}
-	}
-
-	private planPrep(ctx: StepCtx): LaunchOrder {
-		return {
-			hack: 0,
-			grow: missing(ctx.prep.needGrow, ctx.jobs.grow),
-			weaken: missing(ctx.prep.totalWeaken, ctx.jobs.weaken),
-		}
-	}
-
-	private planCycle(ctx: StepCtx): LaunchOrder {
-		const weakenThreads = ctx.plan.hackWeaken + ctx.plan.growWeaken
-		return {
-			hack: missing(ctx.plan.hackThreads, ctx.jobs.hack),
-			grow: missing(ctx.plan.growThreads, ctx.jobs.grow),
-			weaken: missing(weakenThreads, ctx.jobs.weaken),
-		}
-	}
-
-	private hasWork(order: LaunchOrder): boolean {
-		return order.hack > 0 || order.grow > 0 || order.weaken > 0
-	}
-
-	private emptyOrder(): LaunchOrder {
-		return { hack: 0, grow: 0, weaken: 0 }
-	}
-
+	/** Calculate how long until next worker finishes */
 	private getNextSleep(): number {
-		if (this.workerPids.size === 0) return 500
-
+		if (this.workerPids.size === 0) return 50
 		const now = Date.now()
 		let minRemaining = Infinity
-
 		for (const endTime of this.workerPids.values()) {
 			const remaining = endTime - now
-			if (remaining > 0 && remaining < minRemaining) {
-				minRemaining = remaining
-			}
+			if (remaining > 0 && remaining < minRemaining) minRemaining = remaining
 		}
-
-		return Math.max(50, minRemaining)
+		return Math.max(1, minRemaining)
 	}
 
-	runOnce() {
-		const ctx = this.initStep()
-		const phase = this.getPhase(ctx)
-
-		if (phase === "idle") {
-			return this.ns.asleep(this.getNextSleep())
-		}
-
-		const order = this.planPhaseWork(ctx, phase)
-		const didLaunch = this.runLaunchOrder(ctx, order)
-
-		if (didLaunch) {
-			log(
-				this.ns,
-				`[SMART_FARM] phase=${phase} h=${order.hack} g=${order.grow} w=${order.weaken}`,
-			)
-		}
-
-		return this.ns.asleep(this.getNextSleep())
-	}
-
-	private workerPids = new Map<number, number>() // pid -> expected end time
-
-	private trackPids(pids: number[], endTime: number) {
-		for (const pid of pids) {
-			if (pid > 0) {
-				this.workerPids.set(pid, endTime)
-			}
-		}
-	}
-
-	private notifyEndPids(pids: number[]) {
-		for (const pid of pids) {
-			this.workerPids.delete(pid)
-		}
-	}
-
-	cleanupWorkers() {
+	/** Run one iteration for all targets */
+	async runOnce() {
 		const ns = this.ns
+		const fleet = getFleet(ns)
+		const targetStates = this.initTargets()
 
-		for (const [pid] of this.workerPids) {
-			ns.kill(pid)
+		for (const target of targetStates) {
+			const phase = this.getPhase(target)
+			if (phase === "idle") continue
+			const order = this.planPhaseWork(target, phase)
+			const launched = this.launchThreads(fleet, order, target.host)
+			if (launched.hack + launched.grow + launched.weaken > 0) {
+				log(ns, `[MULTI_FARM] target=${target.host} phase=${phase} h=${launched.hack} g=${launched.grow} w=${launched.weaken}`)
+			}
 		}
+
+		await ns.asleep(this.getNextSleep())
+	}
+
+	/** Kill all tracked workers on exit */
+	cleanupWorkers() {
+		for (const pid of this.workerPids.keys()) this.ns.kill(pid)
 		this.workerPids.clear()
 	}
 }
 
+/** Main entry point */
 export async function main(ns: NS) {
 	ns.disableLog("disableLog")
 	ns.disableLog("scp")
@@ -304,37 +165,28 @@ export async function main(ns: NS) {
 	ns.disableLog("sleep")
 	ns.disableLog("asleep")
 	ns.disableLog("isRunning")
-	ns.disableLog("getServerMaxRam")
-	ns.disableLog("getServerUsedRam")
-	ns.disableLog("getServerMaxMoney")
-	ns.disableLog("getServerSecurityLevel")
-	ns.disableLog("getServerMoneyAvailable")
-	ns.disableLog("getServerMinSecurityLevel")
 
-	let target = String(ns.args[0] ?? "")
-	const hackPct = Number(ns.args[1] ?? 0.1)
+	const hackPct = Number(ns.args[0] ?? 0.1)
 
-	if (!target) {
-		const best = chooseBestTarget(ns)
-		if (!best) {
-			ns.tprint("No farmable target found.")
-			return
-		}
-		target = best.host
+	// Get all hackable targets
+	const allTargets = ns.scan()
+		.filter(s => ns.getServerRequiredHackingLevel(s) <= ns.getHackingLevel())
+
+	if (allTargets.length === 0) {
+		ns.tprint("No hackable targets found.")
+		return
 	}
 
-	ns.ui.setTailTitle(`smart_farm:${target}:${hackPct}`)
-	log(ns, `[SMART_FARM] target=${target} hackPct=${hackPct}`)
+	ns.ui.setTailTitle(`multi_farm:${hackPct}`)
+	log(ns, `[MULTI_FARM] targets=${allTargets.length} hackPct=${hackPct}`)
 
 	const map = NetworkMap.build(ns)
-	const FILES = [HACK, GROW, WEAKEN]
-	deployScriptSet(ns, FILES, map.hosts)
+	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.hosts)
 
-	const state = new SmartFarm(ns, target, hackPct)
-	ns.atExit(() => state.cleanupWorkers())
+	const farm = new MultiTargetFarm(ns, hackPct, allTargets)
+	ns.atExit(() => farm.cleanupWorkers())
 
-	for (; ;) {
-		const p = state.runOnce()
-		if (p) await p
+	while (true) {
+		await farm.runOnce()
 	}
 }
