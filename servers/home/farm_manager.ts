@@ -191,10 +191,14 @@ export async function main(ns: NS) {
 	async function slowStart() {
 		let hadAnyErrors = false
 		for (let i = 0; ; i++) {
+			if (i - 4 >= 0) {
+				farms[i - 4].noisy = false
+			}
 			const farm = addFarm(hackPct, logger)
+			farm.noisy = true
 			do {
 				ns.print("waiting for farm id=", i, " to stabilize")
-				await ns.asleep(1000)
+				await ns.asleep(1500)
 				if (farm.hasErrors()) {
 					hadAnyErrors = true
 				}

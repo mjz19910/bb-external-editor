@@ -34,6 +34,7 @@ type FarmLogger = {
 }
 
 export class MultiTargetFarm {
+	noisy = false
 	hasErrors() {
 		return this.errorCount > 0
 	}
@@ -194,6 +195,9 @@ export class MultiTargetFarm {
 		const res = runAllocationsTracked(this.ns, script, alloc, [target])
 		for (const _failure of res.failedAllocs) {
 			this.errorCount++
+		}
+		if (this.noisy) {
+			this.ns.tprint("start jobs ", script, " ", target, " ", threads, " ", res.pids.length, " processes")
 		}
 		duration += 50
 		const endTime = Date.now() + duration
