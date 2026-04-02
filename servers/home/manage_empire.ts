@@ -22,9 +22,9 @@ function manager_run_once(
 }
 
 export async function main(ns: NS) {
-	const reserve = Number(ns.args[0] ?? 50_000_000);
-	const buyMinRam = Number(ns.args[1] ?? 8);
-	const upgradeMinRam = Number(ns.args[2] ?? 8);
+	const reserve = Number(ns.args[0] ?? 500_000);
+	const buyMinRam = Number(ns.args[1] ?? 1);
+	const upgradeMinRam = Number(ns.args[2] ?? 1);
 
 	while (true) {
 		try {
