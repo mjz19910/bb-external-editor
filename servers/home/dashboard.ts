@@ -99,14 +99,14 @@ export async function main(ns: NS) {
 			e.preventDefault()
 		})
 
-		document.addEventListener("mousemove", (e) => {
+		doc.addEventListener("mousemove", (e) => {
 			if (!isDragging) return
 			el.style.left = `${e.clientX - offsetX}px`
 			el.style.top = `${e.clientY - offsetY}px`
 			el.style.right = "auto" // remove right to allow left/top positioning
 		})
 
-		document.addEventListener("mouseup", () => {
+		doc.addEventListener("mouseup", () => {
 			isDragging = false
 		})
 	}
