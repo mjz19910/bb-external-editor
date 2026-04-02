@@ -201,7 +201,7 @@ export async function main(ns: NS) {
 		// 3 = 1.26PB
 		// 4 =
 		// 40 = 11
-		for (let i = 0; i < 16; i++) {
+		for (let i = 0; i < 18; i++) {
 			addFarm(farms, hackPct, logger)
 			ns.print("added farm id=", farms.length)
 			do {
