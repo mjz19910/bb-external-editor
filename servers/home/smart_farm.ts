@@ -5,7 +5,6 @@ import {
 	getFleet,
 	runAllocationsTracked,
 } from "./lib/fleet"
-import { getTargetJobCounts, TargetJobCounts } from "./lib/jobs"
 import { log } from "./lib/log"
 import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep"
 import { NetworkMap } from "./lib/network_map"
@@ -22,7 +21,6 @@ type TargetState = {
 	moneyMax: number
 	plan: CyclePlan
 	prep: PrepPlan
-	jobs: TargetJobCounts
 }
 
 class MultiTargetFarm {
@@ -54,8 +52,7 @@ class MultiTargetFarm {
 				const moneyMax = ns.getServerMaxMoney(host)
 				const plan: CyclePlan = this.calcCyclePlan(host)
 				const prep: PrepPlan = calcPrepPlan(ns, host)
-				const jobs = getTargetJobCounts(ns, getFleet(ns), host)
-				return { host, hackPct: this.hackPct, minSec, moneyMax, plan, prep, jobs }
+				return { host, hackPct: this.hackPct, minSec, moneyMax, plan, prep }
 			})
 	}
 
@@ -100,9 +97,9 @@ class MultiTargetFarm {
 		switch (phase) {
 			case "stabilize":
 				const wantedW = target.plan.hackWeaken + target.plan.growWeaken + 20
-				return { hack: 0, grow: 0, weaken: Math.max(0, wantedW - target.jobs.weaken) }
+				return { hack: 0, grow: 0, weaken: Math.max(0, wantedW) }
 			case "prep":
-				return { hack: 0, grow: Math.max(0, target.prep.needGrow - target.jobs.grow), weaken: Math.max(0, target.prep.totalWeaken - target.jobs.weaken) }
+				return { hack: 0, grow: Math.max(0, target.prep.needGrow), weaken: Math.max(0, target.prep.totalWeaken) }
 			case "cycle":
 				return this.planCycle(target)
 			case "idle":
@@ -114,9 +111,9 @@ class MultiTargetFarm {
 	/** Plan cycle order for a target */
 	private planCycle(target: TargetState): LaunchOrder {
 		return {
-			hack: Math.max(0, target.plan.hackThreads - target.jobs.hack),
-			grow: Math.max(0, target.plan.growThreads - target.jobs.grow),
-			weaken: Math.max(0, target.plan.hackWeaken + target.plan.growWeaken - target.jobs.weaken),
+			hack: Math.max(0, target.plan.hackThreads),
+			grow: Math.max(0, target.plan.growThreads),
+			weaken: Math.max(0, target.plan.hackWeaken + target.plan.growWeaken),
 		}
 	}
 
