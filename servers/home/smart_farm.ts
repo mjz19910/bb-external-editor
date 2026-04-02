@@ -186,50 +186,60 @@ class SmartFarm {
 		return this.ns.getWeakenTime(this.target) + 50
 	}
 
+	private launchOne(
+		fleet: Fleet,
+		script: string,
+		memPerThread: number,
+		threads: number,
+		duration: number,
+	): { threads: number; pids: number[] } {
+		if (threads <= 0) {
+			return { threads: 0, pids: [] }
+		}
+
+		const alloc = allocateThreads(fleet, memPerThread, threads)
+		const res = runAllocationsTracked(this.ns, script, alloc, [this.target])
+
+		this.trackPids(res.pids)
+		this.ns.asleep(duration).then(() => this.notifyEndPids(res.pids))
+
+		return res
+	}
+
 	private launchThreads(
 		fleet: Fleet,
 		order: LaunchOrder,
 	): LaunchOrder {
-		const ns = this.ns
-		const { target } = this
+		const h = this.launchOne(
+			fleet,
+			HACK,
+			this.hMem,
+			order.hack,
+			this.hackTime,
+		)
 
-		let launchedH = 0
-		let launchedG = 0
-		let launchedW = 0
+		const g = this.launchOne(
+			fleet,
+			GROW,
+			this.wgMem,
+			order.grow,
+			this.growTime,
+		)
 
-		if (order.hack > 0) {
-			const alloc = allocateThreads(fleet, this.hMem, order.hack)
-			const res = runAllocationsTracked(ns, HACK, alloc, [target])
-			launchedH = res.threads
-			this.trackPids(res.pids)
-			const cb = this.notifyEndPids.bind(this, res.pids)
-			ns.asleep(this.hackTime).then(cb)
-		}
+		const w = this.launchOne(
+			fleet,
+			WEAKEN,
+			this.wgMem,
+			order.weaken,
+			this.weakenTime,
+		)
 
-		if (order.grow > 0) {
-			const alloc = allocateThreads(fleet, this.wgMem, order.grow)
-			const res = runAllocationsTracked(ns, GROW, alloc, [target])
-			launchedG = res.threads
-			this.trackPids(res.pids)
-			const cb = this.notifyEndPids.bind(this, res.pids)
-			ns.asleep(this.growTime).then(cb)
-		}
-
-		if (order.weaken > 0) {
-			const alloc = allocateThreads(fleet, this.wgMem, order.weaken)
-			const res = runAllocationsTracked(ns, WEAKEN, alloc, [target])
-			launchedW = res.threads
-			this.trackPids(res.pids)
-			const cb = this.notifyEndPids.bind(this, res.pids)
-			ns.asleep(this.weakenTime).then(cb)
-		}
-
-		this.launch_counter += launchedH + launchedG + launchedW
+		this.launch_counter += h.threads + g.threads + w.threads
 
 		return {
-			hack: launchedH,
-			grow: launchedG,
-			weaken: launchedW,
+			hack: h.threads,
+			grow: g.threads,
+			weaken: w.threads,
 		}
 	}
 
