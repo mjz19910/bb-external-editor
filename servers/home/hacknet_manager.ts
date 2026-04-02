@@ -6,7 +6,7 @@ import {
 
 export async function main(ns: NS) {
 	const reserve = Number(ns.args[0] ?? 100_000)
-	const minRoi = Number(ns.args[1] ?? 1e-6)
+	const minRoi = Number(ns.args[1] ?? 1e-5)
 	const buyMany = Boolean(ns.args[2] ?? true)
 
 	let bought = 0
