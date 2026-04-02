@@ -1,3 +1,5 @@
+import { createRow } from "./dom_helpers"
+
 // ram_widget.ts
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
@@ -63,24 +65,21 @@ export async function main(ns: NS) {
 	box.appendChild(sep)
 
 	// --- Summary rows ---
-	const createRow = (label: string) => {
-		const div = doc.createElement("div")
-		const span = doc.createElement("span")
-		div.innerText = label
-		div.appendChild(span)
-		box.appendChild(div)
-		return span
+	const createRow2 = (label: string) => {
+		const row = createRow(label)
+		box.appendChild(row.div)
+		return row.span
 	}
 
-	const homeBarSpan = createRow("HOME    ")
-	const homeUsedSpan = createRow("        Used: ")
-	const homeFreeSpan = createRow("        Free: ")
-	const homeMax1Span = createRow("        MAX 1min: ")
+	const homeBarSpan = createRow2("HOME    ")
+	const homeUsedSpan = createRow2("        Used: ")
+	const homeFreeSpan = createRow2("        Free: ")
+	const homeMax1Span = createRow2("        MAX 1min: ")
 
-	const totalBarSpan = createRow("TOTAL   ")
-	const totalUsedSpan = createRow("        Used: ")
-	const totalFreeSpan = createRow("        Free: ")
-	const totalMax1Span = createRow("        MAX 1min: ")
+	const totalBarSpan = createRow2("TOTAL   ")
+	const totalUsedSpan = createRow2("        Used: ")
+	const totalFreeSpan = createRow2("        Free: ")
+	const totalMax1Span = createRow2("        MAX 1min: ")
 
 	// --- Servers section ---
 	const serversTitle = doc.createElement("div")
