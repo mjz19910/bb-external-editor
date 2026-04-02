@@ -283,22 +283,12 @@ class SmartFarm {
 		}
 	}
 
-	private cleanupWorkers() {
+	cleanupWorkers() {
 		const ns = this.ns;
-		let killed = 0;
-		let missing = 0;
 
 		for (const pid of this.workerPids) {
-			if (ns.kill(pid)) {
-				killed++;
-			} else {
-				missing++;
-			}
+			ns.kill(pid);
 		}
-	}
-
-	kill() {
-		this.cleanupWorkers();
 	}
 }
 
@@ -344,7 +334,7 @@ export async function main(ns: NS) {
 	deployScriptSet(ns, FILES, map.hosts);
 
 	const state = new SmartFarm(ns, target, hackPct);
-	ns.atExit(() => state.kill());
+	ns.atExit(() => state.cleanupWorkers());
 
 	for (;;) {
 		const p = state.runOnce();
