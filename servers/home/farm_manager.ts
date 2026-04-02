@@ -178,11 +178,14 @@ export async function main(ns: NS) {
 		return farm
 	}
 
+	let running = true
+
 	ns.atExit(() => {
 		for (const farm of farms) {
 			farm.shutdown()
 		}
 		logger.shutdown()
+		running = false
 	})
 
 	const port = new ScriptPort<{
@@ -195,19 +198,26 @@ export async function main(ns: NS) {
 		let hadAnyErrors = false
 		// 1 = 131.04TB + 216.96TB
 		// 2 = 38% of pserv-01
-		// 3 = 70% of pserv-01
+		// 3 = 1.26PB
+		// 4 =
 		// 40 = 11
 
-		for (let i = 0; i < 2; i++) {
+		for (let i = 0; i < 61; i++) {
 			addFarm(farms, hackPct, logger, true)
 		}
 		await ns.asleep(15_000)
+		const errs = farms.filter(v => v.hasErrors())
+		if (errs.length > 0) {
+			ns.tprint("farms that have errors ", errs.map(v => farms.indexOf(v)))
+			return
+		}
 
-		for (let i = 0; i < 60; i++) {
+		for (let i = 0; i < 5; i++) {
 			addFarm(farms, hackPct, logger)
 			ns.print("added farm id=", farms.length)
 			do {
 				await ns.asleep(4_000)
+				if (!running) break
 				const errs = farms.filter(v => v.hasErrors())
 				if (errs.length > 0) {
 					ns.tprint("farms that have errors ", errs.map(v => farms.indexOf(v)))
@@ -215,6 +225,7 @@ export async function main(ns: NS) {
 				}
 			} while (farms.some(v => v.hasErrors()))
 			if (hadAnyErrors) break
+			if (!running) break
 		}
 	}
 	raceArr.push(slowStart())
