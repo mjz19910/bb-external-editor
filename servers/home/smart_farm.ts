@@ -68,6 +68,10 @@ class MultiTargetFarm {
 		const hackWeaken = hackSec > 0 ? Math.ceil(hackSec / ns.weakenAnalyze(1)) : 0
 
 		const growFactor = 1 / Math.max(0.001, 1 - hackPct)
+		if (Number.isNaN(growFactor)) {
+			ns.print("grow factor is NaN, hackPct=", hackPct)
+			return { hackThreads: 0, growThreads: 0, hackWeaken: 0, growWeaken: 0 }
+		}
 		const growThreads = Math.max(0, Math.ceil(ns.growthAnalyze(target, growFactor)))
 		const growSec = growThreads > 0 ? ns.growthAnalyzeSecurity(growThreads) : 0
 		const growWeaken = growSec > 0 ? Math.ceil(growSec / ns.weakenAnalyze(1)) : 0
@@ -111,17 +115,17 @@ class MultiTargetFarm {
 
 	/** Launch threads for a target, respecting memory limits */
 	private launchThreads(fleet: Fleet, order: LaunchOrder, target: string): LaunchOrder {
-		const h = this.launchOne(fleet, HACK, this.hMem, order.hack, this.ns.getHackTime(target) + 50)
-		const g = this.launchOne(fleet, GROW, this.gMem, order.grow, this.ns.getGrowTime(target) + 50)
-		const w = this.launchOne(fleet, WEAKEN, this.wMem, order.weaken, this.ns.getWeakenTime(target) + 50)
+		const h = this.launchOne(fleet, target, HACK, this.hMem, order.hack, this.ns.getHackTime(target) + 50)
+		const g = this.launchOne(fleet, target, GROW, this.gMem, order.grow, this.ns.getGrowTime(target) + 50)
+		const w = this.launchOne(fleet, target, WEAKEN, this.wMem, order.weaken, this.ns.getWeakenTime(target) + 50)
 		return { hack: h.threads, grow: g.threads, weaken: w.threads }
 	}
 
 	/** Launch a single script with memory allocation */
-	private launchOne(fleet: Fleet, script: string, memPerThread: number, threads: number, duration: number) {
+	private launchOne(fleet: Fleet, target: string, script: string, memPerThread: number, threads: number, duration: number) {
 		if (threads <= 0) return { threads: 0, pids: [], endTime: 0 }
 		const alloc = allocateThreads(fleet, memPerThread, threads)
-		const res = runAllocationsTracked(this.ns, script, alloc, [script])
+		const res = runAllocationsTracked(this.ns, script, alloc, [target])
 		const endTime = Date.now() + duration
 		for (const pid of res.pids) if (pid > 0) this.workerPids.set(pid, endTime)
 		this.ns.asleep(duration).then(() => res.pids.forEach(pid => this.workerPids.delete(pid)))
