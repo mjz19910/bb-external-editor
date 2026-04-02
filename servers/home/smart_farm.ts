@@ -187,6 +187,9 @@ export class MultiTargetFarm {
 		if (threads <= 0) return { threads: 0, pids: [], endTime: 0 }
 		const alloc = allocateThreads(fleet, memPerThread, threads)
 		const res = runAllocationsTracked(this.ns, script, alloc, [target])
+		if (res.failedAllocs.length > 0) {
+			this.ns.tprint("failed to start ", res.failedAllocs)
+		}
 		duration += 50
 		const endTime = Date.now() + duration
 		for (const pid of res.pids) if (pid > 0) this.workerPids.set(pid, endTime)

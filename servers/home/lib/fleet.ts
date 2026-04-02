@@ -150,6 +150,7 @@ export function runAllocations(
 export type LaunchResult = {
 	threads: number
 	pids: number[]
+	failedAllocs: Allocation[]
 }
 
 export function runAllocationsTracked(
@@ -160,16 +161,20 @@ export function runAllocationsTracked(
 ): LaunchResult {
 	let threads = 0
 	const pids: number[] = []
+	const failedAllocs: Allocation[] = []
 
 	for (const a of allocs) {
 		if (a.threads <= 0) continue
 
 		const pid = ns.exec(script, a.host, a.threads, ...args)
-		if (pid === 0) continue
+		if (pid === 0) {
+			failedAllocs.push(a)
+			continue
+		}
 
 		threads += a.threads
 		pids.push(pid)
 	}
 
-	return { threads, pids }
+	return { threads, pids, failedAllocs }
 }
