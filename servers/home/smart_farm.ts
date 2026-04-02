@@ -191,6 +191,7 @@ export async function main(ns: NS) {
 	ns.disableLog("scan")
 	ns.disableLog("scp")
 	ns.disableLog("getHackingLevel")
+	ns.disableLog("getServerRequiredHackingLevel")
 
 	const hackPct = Number(ns.args[0] ?? 0.1)
 	const map = NetworkMap.build(ns)
