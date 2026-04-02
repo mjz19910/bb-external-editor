@@ -48,7 +48,6 @@ type StepCtx = {
 	jobs: TargetJobCounts;
 	sec: number;
 	money: number;
-	maxMoney: number;
 	plan: CyclePlan;
 	prep: PrepPlan;
 };
@@ -79,8 +78,7 @@ class SmartFarm {
 		const jobs = getTargetJobCounts(ns, fleet, target);
 		const sec = ns.getServerSecurityLevel(target);
 		const money = ns.getServerMoneyAvailable(target);
-		const maxMoney = this.moneyMax;
-		const plan = this.calcCyclePlan(ns, target, this.hackPct);
+		const plan = this.calcCyclePlan(ns);
 		const prep = calcPrepPlan(ns, target);
 
 		return {
@@ -88,7 +86,6 @@ class SmartFarm {
 			jobs,
 			sec,
 			money,
-			maxMoney,
 			plan,
 			prep,
 		};
@@ -108,16 +105,18 @@ class SmartFarm {
 		this.steps++;
 	}
 
-	private calcCyclePlan(ns: NS, target: string, hackPct: number): CyclePlan {
+	private calcCyclePlan(ns: NS): CyclePlan {
 		const hackThreads = Math.ceil(
-			calcHackThreadsForPercent(ns, target, hackPct),
+			calcHackThreadsForPercent(ns, this.target, this.hackPct),
 		);
 
-		const hackSec = ns.hackAnalyzeSecurity(hackThreads, target);
+		const hackSec = ns.hackAnalyzeSecurity(hackThreads, this.target);
 		const hackWeaken = Math.ceil(hackSec / ns.weakenAnalyze(1));
 
-		const growFactor = 1 / Math.max(0.001, 1 - hackPct);
-		const growThreads = Math.ceil(ns.growthAnalyze(target, growFactor));
+		const growFactor = 1 / Math.max(0.001, 1 - this.hackPct);
+		const growThreads = Math.ceil(
+			ns.growthAnalyze(this.target, growFactor),
+		);
 		const growSec = ns.growthAnalyzeSecurity(growThreads);
 		const growWeaken = Math.ceil(growSec / ns.weakenAnalyze(1));
 
