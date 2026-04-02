@@ -6,13 +6,13 @@ import {
 	runAllocationsTracked,
 } from "./lib/fleet"
 import { log } from "./lib/log"
-import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep"
+import { calcHackThreadsForPercent, calcPrepPlanV1 } from "./lib/prep"
 import { NetworkMap } from "./lib/network_map"
 import { GROW, HACK, WEAKEN } from "./lib/paths"
 
 type LaunchOrder = { hack: number; grow: number; weaken: number }
 type CyclePlan = { hackThreads: number; growThreads: number; hackWeaken: number; growWeaken: number }
-type PrepPlan = ReturnType<typeof calcPrepPlan>
+type PrepPlan = ReturnType<typeof calcPrepPlanV1>
 
 type TargetState = {
 	host: string
@@ -104,7 +104,7 @@ export class MultiTargetFarm {
 				const minSec = ns.getServerMinSecurityLevel(host)
 				const moneyMax = ns.getServerMaxMoney(host)
 				const plan: CyclePlan = this.calcCyclePlan(host)
-				const prep: PrepPlan = calcPrepPlan(ns, host)
+				const prep: PrepPlan = calcPrepPlanV1(ns, host)
 				return { host, hackPct: this.hackPct, minSec, moneyMax, plan, prep }
 			})
 	}
