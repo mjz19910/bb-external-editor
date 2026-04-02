@@ -248,9 +248,6 @@ class SmartFarm {
 			weaken: w.threads,
 		}
 	}
-	wgMem(fleet: Fleet, GROW: string, wgMem: any, grow: number, growTime: number) {
-		throw new Error("Method not implemented.")
-	}
 
 	private planStabilize(ctx: StepCtx): LaunchOrder {
 		const wantedW = ctx.plan.hackWeaken + ctx.plan.growWeaken + 20
