@@ -1,11 +1,11 @@
-import { scoreTargets } from "../lib/score_target"
+import { scoreTargetsEx } from "../lib/score_target"
 import { getFarmableTargets } from "../lib/targeting"
 
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
 
 	const targets = getFarmableTargets(ns)
-	const scored = scoreTargets(ns, targets, {
+	const scored = scoreTargetsEx(ns, targets, {
 		hackFraction: 0.1,
 		minHackChance: 0.2,
 	})

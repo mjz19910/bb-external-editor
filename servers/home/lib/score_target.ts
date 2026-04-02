@@ -1,5 +1,6 @@
 // lib/score_target.ts
 
+import { isNormalServer } from "../../../gpt_pause/src/lib/helper"
 import { TargetInfo } from "./targeting"
 
 export type TargetScore = {
@@ -45,7 +46,7 @@ export type ScoreTargetOptions = {
 	maxHackLevelRatio?: number
 }
 
-export function scoreTarget(
+export function scoreTargetEx(
 	ns: NS,
 	target: string,
 	opts: ScoreTargetOptions = {}
@@ -148,17 +149,36 @@ export function scoreTarget(
 	}
 }
 
-export function scoreTargets(
+export function scoreTargetsEx(
 	ns: NS,
 	targets: string[],
 	opts: ScoreTargetOptions = {}
 ): TargetScore[] {
 	return targets
-		.map(t => scoreTarget(ns, t, opts))
+		.map(t => scoreTargetEx(ns, t, opts))
 		.filter((x): x is TargetScore => x !== null)
 		.sort((a, b) => b.finalScore - a.finalScore)
 }
 
 function clamp01(x: number): number {
 	return Math.max(0, Math.min(1, x))
+}
+
+export function scoreTarget(ns: NS, target: string): number {
+	const server = ns.getServer(target)
+	if (!isNormalServer(server)) throw new Error("Unable to handle darkweb server")
+
+	// Skip servers you can't hack
+	if (ns.getHackingLevel() < server.requiredHackingSkill!) return -Infinity
+
+	const moneyRatio = server.moneyMax! > 0 ? server.moneyAvailable! / server.moneyMax! : 0
+	const securityRatio = (server.minDifficulty! / Math.max(server.hackDifficulty!, 1)) // lower is better
+	const hackDifficultyFactor = Math.max(0.1, (server.requiredHackingSkill! / ns.getHackingLevel())) // <=1 is easier
+	const potentialMoney = server.moneyMax!
+
+	// Weighted scoring formula (can tune weights)
+	const score =
+		potentialMoney * moneyRatio * securityRatio / hackDifficultyFactor
+
+	return score
 }

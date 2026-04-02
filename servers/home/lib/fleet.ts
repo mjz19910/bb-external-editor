@@ -87,7 +87,7 @@ export type AllocationPlan = {
 	fitAll: boolean
 }
 
-export function allocateThreads(
+export function allocateThreadsWithPlan(
 	fleet: Fleet,
 	ramPerThread: number,
 	wantedThreads: number,
@@ -202,4 +202,25 @@ export function runAllocationsTracked(
 	}
 
 	return { threads, pids, failedAllocs }
+}
+
+// lib/fleet.ts
+
+export function allocateThreadsSimple(ns: NS, script: string, target: string, maxThreads?: number): number {
+    // Calculate maximum threads you can run for this script on home/purchased servers
+    const servers = ns.cloud.getServerNames().concat(["home"]);
+    const scriptRam = ns.getScriptRam(script);
+
+    let totalThreads = 0;
+    for (const s of servers) {
+        const freeRam = ns.getServerMaxRam(s) - ns.getServerUsedRam(s);
+        const threads = Math.floor(freeRam / scriptRam);
+        totalThreads += threads;
+    }
+
+    if (maxThreads !== undefined) {
+        totalThreads = Math.min(totalThreads, maxThreads);
+    }
+
+    return Math.max(totalThreads, 0);
 }

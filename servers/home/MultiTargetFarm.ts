@@ -1,5 +1,5 @@
 import {
-	allocateThreads,
+	allocateThreadsWithPlan,
 	deployScriptSet,
 	Fleet,
 	getFleet,
@@ -205,7 +205,7 @@ export class MultiTargetFarm {
 			this.errorCount -= myErrors
 		})
 		this.addJobToHost(target)
-		const plan = allocateThreads(fleet, memPerThread, threads)
+		const plan = allocateThreadsWithPlan(fleet, memPerThread, threads)
 		const { allocations: alloc } = plan
 		if (!plan.fitAll) {
 			myErrors++

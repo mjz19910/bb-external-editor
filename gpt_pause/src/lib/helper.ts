@@ -1,7 +1,5 @@
-import { DarknetServer } from "../darknet/misc";
-
 export function isNormalServer(
-	s: { hostname: string } | Server | DarknetServer,
+	s: { hostname: string } | Server | DarknetServerData,
 ): s is Server {
-	return "moneyMax" in s;
+	return "moneyMax" in s
 }

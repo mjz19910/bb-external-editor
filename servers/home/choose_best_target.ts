@@ -1,5 +1,5 @@
 import { getFarmableTargets } from "./lib/target_pool"
-import { scoreTargets, TargetScore } from "./lib/score_target"
+import { scoreTargetsEx, TargetScore } from "./lib/score_target"
 
 export type ChooseBestTargetOptions = {
 	/** If true, prefer already-prepped / nearly-prepped servers */
@@ -52,7 +52,7 @@ export function chooseBestTargetScore(
 	const targets = getFarmableTargets(ns).filter(t => !excluded.has(t))
 	if (targets.length === 0) return null
 
-	let scored = scoreTargets(ns, targets, {
+	let scored = scoreTargetsEx(ns, targets, {
 		hackFraction,
 		minHackChance,
 		maxHackLevelRatio,

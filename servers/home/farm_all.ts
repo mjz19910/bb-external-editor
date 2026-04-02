@@ -1,81 +1,59 @@
-import {
-	buildNetworkMap,
-	canRunThreads,
-	runnableHosts,
-} from "./lib/network_map";
-import { chooseBestTarget } from "./choose_best_target";
-import { log, tlog } from "./lib/log";
-import { GROW, HACK, WEAKEN } from "./lib/paths";
+// farm_all.ts
+import { StateManager } from "./lib/state"
+import { allocateThreadsSimple, allocateThreadsWithPlan, deployScriptSet } from "./lib/fleet" // your existing helpers
 
 export async function main(ns: NS) {
-	let target = String(ns.args[0] ?? "");
+	ns.disableLog("ALL")
+	if (ns.args.length < 1) {
+		ns.tprint("Usage: run farm_all.js <target>")
+		return
+	}
+	const target = ns.args[0] as string
+	const state = new StateManager(ns)
+	const targetState = state.getTarget(target)
 
-	if (!target) {
-		const best = chooseBestTarget(ns);
-		if (!best) {
-			ns.tprint("No valid target found.");
-			return;
-		}
-		target = best;
+	// 1️⃣ Update server info
+	const servers = ns.cloud.getServerNames().concat(["home"])
+	for (const s of servers) {
+		const usedRam = ns.getServerUsedRam(s)
+		state.updateServer(s, { usedRam })
 	}
 
-	tlog(ns, `[FARM] target=${target}`);
-	tlog(ns, `[FARM] prep target first for best results`);
+	// 2️⃣ Compute threads for each script (hack/grow/weaken)
+	const hackThreads = allocateThreadsSimple(ns, "hack", target)
+	const growThreads = allocateThreadsSimple(ns, "grow", target)
+	const weakenThreads = allocateThreadsSimple(ns, "weaken", target)
 
-	const map = buildNetworkMap(ns);
-	const runners = runnableHosts(ns, map, map.allHosts);
+	// 3️⃣ Deploy scripts respecting RAM
+	const jobs = [
+		{ script: "hack.ts", threads: hackThreads },
+		{ script: "grow.ts", threads: growThreads },
+		{ script: "weaken.ts", threads: weakenThreads },
+	]
 
-	for (const r of runners) {
-		ns.scp([HACK, GROW, WEAKEN], r, "home");
+	for (const job of jobs) {
+		// Find server with enough RAM
+		for (const s of servers) {
+			const serverState = state.getServer(s)
+			const freeRam = serverState.maxRam - serverState.usedRam
+			const scriptRam = ns.getScriptRam(job.script)
+			const maxThreads = Math.floor(freeRam / scriptRam)
+			const threadsToRun = Math.min(maxThreads, job.threads)
+
+			if (threadsToRun > 0) {
+				const pid = ns.run(job.script, threadsToRun, target)
+				if (pid > 0) {
+					serverState.activeJobs.push(pid.toString())
+					serverState.usedRam += threadsToRun * scriptRam
+					state.updateServer(s, serverState)
+					ns.print(`Launched ${job.script} x${threadsToRun} on ${s} for ${target}`)
+					break
+				}
+			}
+		}
 	}
 
-	while (true) {
-		const money = ns.getServerMoneyAvailable(target);
-		const maxMoney = ns.getServerMaxMoney(target);
-		const sec = ns.getServerSecurityLevel(target);
-		const minSec = ns.getServerMinSecurityLevel(target);
-
-		let script = WEAKEN;
-
-		if (sec > minSec + 3) {
-			script = WEAKEN;
-		} else if (money < maxMoney * 0.85) {
-			script = GROW;
-		} else {
-			script = HACK;
-		}
-
-		let launched = 0;
-
-		for (const host of runners) {
-			const threads = canRunThreads(ns, map, host, script);
-			if (threads < 1) continue;
-
-			const pid = ns.exec(script, host, threads, target);
-			if (pid !== 0) launched += threads;
-		}
-
-		log(
-			ns,
-			`[FARM] target=${target} ` +
-				`money=${ns.format.number(money)}/${
-					ns.format.number(maxMoney)
-				} ` +
-				`sec=${sec.toFixed(2)}/${minSec.toFixed(2)} ` +
-				`script=${script} threads=${launched}`,
-		);
-
-		if (launched === 0) {
-			await ns.sleep(5000);
-			continue;
-		}
-
-		const sleepMs = script === WEAKEN
-			? ns.getWeakenTime(target)
-			: script === GROW
-			? ns.getGrowTime(target)
-			: ns.getHackTime(target);
-
-		await ns.sleep(Math.max(1000, sleepMs * 0.25));
-	}
+	// 4️⃣ Update target state
+	targetState.activeBatches += 1
+	state.updateTarget(target, targetState)
 }
