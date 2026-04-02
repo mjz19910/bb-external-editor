@@ -154,7 +154,7 @@ export function buildNetworkMap(ns: NS, start = "home"): NetworkMap {
 		}
 	}
 
-	const hosts = Object.keys(nodes).sort()
+	const hosts = Object.keys(nodes)
 	const ramSizes: Record<string, number> = {}
 	for (const host of hosts) {
 		ramSizes[host] = ns.getServerMaxRam(host)
