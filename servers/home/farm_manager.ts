@@ -202,7 +202,7 @@ export async function main(ns: NS) {
 		// 4 =
 		// 40 = 11
 
-		for (let i = 0; i < 51; i++) {
+		for (let i = 0; i < 50; i++) {
 			addFarm(farms, hackPct, logger, true)
 		}
 		await ns.asleep(15_000)
@@ -212,7 +212,7 @@ export async function main(ns: NS) {
 			return
 		}
 
-		for (let i = 0; i < 5; i++) {
+		for (let i = 0; i < 15; i++) {
 			addFarm(farms, hackPct, logger)
 			ns.print("added farm id=", farms.length)
 			do {
@@ -227,6 +227,7 @@ export async function main(ns: NS) {
 			if (hadAnyErrors) break
 			if (!running) break
 		}
+		ns.tprint("[Farm Manager] ", farms.length, " farms are now running")
 	}
 	raceArr.push(slowStart())
 
