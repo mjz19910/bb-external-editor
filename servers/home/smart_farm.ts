@@ -84,9 +84,21 @@ class MultiTargetFarm {
 		return { hackThreads, growThreads, hackWeaken, growWeaken }
 	}
 
+	getOrInsertJob(host: string, newValue: number) {
+		if (this.jobsPerHost.has(host)) {
+			return this.jobsPerHost.get(host)!
+		}
+		this.jobsPerHost.set(host, newValue)
+		return newValue
+	}
+
+	getJob(host: string) {
+		return this.jobsPerHost.get(host)!
+	}
+
 	/** Determine phase for a target */
 	private getPhase(target: TargetState): "stabilize" | "prep" | "cycle" | "idle" {
-		if (this.jobsPerHost.getOrInsert(target.host, 0) != 0) return "idle"
+		if (this.getOrInsertJob(target.host, 0) != 0) return "idle"
 
 		if (this.ns.getServerSecurityLevel(target.host) >= target.minSec + 1.5) return "stabilize"
 		if (!target.prep.isPrepped) return "prep"
@@ -137,26 +149,22 @@ class MultiTargetFarm {
 		for (const pid of res.pids) if (pid > 0) this.workerPids.set(pid, endTime)
 		this.ns.asleep(duration).then(() => {
 			res.pids.forEach(pid => this.workerPids.delete(pid))
-			const curCount = this.finishJobOnHost(target)
-			this.ns.tprint("active job count ", curCount)
+			this.finishJobOnHost(target)
 		})
 		this.addJobToHost(target)
 		return { ...res, endTime }
 	}
 
 	addJobToHost(host: string) {
-		const curCount = this.jobsPerHost.getOrInsert(host, 0)
+		const curCount = this.getOrInsertJob(host, 0)
 		this.jobsPerHost.set(host, curCount + 1)
 	}
 
 	finishJobOnHost(host: string) {
 		if (this.jobsPerHost.has(host)) {
-			let curCount = this.jobsPerHost.getOrInsert(host, 0)
-			curCount--
-			this.jobsPerHost.set(host, curCount)
-			return curCount
+			let curCount = this.getJob(host)
+			this.jobsPerHost.set(host, curCount - 1)
 		}
-		return 0
 	}
 
 	/** Calculate how long until next worker finishes */
