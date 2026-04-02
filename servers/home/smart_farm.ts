@@ -172,14 +172,7 @@ class MultiTargetFarm {
 
 /** Main entry point */
 export async function main(ns: NS) {
-	ns.disableLog("disableLog")
-	ns.disableLog("scp")
-	ns.disableLog("exec")
-	ns.disableLog("scan")
-	ns.disableLog("kill")
-	ns.disableLog("sleep")
-	ns.disableLog("asleep")
-	ns.disableLog("isRunning")
+	ns.disableLog("ALL")
 
 	const hackPct = Number(ns.args[0] ?? 0.1)
 
