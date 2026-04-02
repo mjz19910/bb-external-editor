@@ -9,7 +9,7 @@ const FILES = [
 
 export async function main(ns: NS) {
 	const map = buildNetworkMap(ns);
-	const runners = runnableHosts(ns, map, map.hosts);
+	const runners = runnableHosts(ns, map, map.allHosts);
 
 	let copied = 0;
 

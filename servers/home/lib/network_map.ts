@@ -22,14 +22,14 @@ export class NetworkMap {
 
 		const newMap = new NetworkMap()
 
-		newMap.hosts = net_map.hosts
+		newMap.allHosts = net_map.allHosts
 		newMap.nodes = net_map.nodes
 		newMap.ramSizes = net_map.ramSizes
 
 		return newMap
 	}
 	constructor(
-		public hosts: string[] = [],
+		public allHosts: string[] = [],
 		public nodes: Record<string, NetworkNode> = {},
 		public ramSizes: Record<string, number> = {},
 	) { }
@@ -51,7 +51,7 @@ export class NetworkMap {
 		let best = null
 		let bestValue = 0
 
-		for (const s of map.hosts) {
+		for (const s of map.allHosts) {
 			if (s === "home") continue
 			if (!ns.hasRootAccess(s)) continue
 			if (ns.getServerRequiredHackingLevel(s) > (myHacking / 2) + 2) {
@@ -83,7 +83,7 @@ export class NetworkMap {
 				depth: pn.depth + 1,
 				neighbors: ns.scan(host),
 			}
-			this.hosts.push(host)
+			this.allHosts.push(host)
 			this.ramSizes[host] = ns.getServerMaxRam(host)
 		}
 		const json_txt = JSON.stringify(this, void 0, "\t")
@@ -102,7 +102,7 @@ let network_map: NetworkMap | null = null
 
 export function buildNetworkMap(ns: NS, start = "home"): NetworkMap {
 	x: if (network_map) {
-		const hosts = network_map.hosts
+		const hosts = network_map.allHosts
 		const nodes = network_map.nodes
 		const hosts_len = hosts.length
 		const recheck_idx = Math.floor(Math.random() * hosts_len)
@@ -187,17 +187,17 @@ export function connectString(map: NetworkMap, target: string): string {
 }
 
 export function childrenOf(map: NetworkMap, host: string): string[] {
-	return map.hosts.filter((h) => map.nodes[h].parent === host)
+	return map.allHosts.filter((h) => map.nodes[h].parent === host)
 }
 
 export function leafHosts(map: NetworkMap): string[] {
-	return map.hosts.filter((h) =>
+	return map.allHosts.filter((h) =>
 		h !== "home" && map.nodes[h].neighbors.length === 1
 	)
 }
 
 export function hubHosts(map: NetworkMap): { host: string; degree: number }[] {
-	return map.hosts
+	return map.allHosts
 		.map((host) => ({ host, degree: map.nodes[host].neighbors.length }))
 		.sort((a, b) => b.degree - a.degree)
 }
@@ -293,7 +293,7 @@ export function resetMap(ns: NS) {
 	if (!network_map) {
 		network_map = NetworkMap.build(ns, "home")
 	}
-	for (const host of network_map.hosts) {
+	for (const host of network_map.allHosts) {
 		ns.tprint(ns.dnsLookup(host))
 	}
 }

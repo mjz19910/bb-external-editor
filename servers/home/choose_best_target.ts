@@ -13,7 +13,7 @@ export function chooseBestTarget(ns: NS): TargetScore | null {
 	const map = buildNetworkMap(ns);
 	const targets: TargetScore[] = [];
 
-	for (const host of map.hosts) {
+	for (const host of map.allHosts) {
 		if (classifyServer(ns, host) !== "farmable") continue;
 
 		const maxMoney = ns.getServerMaxMoney(host);

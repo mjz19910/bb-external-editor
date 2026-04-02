@@ -26,7 +26,7 @@ export function getNetworkAvailableRam(
 	const homeReserveFrac = opts?.homeReserveFrac ?? 0;
 	const homeReserveAbs = opts?.homeReserveAbs ?? 0;
 
-	const hosts = map.hosts
+	const hosts = map.allHosts
 		.filter((host) => ns.hasRootAccess(host))
 		.filter((host) => includeHome || host !== "home")
 		.filter((host) => map.ramSizes[host] > 0)

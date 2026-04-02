@@ -178,7 +178,7 @@ export async function main(ns: NS) {
 	const hackPct = Number(ns.args[0] ?? 0.05);
 
 	const rooted = buildNetworkMap(ns)
-		.hosts
+		.allHosts
 		.filter((s) => ns.hasRootAccess(s))
 		.filter((s) => s !== "home")
 		.filter((s) => ns.getServerMaxMoney(s) > 0);

@@ -15,7 +15,7 @@ export function getFarmableTargets(ns: NS): TargetInfo[] {
 	const map = buildNetworkMap(ns);
 	const out: TargetInfo[] = [];
 
-	for (const host of map.hosts) {
+	for (const host of map.allHosts) {
 		if (classifyServer(ns, host) !== "farmable") continue;
 
 		const maxMoney = ns.getServerMaxMoney(host);

@@ -23,7 +23,7 @@ export async function main(ns: NS) {
 	tlog(ns, `[FARM] prep target first for best results`);
 
 	const map = buildNetworkMap(ns);
-	const runners = runnableHosts(ns, map, map.hosts);
+	const runners = runnableHosts(ns, map, map.allHosts);
 
 	for (const r of runners) {
 		ns.scp([HACK, GROW, WEAKEN], r, "home");

@@ -12,13 +12,13 @@ export async function main(ns: NS) {
 	const scriptRam = ns.getScriptRam(script);
 	const map = buildNetworkMap(ns);
 
-	const hosts = map.hosts.filter((h) =>
+	const hosts = map.allHosts.filter((h) =>
 		ns.hasRootAccess(h) &&
 		map.ramSizes[h] > 0
 	);
 
 	while (true) {
-		const targets = map.hosts.filter((s) =>
+		const targets = map.allHosts.filter((s) =>
 			s !== "home" &&
 			ns.hasRootAccess(s) &&
 			ns.getServerMaxMoney(s) > 0 &&

@@ -14,7 +14,7 @@ export async function main(ns: NS) {
 
 	const targets: TargetScore[] = [];
 
-	for (const host of map.hosts) {
+	for (const host of map.allHosts) {
 		const maxMoney = ns.getServerMaxMoney(host);
 		const minSec = ns.getServerMinSecurityLevel(host);
 		const sec = ns.getServerSecurityLevel(host);

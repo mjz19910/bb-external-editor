@@ -62,7 +62,7 @@ export async function main(ns: NS) {
 		? Number(ns.args[ns.args.indexOf("--reserve") + 1] ?? 32)
 		: 32;
 	const map = buildNetworkMap(ns);
-	const hosts = map.hosts.filter((h) => ns.hasRootAccess(h));
+	const hosts = map.allHosts.filter((h) => ns.hasRootAccess(h));
 	for (const host of hosts) {
 		if (host != "home") {
 			ns.scp(all_scripts, host);

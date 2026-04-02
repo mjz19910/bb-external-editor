@@ -5,7 +5,7 @@ export async function main(ns: NS) {
 	const rooted = [];
 	const skipped = [];
 
-	for (const host of map.hosts) {
+	for (const host of map.allHosts) {
 		if (host === "home") continue;
 		if (ns.hasRootAccess(host)) continue;
 

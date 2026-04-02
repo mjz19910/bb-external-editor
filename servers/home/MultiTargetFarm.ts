@@ -93,7 +93,7 @@ export class MultiTargetFarm {
 	/** Initialize all target states */
 	private initTargets(): TargetState[] {
 		const ns = this.ns
-		return this.map.hosts
+		return this.map.allHosts
 			.filter(host => {
 				if (!ns.hasRootAccess(host)) return false
 				if (ns.getServerMaxMoney(host) <= 0) return false

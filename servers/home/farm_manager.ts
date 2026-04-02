@@ -159,9 +159,9 @@ export async function main(ns: NS) {
 
 	ns.ui.setTailTitle(`Farm Manager hackPercent=${hackPct}`)
 	tlog(ns, `[Farm Manager] hackPercent=${hackPct}`)
-	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.hosts)
+	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.allHosts)
 
-	const logger = new RoundRobinTargetLogger(ns, map.hosts)
+	const logger = new RoundRobinTargetLogger(ns, map.allHosts)
 	const raceArr: Promise<null | void>[] = []
 	const farms: MultiTargetFarm[] = []
 	let farmIdBase = 1

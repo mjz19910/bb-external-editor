@@ -17,7 +17,7 @@ export type Fleet = {
 export function getFleet(ns: NS): Fleet {
 	const map = NetworkMap.build(ns)
 	const purchased = new Set(ns.cloud.getServerNames())
-	const hosts: FleetHost[] = map.hosts
+	const hosts: FleetHost[] = map.allHosts
 		.filter((h) => ns.hasRootAccess(h) && map.ramSizes[h] > 0)
 		.map((host) => map.getRamInfo(ns, host))
 		.sort((a, b) => {

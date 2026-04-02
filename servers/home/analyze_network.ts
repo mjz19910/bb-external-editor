@@ -8,10 +8,10 @@ import {
 export async function main(ns: NS) {
 	const map = buildNetworkMap(ns);
 
-	ns.tprint(`Servers found: ${map.hosts.length}`);
+	ns.tprint(`Servers found: ${map.allHosts.length}`);
 	ns.tprint("");
 
-	for (const host of map.hosts) {
+	for (const host of map.allHosts) {
 		const node = map.nodes[host];
 		const cls = classifyServer(ns, host);
 		const reqHack = ns.getServerRequiredHackingLevel(host);
