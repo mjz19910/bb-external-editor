@@ -23,7 +23,22 @@ type TargetState = {
 	prep: PrepPlan
 }
 
+type FarmLogger = {
+	log(a: {
+		target: string,
+		phase: string,
+		hackThreads: number,
+		growThreads: number,
+		weakenThreads: number,
+	}): void
+}
+
 export class MultiTargetFarm {
+	private logger: FarmLogger
+	setLogger(logger: FarmLogger) {
+		this.logger = logger
+	}
+
 	static disableLogs(ns: NS) {
 		ns.disableLog("exec")
 		ns.disableLog("kill")
@@ -57,6 +72,12 @@ export class MultiTargetFarm {
 		this.gMem = ns.getScriptRam(GROW)
 		this.wMem = ns.getScriptRam(WEAKEN)
 		this.hackingLevel = ns.getHackingLevel()
+
+		this.logger = {
+			log(a) {
+				log(ns, `[MULTI_FARM] target=${a.target} phase=${a.phase} h=${a.hackThreads} g=${a.growThreads} w=${a.weakenThreads}`)
+			}
+		}
 	}
 
 	/** Initialize all target states */
@@ -214,7 +235,13 @@ export class MultiTargetFarm {
 			const order = this.planPhaseWork(target, phase)
 			const launched = this.launchThreads(fleet, order, target.host)
 			if (launched.hack + launched.grow + launched.weaken > 0) {
-				log(ns, `[MULTI_FARM] target=${target.host} phase=${phase} h=${launched.hack} g=${launched.grow} w=${launched.weaken}`)
+				this.logger.log({
+					target: target.host,
+					phase,
+					hackThreads: launched.hack,
+					growThreads: launched.grow,
+					weakenThreads: launched.weaken,
+				})
 			}
 		}
 
