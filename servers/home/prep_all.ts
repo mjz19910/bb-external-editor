@@ -68,6 +68,12 @@ class PrepAll {
 	async launchStage(script: string) {
 		const jobsEndTimes: Map<string, number[]> = new Map()
 
+		if (script === WEAK) {
+			this.targets.sort((a, b) => this.ns.getWeakenTime(a) - this.ns.getWeakenTime(b))
+		} else {
+			this.targets.sort((a, b) => this.ns.getGrowTime(a) - this.ns.getGrowTime(b))
+		}
+
 		for (const target of this.targets) {
 			const threads = this.threadsNeeded(target, script)
 			if (threads <= 0) continue
