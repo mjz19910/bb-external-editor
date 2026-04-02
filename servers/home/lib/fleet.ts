@@ -129,16 +129,43 @@ export function deployScriptSet(
 export function runAllocations(
 	ns: NS,
 	script: string,
-	allocations: Allocation[],
+	allocs: Allocation[],
 	args: (string | number | boolean)[] = [],
 ): number {
 	let launched = 0;
 
-	for (const a of allocations) {
+	for (const a of allocs) {
 		if (a.threads <= 0) continue;
 		const pid = ns.exec(script, a.host, a.threads, ...args);
 		if (pid !== 0) launched += a.threads;
 	}
 
 	return launched;
+}
+
+export type LaunchResult = {
+	threads: number;
+	pids: number[];
+};
+
+export function runAllocationsTracked(
+	ns: NS,
+	script: string,
+	allocs: Allocation[],
+	args: ScriptArg[] = [],
+): LaunchResult {
+	let threads = 0;
+	const pids: number[] = [];
+
+	for (const a of allocs) {
+		if (a.threads <= 0) continue;
+
+		const pid = ns.exec(script, a.host, a.threads, ...args);
+		if (pid === 0) continue;
+
+		threads += a.threads;
+		pids.push(pid);
+	}
+
+	return { threads, pids };
 }

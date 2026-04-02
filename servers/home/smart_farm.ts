@@ -3,7 +3,7 @@ import {
 	deployScriptSet,
 	Fleet,
 	getFleet,
-	runAllocations,
+	runAllocationsTracked,
 } from "./lib/fleet";
 import { getTargetJobCounts, TargetJobCounts } from "./lib/jobs";
 import { tlog } from "./lib/log";
@@ -94,16 +94,14 @@ class SmartFarm {
 		};
 	}
 
-	private async finalizeStep() {
+	private finalizeStep() {
 		const ns = this.ns;
 
 		if (this.steps % 20 === 0) {
-			await ns.sleep(50);
-		}
-		if (this.launch_counter === 0) {
-			await ns.sleep(80);
-		}
-		if (this.steps % 4 === 0) {
+			return ns.sleep(50);
+		} else if (this.launch_counter === 0) {
+			return ns.sleep(80);
+		} else if (this.steps % 4 === 0) {
 			this.launch_counter = 0;
 		}
 
@@ -175,22 +173,34 @@ class SmartFarm {
 	): LaunchOrder {
 		const ns = this.ns;
 		const { target } = this;
+
 		let launchedH = 0;
 		let launchedG = 0;
 		let launchedW = 0;
+
 		if (order.hack > 0) {
 			const alloc = allocateThreads(fleet, this.hMem, order.hack);
-			launchedH = runAllocations(ns, HACK, alloc, [target]);
+			const res = runAllocationsTracked(ns, HACK, alloc, [target]);
+			launchedH = res.threads;
+			this.trackPids(res.pids);
 		}
+
 		if (order.grow > 0) {
 			const alloc = allocateThreads(fleet, this.wgMem, order.grow);
-			launchedG = runAllocations(ns, GROW, alloc, [target]);
+			const res = runAllocationsTracked(ns, GROW, alloc, [target]);
+			launchedG = res.threads;
+			this.trackPids(res.pids);
 		}
+
 		if (order.weaken > 0) {
 			const alloc = allocateThreads(fleet, this.wgMem, order.weaken);
-			launchedW = runAllocations(ns, WEAKEN, alloc, [target]);
+			const res = runAllocationsTracked(ns, WEAKEN, alloc, [target]);
+			launchedW = res.threads;
+			this.trackPids(res.pids);
 		}
+
 		this.launch_counter += launchedH + launchedG + launchedW;
+
 		return {
 			hack: launchedH,
 			grow: launchedG,
@@ -234,12 +244,43 @@ class SmartFarm {
 		return { hack: 0, grow: 0, weaken: 0 };
 	}
 
-	async step_once() {
+	runOnce() {
 		const ctx = this.initStep();
 		const phase = this.getPhase(ctx);
 		const order = this.planPhaseWork(ctx, phase);
 		this.runLaunchOrder(ctx, order);
-		await this.finalizeStep();
+		return this.finalizeStep();
+	}
+
+	private trackPids(pids: number[]) {
+		for (const pid of pids) {
+			if (pid > 0) {
+				this.workerPids.add(pid);
+			}
+		}
+	}
+
+	private cleanupWorkers() {
+		const ns = this.ns;
+		let killed = 0;
+		let missing = 0;
+
+		for (const pid of this.workerPids) {
+			if (ns.kill(pid)) {
+				killed++;
+			} else {
+				missing++;
+			}
+		}
+
+		tlog(
+			ns,
+			`[SMART_FARM_EXIT] target=${this.target} tracked=${this.workerPids.size} killed=${killed} missing=${missing}`,
+		);
+	}
+
+	kill() {
+		this.cleanupWorkers();
 	}
 }
 
@@ -282,7 +323,10 @@ export async function main(ns: NS) {
 	deployScriptSet(ns, FILES, map.hosts);
 
 	const state = new SmartFarm(ns, target, hackPct);
-	while (true) {
-		await state.step_once();
+	ns.atExit(() => state.kill());
+
+	for (;;) {
+		const p = state.runOnce();
+		if (p) await p;
 	}
 }
