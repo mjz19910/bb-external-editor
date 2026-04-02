@@ -177,7 +177,7 @@ export async function main(ns: NS) {
 	const logger = new RoundRobinTargetLogger(ns)
 
 	const farms: MultiTargetFarm[] = []
-	for (let i = 0; i < 60; i++) {
+	for (let i = 0; i < 5; i++) {
 		const farm = new MultiTargetFarm(ns, hackPct, map)
 		farm.setLogger(logger)
 		farms.push(farm)
