@@ -108,6 +108,8 @@ export function allocateThreads(
 			threads: use,
 		})
 
+		h.freeRam -= use * ramPerThread
+
 		remaining -= use
 		if (remaining <= 0) break
 	}

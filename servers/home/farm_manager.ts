@@ -173,6 +173,7 @@ export async function main(ns: NS) {
 		farms.push(farm)
 		raceArr.push(farm.runForever())
 		farmIdBase++
+		return farm
 	}
 
 	ns.atExit(() => {
@@ -189,8 +190,11 @@ export async function main(ns: NS) {
 
 	async function slowStart() {
 		for (let i = 0; i < 25; i++) {
-			addFarm(hackPct, logger)
-			await ns.asleep(1000)
+			const farm = addFarm(hackPct, logger)
+			do {
+				ns.print("waiting for farm id=", i, " to stabilize")
+				await ns.asleep(1000)
+			} while (farm.hasErrors())
 		}
 	}
 	raceArr.push(slowStart())

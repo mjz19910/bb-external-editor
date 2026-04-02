@@ -34,6 +34,9 @@ type FarmLogger = {
 }
 
 export class MultiTargetFarm {
+	hasErrors() {
+		return this.errorCount > 0
+	}
 	private logger: FarmLogger
 	setLogger(logger: FarmLogger) {
 		this.logger = logger
@@ -66,6 +69,8 @@ export class MultiTargetFarm {
 	gMem: number
 	wMem: number
 	hackingLevel: number
+
+	errorCount = 0
 
 	constructor(public ns: NS, public hackPct: number, public map: NetworkMap) {
 		this.hMem = ns.getScriptRam(HACK)
@@ -187,8 +192,8 @@ export class MultiTargetFarm {
 		if (threads <= 0) return { threads: 0, pids: [], endTime: 0 }
 		const alloc = allocateThreads(fleet, memPerThread, threads)
 		const res = runAllocationsTracked(this.ns, script, alloc, [target])
-		if (res.failedAllocs.length > 0) {
-			this.ns.tprint("failed to start ", res.failedAllocs)
+		for (const _failure of res.failedAllocs) {
+			this.errorCount++
 		}
 		duration += 50
 		const endTime = Date.now() + duration
@@ -197,6 +202,7 @@ export class MultiTargetFarm {
 			if (this.disabled) return
 			res.pids.forEach(pid => this.workerPids.delete(pid))
 			this.finishJobOnHost(target)
+			this.errorCount -= res.failedAllocs.length
 		})
 		this.addJobToHost(target)
 		return { ...res, endTime }
