@@ -202,19 +202,18 @@ export async function main(ns: NS) {
 		// 4 =
 		// 40 = 11
 
-		for (let i = 0; i < 5; i++) {
+		for (let i = 0; i < 14; i++) {
 			addFarm(farms, hackPct, logger, true)
 			ns.print("added farm id=", farms.length)
-			await ns.asleep(1_000)
 		}
-		await ns.asleep(15_000)
+		await ns.asleep(1_000)
 		const errs = farms.filter(v => v.hasErrors())
 		if (errs.length > 0) {
 			ns.tprint("farms that have errors ", errs.map(v => farms.indexOf(v)))
 			return
 		}
 
-		for (let i = 0; i < 15; i++) {
+		for (let i = 0; i < 0; i++) {
 			addFarm(farms, hackPct, logger)
 			ns.print("added farm id=", farms.length)
 			do {
