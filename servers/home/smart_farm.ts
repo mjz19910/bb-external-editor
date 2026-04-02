@@ -115,9 +115,9 @@ class MultiTargetFarm {
 
 	/** Launch threads for a target, respecting memory limits */
 	private launchThreads(fleet: Fleet, order: LaunchOrder, target: string): LaunchOrder {
-		const h = this.launchOne(fleet, target, HACK, this.hMem, order.hack, this.ns.getHackTime(target) + 25)
-		const g = this.launchOne(fleet, target, GROW, this.gMem, order.grow, this.ns.getGrowTime(target) + 25)
-		const w = this.launchOne(fleet, target, WEAKEN, this.wMem, order.weaken, this.ns.getWeakenTime(target) + 25)
+		const h = this.launchOne(fleet, target, HACK, this.hMem, order.hack, this.ns.getHackTime(target))
+		const g = this.launchOne(fleet, target, GROW, this.gMem, order.grow, this.ns.getGrowTime(target))
+		const w = this.launchOne(fleet, target, WEAKEN, this.wMem, order.weaken, this.ns.getWeakenTime(target))
 		return { hack: h.threads, grow: g.threads, weaken: w.threads }
 	}
 
