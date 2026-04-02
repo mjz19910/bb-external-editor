@@ -57,6 +57,7 @@ export async function main(ns: NS) {
 					await ns.asleep(2000)
 				}
 			})())
+			raceArr.push(port.nextWrite().then(() => port))
 		}
 	}
 }
