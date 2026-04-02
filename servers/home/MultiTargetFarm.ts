@@ -34,7 +34,6 @@ type FarmLogger = {
 }
 
 export class MultiTargetFarm {
-	noisy = false
 	hasErrors() {
 		return this.errorCount > 0
 	}
@@ -64,16 +63,21 @@ export class MultiTargetFarm {
 		this.disabled = true
 	}
 
-	workerPids = new Map<number, number>() // pid -> expected end time
-	jobsPerHost = new Map<string, number>();
+	workerPids: Map<number, number>
+	jobsPerHost: Map<string, number>
 	hMem: number
 	gMem: number
 	wMem: number
 	hackingLevel: number
 
-	errorCount = 0
+	errorCount: number
+	disabled: boolean
 
 	constructor(public ns: NS, public hackPct: number, public map: NetworkMap) {
+		this.disabled = false
+		this.errorCount = 0
+		this.workerPids = new Map()
+		this.jobsPerHost = new Map()
 		this.hMem = ns.getScriptRam(HACK)
 		this.gMem = ns.getScriptRam(GROW)
 		this.wMem = ns.getScriptRam(WEAKEN)
@@ -207,7 +211,6 @@ export class MultiTargetFarm {
 			plannedThreads += a.threads
 		}
 		if (plannedThreads != threads) {
-			this.ns.tprint("unable to launch enough threads wanted ", threads, " planned ", plannedThreads)
 			myErrors++
 			this.errorCount += myErrors
 			return { threads: 0, pids: [], endTime: 0 }
@@ -281,23 +284,4 @@ export class MultiTargetFarm {
 			await this.runOnce()
 		}
 	}
-
-	private disabled = false;
-}
-
-/** Main entry point */
-export async function main(ns: NS) {
-	ns.disableLog("disableLog")
-	MultiTargetFarm.disableLogs(ns)
-
-	const hackPct = Number(ns.args[0] ?? 0.1)
-	const map = NetworkMap.build(ns)
-
-	ns.ui.setTailTitle(`multi_farm:${hackPct}`)
-	log(ns, `[MULTI_FARM] hackPct=${hackPct}`)
-	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.hosts)
-
-	const farm = new MultiTargetFarm(ns, hackPct, map)
-	ns.atExit(() => farm.shutdown())
-	await farm.runForever()
 }

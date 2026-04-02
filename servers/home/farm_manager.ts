@@ -3,7 +3,7 @@ import { deployScriptSet } from "./lib/fleet"
 import { tlog } from "./lib/log"
 import { NetworkMap } from "./lib/network_map"
 import { HACK, GROW, WEAKEN } from "./lib/paths"
-import { MultiTargetFarm } from "./smart_farm"
+import { MultiTargetFarm } from "./MultiTargetFarm"
 
 type FarmLogEvent = {
 	target: string
