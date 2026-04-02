@@ -141,6 +141,8 @@ export async function main(ns: NS) {
 		// Wait for the next job to finish (shortest end time)
 		const nextEnd = Math.min(...jobsEndTimes.values())
 		const sleepMs = Math.max(0, nextEnd - Date.now() + 50) // 50ms buffer
+		const [target] = [...jobsEndTimes.entries()].find(v => v[1] == nextEnd)!
+		log(`${target}: waiting ${ns.format.time(sleepMs)} for next prep`)
 		await ns.sleep(sleepMs)
 	}
 
