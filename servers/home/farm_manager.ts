@@ -1,6 +1,13 @@
 // farm_manager.ts
 import { StateManager } from "./lib/state"
 import { scoreTarget } from "./lib/score_target" // your scoring system
+import { Events } from "./lib/events"
+
+// TODO: hook this up
+Events.on("NEW_BEST_TARGET", (target: string) => {
+	console.log(`Best target changed to ${target}`)
+	// maybe auto-reassign batches or prep
+})
 
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
