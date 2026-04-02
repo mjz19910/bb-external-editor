@@ -5,206 +5,132 @@
  *   run prep_all.ts
  *   run prep_all.ts --reserve 32
  */
-import { buildNetworkMap } from "./lib/network_map";
+import { buildNetworkMap } from "./lib/network_map"
 
 function formatMoney(ns: NS, n: number) {
-	return "$" + ns.format.number(n, 2);
+	return "$" + ns.format.number(n, 2)
 }
 
-const GROW = "lib/prep_grow.ts";
-const WEAK = "lib/prep_weak.ts";
+const GROW = "lib/prep_grow.ts"
+const WEAK = "lib/prep_weak.ts"
 
-const all_scripts = [
-	GROW,
-	WEAK,
-];
-
-export function getPrepSortKey(
-	ns: NS,
-	target: string,
-	serverMaxMoneyMap: Map<string, number>,
-	serverMinSecMap: Map<string, number>,
-): number {
-	const weaken1 = ns.weakenAnalyze(1);
-	const maxMoney = serverMaxMoneyMap.get(target)!;
-	const money = Math.max(1, ns.getServerMoneyAvailable(target));
-	const sec = serverMinSecMap.get(target)!;
-	const minSec = ns.getServerMinSecurityLevel(target);
-
-	const weakenThreads = Math.ceil(Math.max(0, sec - minSec) / weaken1);
-
-	const growThreads = money >= maxMoney
-		? 0
-		: Math.ceil(ns.growthAnalyze(target, maxMoney / money));
-
-	const weakenForGrow = Math.ceil(
-		ns.growthAnalyzeSecurity(growThreads, target) / weaken1,
-	);
-
-	const weakenTime = ns.getWeakenTime(target);
-	const growTime = ns.getGrowTime(target);
-
-	return weakenThreads * weakenTime +
-		growThreads * growTime * 0.05 +
-		weakenForGrow * weakenTime;
-}
+const all_scripts = [GROW, WEAK]
 
 export async function main(ns: NS) {
 	function log(...args: any[]) {
-		ns.tprint(...args);
-		ns.print(...args);
+		ns.tprint(...args)
+		ns.print(...args)
 	}
 
-	ns.disableLog("ALL");
-	ns.clearLog();
+	ns.disableLog("ALL")
+	ns.clearLog()
 
 	const reserve = ns.args.includes("--reserve")
 		? Number(ns.args[ns.args.indexOf("--reserve") + 1] ?? 32)
-		: 32;
-	const map = buildNetworkMap(ns);
-	const hosts = map.allHosts.filter((h) => ns.hasRootAccess(h));
+		: 32
+
+	const map = buildNetworkMap(ns)
+	const hosts = map.allHosts.filter((h) => ns.hasRootAccess(h))
+
+	// Copy prep scripts to all hosts
 	for (const host of hosts) {
-		if (host != "home") {
-			ns.scp(all_scripts, host);
-		}
+		if (host !== "home") ns.scp(all_scripts, host)
 	}
 
-	const srvWeakenTime = new Map<string, number>();
-	const srvMaxMoney = new Map<string, number>();
-	const srvMinSec = new Map<string, number>();
+	// Server state maps
+	const srvWeakenTime = new Map<string, number>()
+	const srvMaxMoney = new Map<string, number>()
+	const srvMinSec = new Map<string, number>()
+	const maxRamByHost = new Map<string, number>()
 
-	const maxRamByHost = new Map<string, number>();
-	const scriptRamMap = new Map<string, number>();
-
-	for (const host of hosts) {
-		maxRamByHost.set(host, map.ramSizes[host]);
-	}
-
+	for (const host of hosts) maxRamByHost.set(host, map.ramSizes[host])
 	for (const target of hosts) {
-		srvMaxMoney.set(target, ns.getServerMaxMoney(target));
-		srvMinSec.set(target, ns.getServerMinSecurityLevel(target));
+		srvMaxMoney.set(target, ns.getServerMaxMoney(target))
+		srvMinSec.set(target, ns.getServerMinSecurityLevel(target))
+		if (target !== "home") srvWeakenTime.set(target, ns.getWeakenTime(target))
 	}
 
-	for (const target of hosts) {
-		if (target == "home") continue;
-		const waitTime = ns.getWeakenTime(target);
-		srvWeakenTime.set(target, waitTime);
-	}
+	const targets = hosts.filter((h) => h !== "home" && srvMaxMoney.get(h)! > 0)
+	targets.sort((a, b) => (srvWeakenTime.get(a)! - srvWeakenTime.get(b)!))
 
-	const targets = hosts.filter((h) =>
-		h !== "home" && srvMaxMoney.get(h)! > 0
-	);
-	targets.sort((a, b) => srvWeakenTime.get(a)! - srvWeakenTime.get(b)!);
 	for (const target of targets) {
-		const waitTime = srvWeakenTime.get(target)!;
-		log(`${target}: weaken ETA ${ns.format.time(waitTime)}`);
+		const waitTime = srvWeakenTime.get(target)!
+		log(`${target}: weaken ETA ${ns.format.time(waitTime)}`)
 	}
 
-	log("\n");
-	log(`Preparing ${targets.length} servers in parallel...`);
+	log(`\nPreparing ${targets.length} servers in parallel...`)
 
-	const done = new Set<string>();
+	const scriptRamMap = new Map<string, number>()
+	const done = new Set<string>()
 
 	while (done.size < targets.length) {
 		for (const target of targets) {
-			if (done.has(target)) continue;
+			if (done.has(target)) continue
 
-			const money = ns.getServerMoneyAvailable(target);
-			const sec = ns.getServerSecurityLevel(target);
-			const maxMoney = srvMaxMoney.get(target)!;
-			const minSec = srvMinSec.get(target)!;
+			const money = ns.getServerMoneyAvailable(target)
+			const sec = ns.getServerSecurityLevel(target)
+			const maxMoney = srvMaxMoney.get(target)!
+			const minSec = srvMinSec.get(target)!
 
-			const moneyReady = money >= maxMoney;
-			const secReady = sec <= minSec + 0.001;
+			const moneyReady = money >= maxMoney
+			const secReady = sec <= minSec + 0.001
+
+			// Determine script and threads needed
+			let script = ""
+			let threadsNeeded = 0
 
 			if (!secReady) {
-				const launched = await launchAcrossNetwork(
-					ns,
-					WEAK,
-					target,
-					reserve,
-					hosts,
-					maxRamByHost,
-					scriptRamMap,
-				);
-				if (launched > 0) {
-					const waitTime = ns.getWeakenTime(target);
-					log(
-						`${target}: weaken x${launched}, ETA ${
-							ns.format.time(waitTime)
-						}`,
-					);
-					await ns.sleep(waitTime);
-					// await ns.sleep(5000);
-				}
+				script = WEAK
+				const weakenPerThread = ns.weakenAnalyze(1)
+				threadsNeeded = Math.ceil(Math.max(0, sec - minSec) / weakenPerThread)
 			} else if (!moneyReady) {
-				const launched = await launchAcrossNetwork(
-					ns,
-					GROW,
-					target,
-					reserve,
-					hosts,
-					maxRamByHost,
-					scriptRamMap,
-				);
-				if (launched > 0) {
-					const waitTime = ns.getGrowTime(target);
-					log(
-						`${target}: grow x${launched}, ETA ${
-							ns.format.time(waitTime)
-						}`,
-					);
-					await ns.sleep(waitTime);
-					// await ns.sleep(5000);
-				}
+				script = GROW
+				threadsNeeded = Math.ceil(ns.growthAnalyze(target, maxMoney / Math.max(1, money)))
 			} else {
 				log(
-					`${target}: READY (${formatMoney(ns, money)} / ${
-						formatMoney(ns, maxMoney)
-					}, sec ${sec.toFixed(2)})`,
-				);
-				done.add(target);
+					`${target}: READY (${formatMoney(ns, money)} / ${formatMoney(ns, maxMoney)}, sec ${sec.toFixed(
+						2
+					)})`
+				)
+				done.add(target)
+				continue
+			}
+
+			if (!scriptRamMap.has(script)) scriptRamMap.set(script, ns.getScriptRam(script))
+			const ramPerThread = scriptRamMap.get(script)!
+
+			// Inline launch across network
+			let launchedThreads = 0
+			const sortedHosts = hosts
+				.filter((h) => ns.hasRootAccess(h) && (maxRamByHost.get(h) ?? 0) > 0)
+				.sort((a, b) => (maxRamByHost.get(b)! - maxRamByHost.get(a)!))
+
+			for (const host of sortedHosts) {
+				if (threadsNeeded <= 0) break
+
+				const maxRam = maxRamByHost.get(host)!
+				const usedRam = ns.getServerUsedRam(host)
+				const freeRam = host === "home" ? Math.max(0, maxRam - usedRam - reserve) : Math.max(0, maxRam - usedRam)
+
+				const hostThreads = Math.min(Math.floor(freeRam / ramPerThread), threadsNeeded)
+				if (hostThreads <= 0) continue
+
+				const pid = ns.exec(script, host, hostThreads, target, hostThreads)
+				if (pid !== 0) {
+					launchedThreads += hostThreads
+					threadsNeeded -= hostThreads
+					await ns.sleep(50) // small stagger
+				}
+			}
+
+			if (launchedThreads > 0) {
+				const waitTime = script === WEAK ? ns.getWeakenTime(target) : ns.getGrowTime(target)
+				log(`${target}: ${script === WEAK ? "weaken" : "grow"} x${launchedThreads}, ETA ${ns.format.time(waitTime)}`)
+				await ns.sleep(waitTime)
 			}
 		}
-		await ns.sleep(5000);
+		await ns.sleep(5000) // loop pause
 	}
-	log("All servers prepped.");
-}
 
-async function launchAcrossNetwork(
-	ns: NS,
-	script: string,
-	target: string,
-	reserve: number,
-	hosts: string[],
-	maxRamByHost: Map<string, number>,
-	scriptRamMap: Map<string, number>,
-) {
-	if (!scriptRamMap.has(script)) {
-		scriptRamMap.set(script, ns.getScriptRam(script));
-	}
-	const ramPerThread = scriptRamMap.get(script)!;
-
-	const sortedHosts = hosts
-		.filter((h) => ns.hasRootAccess(h) && (maxRamByHost.get(h) ?? 0) > 0)
-		.sort((a, b) => (maxRamByHost.get(b)! - maxRamByHost.get(a)!));
-
-	let sum = 0;
-	for (const host of sortedHosts) {
-		const maxRam = maxRamByHost.get(host)!;
-		const usedRam = ns.getServerUsedRam(host);
-		const freeRam = host === "home"
-			? Math.max(0, maxRam - usedRam - reserve)
-			: Math.max(0, maxRam - usedRam);
-
-		const threads = Math.floor(freeRam / ramPerThread);
-		if (threads <= 0) continue;
-
-		const pid = ns.exec(script, host, threads, target, threads);
-		if (pid !== 0) {
-			sum += threads;
-			await ns.sleep(50);
-		}
-	}
-	return sum;
+	log("All servers prepped.")
 }
