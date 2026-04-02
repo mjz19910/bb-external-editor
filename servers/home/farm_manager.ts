@@ -34,12 +34,21 @@ export async function main(ns: NS) {
 		tlog(ns, `[Farm;id=${i + 1}] Starting`)
 		return await v.runForever()
 	}))
+	const raceArr: (Promise<void | void[] | ScriptPort<{ msg: true }>>)[] = [allDone, port.nextWrite().then(() => port)]
 	for (; ;) {
-		const results = await Promise.race([allDone, port.nextWrite().then(() => port)])
+		const results = await Promise.race(raceArr)
 		if (results instanceof ScriptPort) {
 			const msgs = results.readAll()
 			ns.tprint("got messages ", msgs)
-		} else {
+			for (const _msg of msgs) {
+				raceArr.push((async () => {
+					const farm = new MultiTargetFarm(ns, hackPct, map)
+					farms.push(farm)
+					tlog(ns, `[Farm;id=${farms.length}] Starting`)
+					return await farm.runForever()
+				})())
+			}
+		} else if (results !== void 0) {
 			for (const res of results) {
 				ns.tprint("farm done ", res)
 			}
