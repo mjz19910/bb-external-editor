@@ -300,6 +300,7 @@ class SmartFarm {
 		for (const pid of this.workerPids) {
 			ns.kill(pid)
 		}
+		this.workerPids.clear()
 	}
 }
 
