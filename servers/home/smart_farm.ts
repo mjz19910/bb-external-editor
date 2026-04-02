@@ -55,8 +55,6 @@ type StepCtx = {
 type FarmPhase = "stabilize" | "prep" | "cycle" | "idle"
 
 class SmartFarm {
-	workerPids = new Set<number>();
-
 	hMem: number
 	gMem: number
 	wMem: number
@@ -151,12 +149,6 @@ class SmartFarm {
 		return launched.hack > 0 || launched.grow > 0 || launched.weaken > 0
 	}
 
-	private notifyEndPids(pids: number[]) {
-		for (const pid of pids) {
-			this.workerPids.delete(pid)
-		}
-	}
-
 	private get hackTime() {
 		return this.ns.getHackTime(this.target) + 50
 	}
@@ -183,7 +175,8 @@ class SmartFarm {
 		const alloc = allocateThreads(fleet, memPerThread, threads)
 		const res = runAllocationsTracked(this.ns, script, alloc, [this.target])
 
-		this.trackPids(res.pids)
+		const endTime = Date.now() + duration
+		this.trackPids(res.pids, endTime)
 		this.ns.asleep(duration).then(() => this.notifyEndPids(res.pids))
 
 		return res
@@ -275,18 +268,26 @@ class SmartFarm {
 		return this.ns.asleep(this.getNextSleep())
 	}
 
-	private trackPids(pids: number[]) {
+	private workerPids = new Map<number, number>() // pid -> expected end time
+
+	private trackPids(pids: number[], endTime: number) {
 		for (const pid of pids) {
 			if (pid > 0) {
-				this.workerPids.add(pid)
+				this.workerPids.set(pid, endTime)
 			}
+		}
+	}
+
+	private notifyEndPids(pids: number[]) {
+		for (const pid of pids) {
+			this.workerPids.delete(pid)
 		}
 	}
 
 	cleanupWorkers() {
 		const ns = this.ns
 
-		for (const pid of this.workerPids) {
+		for (const [pid] of this.workerPids) {
 			ns.kill(pid)
 		}
 		this.workerPids.clear()
