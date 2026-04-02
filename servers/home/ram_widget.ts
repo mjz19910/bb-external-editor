@@ -2,7 +2,7 @@ export async function main(ns: NS) {
 	ns.disableLog("ALL")
 
 	const doc = eval("document") as Document
-	const widgetId = "ram-widget-bitburner"
+	const widgetId = "ram-widget"
 
 	// Remove old widget if already running
 	const old = doc.getElementById(widgetId)
@@ -34,6 +34,10 @@ export async function main(ns: NS) {
 	// Drag support
 	makeDraggable(box)
 
+	// Rolling buffers for max RAM over last 60 seconds
+	const homeHistory = []
+	const totalHistory = []
+
 	try {
 		while (true) {
 			const servers = getAllServers(ns)
@@ -45,6 +49,16 @@ export async function main(ns: NS) {
 			const totalMax = servers.reduce((sum, s) => sum + ns.getServerMaxRam(s), 0)
 			const totalUsed = servers.reduce((sum, s) => sum + ns.getServerUsedRam(s), 0)
 			const totalFree = totalMax - totalUsed
+
+			// Update rolling history
+			homeHistory.push(homeUsed)
+			if (homeHistory.length > 60) homeHistory.shift()
+
+			totalHistory.push(totalUsed)
+			if (totalHistory.length > 60) totalHistory.shift()
+
+			const homeMax1min = Math.max(...homeHistory)
+			const totalMax1min = Math.max(...totalHistory)
 
 			const ranked = servers
 				.map(s => ({
@@ -63,10 +77,12 @@ export async function main(ns: NS) {
 			text += `HOME    ${bar(homeUsed, homeMax)}\n`
 			text += `        ${fmt(homeUsed)} / ${fmt(homeMax)}\n`
 			text += `        FREE: ${fmt(homeFree)}\n\n`
+			text += `        MAX 1min: ${fmt(homeMax1min)}\n\n`
 
 			text += `TOTAL   ${bar(totalUsed, totalMax)}\n`
 			text += `        ${fmt(totalUsed)} / ${fmt(totalMax)}\n`
 			text += `        FREE: ${fmt(totalFree)}\n\n`
+			text += `        MAX 1min: ${fmt(totalMax1min)}\n\n`
 
 			text += "TOP FREE SERVERS\n"
 			text += "------------------------\n"
