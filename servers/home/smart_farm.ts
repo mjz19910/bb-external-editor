@@ -289,6 +289,7 @@ export async function main(ns: NS) {
 	ns.disableLog("scp");
 	ns.disableLog("exec");
 	ns.disableLog("scan");
+	ns.disableLog("kill");
 	ns.disableLog("sleep");
 	ns.disableLog("getServerMaxRam");
 	ns.disableLog("getServerUsedRam");
