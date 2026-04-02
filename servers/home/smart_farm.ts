@@ -177,6 +177,7 @@ class SmartFarm {
 
 		const endTime = Date.now() + duration
 		this.trackPids(res.pids, endTime)
+
 		this.ns.asleep(duration).then(() => this.notifyEndPids(res.pids))
 
 		return res
