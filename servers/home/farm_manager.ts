@@ -7,19 +7,7 @@ import { MultiTargetFarm } from "./smart_farm"
 /** Main entry point */
 export async function main(ns: NS) {
 	ns.disableLog("disableLog")
-	ns.disableLog("exec")
-	ns.disableLog("kill")
-	ns.disableLog("getServerUsedRam")
-	ns.disableLog("getServerSecurityLevel")
-	ns.disableLog("asleep")
-	ns.disableLog("getServerMaxRam")
-	ns.disableLog("getServerMaxMoney")
-	ns.disableLog("getServerMinSecurityLevel")
-	ns.disableLog("getServerMoneyAvailable")
-	ns.disableLog("scan")
-	ns.disableLog("scp")
-	ns.disableLog("getHackingLevel")
-	ns.disableLog("getServerRequiredHackingLevel")
+	MultiTargetFarm.disableLogs(ns)
 
 	const hackPct = Number(ns.args[0] ?? 0.1)
 	const map = NetworkMap.build(ns)
@@ -39,7 +27,12 @@ export async function main(ns: NS) {
 		}
 	})
 
-	const results = await Promise.allSettled(farms.map((v) => v.runForever()))
+	const results = await Promise.allSettled(farms.map(async (v, i) => {
+		await ns.asleep((i + 1) * 2000)
+		log(ns, `[Farm;id=${i + 1}] Starting`)
+		return await v.runForever()
+	}))
+
 	for (const res of results) {
 		ns.tprint("farm done ", res)
 	}
