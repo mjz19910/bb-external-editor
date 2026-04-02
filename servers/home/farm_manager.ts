@@ -72,7 +72,7 @@ class RoundRobinTargetLogger {
 	private start() {
 		(async () => {
 			while (!this.stopped) {
-				await this.ns.asleep(this.intervalMs)
+				await this.ns.asleep(this.intervalMs + 50)
 				if (this.stopped) break
 				this.flushOne()
 			}
@@ -173,7 +173,7 @@ export async function main(ns: NS) {
 	tlog(ns, `[Farm Manager] hackPercent=${hackPct}`)
 	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.hosts)
 
-	const logger = new RoundRobinTargetLogger(ns, 30_000, 60_000)
+	const logger = new RoundRobinTargetLogger(ns)
 
 	const farms: MultiTargetFarm[] = []
 	for (let i = 0; i < 60; i++) {
@@ -189,14 +189,9 @@ export async function main(ns: NS) {
 
 	const port = new ScriptPort<{ msg: true }>(ns, 1)
 	const raceArr = []
-	raceArr.push((async () => {
-		for (const [idx, farm] of farms.entries()) {
-			raceArr.push((async () => {
-				tlog(ns, `[Farm;id=${idx + 1}] Starting`)
-				return await farm.runForever()
-			})())
-		}
-	})())
+	for (const farm of farms) {
+		raceArr.push(farm.runForever())
+	}
 	raceArr.push(port.nextWrite().then(() => port))
 	for (; ;) {
 		const [idx, results]: [number, ScriptPort<{ msg: true }> | void] = await Promise.race(raceArr.map(async (v, i) => [i, await v] as [number, Awaited<typeof v>]))
