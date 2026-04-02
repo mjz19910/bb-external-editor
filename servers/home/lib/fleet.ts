@@ -79,12 +79,7 @@ export type Allocation = {
 	threads: number
 }
 
-export function allocateThreads(
-	fleet: Fleet,
-	ramPerThread: number,
-	wantedThreads: number,
-	reserveHomeRam = 32,
-): Allocation[] {
+export function allocateThreads(fleet: Fleet, ramPerThread: number, wantedThreads: number): Allocation[] {
 	if (ramPerThread <= 0 || wantedThreads <= 0) return []
 
 	const allocations: Allocation[] = []
@@ -94,7 +89,7 @@ export function allocateThreads(
 		let free = h.freeRam
 
 		if (h.host === "home") {
-			free = Math.max(0, free - reserveHomeRam)
+			free = Math.max(0, free - h.maxRam * 0.05)
 		}
 
 		const threads = Math.floor(free / ramPerThread)
