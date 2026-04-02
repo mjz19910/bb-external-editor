@@ -5,7 +5,8 @@ export async function main(ns: NS) {
 	const minRam = Number(ns.args[1] ?? 8)
 
 	const money = ns.getServerMoneyAvailable("home")
-	const budget = Math.max(0, money - reserve)
+	const budget = Math.max(0, money - reserve) / ns.cloud.getServerLimit() * Number(ns.args[2] ?? 1)
+	ns.tprint(`Upgrade servers with budget $${ns.format.number(budget)}.`)
 
 	const worst = worstPurchasedServer(ns)
 	if (!worst) {
