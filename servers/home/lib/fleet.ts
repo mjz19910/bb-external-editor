@@ -25,7 +25,7 @@ export function getFleet(ns: NS): Fleet {
 			const bP = purchased.has(b.host) ? 1 : 0;
 
 			if (aP !== bP) return bP - aP; // purchased first
-			return b.freeRam - a.freeRam;
+			return b.maxRam - a.maxRam;
 		});
 
 	let totalMaxRam = 0;
