@@ -18,7 +18,7 @@ export async function main(ns: NS) {
 	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.hosts)
 
 	const farms: MultiTargetFarm[] = []
-	for (let i = 0; i < 1; i++) {
+	for (let i = 0; i < 60; i++) {
 		const farm = new MultiTargetFarm(ns, hackPct, map)
 		farms.push(farm)
 	}
@@ -36,7 +36,6 @@ export async function main(ns: NS) {
 				tlog(ns, `[Farm;id=${idx + 1}] Starting`)
 				return await farm.runForever()
 			})())
-			await ns.asleep(2000)
 		}
 	})())
 	raceArr.push(port.nextWrite().then(() => port))
@@ -55,7 +54,6 @@ export async function main(ns: NS) {
 						tlog(ns, `[Farm;id=${farms.length}] Starting`)
 						return await farm.runForever()
 					})())
-					await ns.asleep(2000)
 				}
 				raceArr.push(nextWriteResult.then(() => results))
 			})())
