@@ -189,12 +189,17 @@ export async function main(ns: NS) {
 	raceArr.push(port.nextWrite().then(() => null))
 
 	async function slowStart() {
-		for (let i = 0; i < 25; i++) {
+		let hadAnyErrors = false
+		for (let i = 0; ; i++) {
 			const farm = addFarm(hackPct, logger)
 			do {
 				ns.print("waiting for farm id=", i, " to stabilize")
 				await ns.asleep(1000)
+				if (farm.hasErrors()) {
+					hadAnyErrors = true
+				}
 			} while (farm.hasErrors())
+			if (hadAnyErrors) break
 		}
 	}
 	raceArr.push(slowStart())
