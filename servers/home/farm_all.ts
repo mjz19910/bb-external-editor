@@ -16,7 +16,7 @@ export async function main(ns: NS) {
 			ns.tprint("No valid target found.");
 			return;
 		}
-		target = best.host;
+		target = best;
 	}
 
 	tlog(ns, `[FARM] target=${target}`);
