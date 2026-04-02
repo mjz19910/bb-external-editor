@@ -1,4 +1,4 @@
-// ram_widget_stable.ts
+// ram_widget.ts
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
 
