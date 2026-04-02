@@ -1,8 +1,5 @@
 // lib/score_target.ts
 
-import { isNormalServer } from "../../../gpt_pause/src/lib/helper"
-import { TargetInfo } from "./targeting"
-
 export type TargetScore = {
 	target: string
 
@@ -162,6 +159,12 @@ export function scoreTargetsEx(
 
 function clamp01(x: number): number {
 	return Math.max(0, Math.min(1, x))
+}
+
+function isNormalServer(
+	s: { hostname: string } | Server | DarknetServerData,
+): s is Server {
+	return "moneyMax" in s
 }
 
 export function scoreTarget(ns: NS, target: string): number {
