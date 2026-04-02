@@ -86,7 +86,6 @@ export class NetworkMap {
 			this.hosts.push(host)
 			this.ramSizes[host] = ns.getServerMaxRam(host)
 		}
-		this.hosts.sort()
 		const json_txt = JSON.stringify(this, void 0, "\t")
 		ns.write(DB_PATH, json_txt, "w")
 	}
