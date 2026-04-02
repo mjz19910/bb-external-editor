@@ -29,14 +29,15 @@ class RoundRobinTargetLogger {
 	private readonly staleMs: number
 
 	private readonly byTarget = new Map<string, TargetActivity>()
-	private readonly rrOrder: string[] = []
+	private readonly rrOrder: string[]
 	private rrIdx = 0
 	private stopped = false
 
-	constructor(ns: NS, intervalMs = 10_000, staleMs = 5 * 60_000) {
+	constructor(ns: NS, rrOrder: string[], intervalMs = 10_000, staleMs = 5 * 60_000) {
 		this.ns = ns
 		this.intervalMs = intervalMs
 		this.staleMs = staleMs
+		this.rrOrder = rrOrder
 		this.start()
 	}
 
@@ -54,7 +55,6 @@ class RoundRobinTargetLogger {
 				lastPhase: ev.phase,
 			}
 			this.byTarget.set(ev.target, row)
-			this.rrOrder.push(ev.target)
 		}
 
 		row.lastSeen = now
@@ -86,8 +86,6 @@ class RoundRobinTargetLogger {
 	}
 
 	private flushOne() {
-		if (this.rrOrder.length === 0) return
-
 		const now = Date.now()
 
 		// normal round-robin candidate
@@ -130,8 +128,6 @@ class RoundRobinTargetLogger {
 	}
 
 	private nextRoundRobinTarget(): string | null {
-		if (this.rrOrder.length === 0) return null
-
 		let tries = this.rrOrder.length
 		while (tries-- > 0) {
 			if (this.rrIdx >= this.rrOrder.length) this.rrIdx = 0
@@ -181,7 +177,7 @@ export async function main(ns: NS) {
 	tlog(ns, `[Farm Manager] hackPercent=${hackPct}`)
 	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.hosts)
 
-	const logger = new RoundRobinTargetLogger(ns)
+	const logger = new RoundRobinTargetLogger(ns, map.hosts)
 
 	const farms: MultiTargetFarm[] = []
 	function addFarm(farm: MultiTargetFarm, logger: RoundRobinTargetLogger) {
