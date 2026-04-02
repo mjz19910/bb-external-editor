@@ -205,14 +205,17 @@ export class MultiTargetFarm {
 			this.errorCount -= myErrors
 		})
 		this.addJobToHost(target)
-		const alloc = allocateThreads(fleet, memPerThread, threads)
-		let plannedThreads = 0
-		for (let a of alloc) {
-			plannedThreads += a.threads
-		}
-		if (plannedThreads != threads) {
+		const plan = allocateThreads(fleet, memPerThread, threads)
+		const { allocations: alloc } = plan
+		if (!plan.fitAll) {
 			myErrors++
 			this.errorCount += myErrors
+
+			log(this.ns,
+				`[MULTI_FARM] alloc_failed target=${target} script=${script} ` +
+				`wanted=${plan.requestedThreads} allocated=${plan.allocatedThreads} missing=${plan.missingThreads}`
+			)
+
 			return { threads: 0, pids: [], endTime: 0 }
 		}
 		const res = runAllocationsTracked(this.ns, script, alloc, [target])

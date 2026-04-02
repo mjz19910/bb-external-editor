@@ -79,11 +79,32 @@ export type Allocation = {
 	threads: number
 }
 
-export function allocateThreads(fleet: Fleet, ramPerThread: number, wantedThreads: number): Allocation[] {
-	if (ramPerThread <= 0 || wantedThreads <= 0) return []
+export type AllocationPlan = {
+	allocations: Allocation[]
+	requestedThreads: number
+	allocatedThreads: number
+	missingThreads: number
+	fitAll: boolean
+}
+
+export function allocateThreads(
+	fleet: Fleet,
+	ramPerThread: number,
+	wantedThreads: number,
+): AllocationPlan {
+	if (ramPerThread <= 0 || wantedThreads <= 0) {
+		return {
+			allocations: [],
+			requestedThreads: wantedThreads,
+			allocatedThreads: 0,
+			missingThreads: Math.max(0, wantedThreads),
+			fitAll: wantedThreads <= 0,
+		}
+	}
 
 	const allocations: Allocation[] = []
 	let remaining = wantedThreads
+	let allocatedThreads = 0
 
 	for (const h of fleet.hosts) {
 		let free = h.freeRam
@@ -104,12 +125,19 @@ export function allocateThreads(fleet: Fleet, ramPerThread: number, wantedThread
 		})
 
 		h.freeRam -= use * ramPerThread
-
+		allocatedThreads += use
 		remaining -= use
+
 		if (remaining <= 0) break
 	}
 
-	return allocations
+	return {
+		allocations,
+		requestedThreads: wantedThreads,
+		allocatedThreads,
+		missingThreads: Math.max(0, remaining),
+		fitAll: remaining <= 0,
+	}
 }
 
 export function deployScriptSet(
