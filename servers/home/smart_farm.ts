@@ -183,12 +183,14 @@ export async function main(ns: NS) {
 	ns.disableLog("getServerMinSecurityLevel")
 	ns.disableLog("getServerMoneyAvailable")
 	ns.disableLog("scan")
+	ns.disableLog("scp")
 
 	const hackPct = Number(ns.args[0] ?? 0.1)
 
+	const hackingLevel = ns.getHackingLevel();
 	// Get all hackable targets with money
 	const allTargets = ns.scan()
-		.filter(s => ns.getServerRequiredHackingLevel(s) <= ns.getHackingLevel())
+		.filter(s => ns.getServerRequiredHackingLevel(s) <= hackingLevel)
 		.filter(s => ns.getServerMaxMoney(s) > 0)
 
 	if (allTargets.length === 0) {
