@@ -145,7 +145,7 @@ class MultiTargetFarm {
 		if (threads <= 0) return { threads: 0, pids: [], endTime: 0 }
 		const alloc = allocateThreads(fleet, memPerThread, threads)
 		const res = runAllocationsTracked(this.ns, script, alloc, [target])
-		const endTime = Date.now() + duration / 3
+		const endTime = Date.now() + duration
 		for (const pid of res.pids) if (pid > 0) this.workerPids.set(pid, endTime)
 		this.ns.asleep(duration).then(() => {
 			if (this.disabled) return
