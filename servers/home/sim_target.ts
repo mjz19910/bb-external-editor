@@ -20,44 +20,38 @@ export async function main(ns: NS) {
 	const prepGrowThreshold = getConfig("prepGrowThreshold", 0.98)
 	const prepWeakenThreshold = getConfig("prepWeakenThreshold", 1.02)
 
+	// Get server stats
 	const serverMaxMoney = ns.getServerMaxMoney(target)
 	const serverMoney = ns.getServerMoneyAvailable(target)
-	const serverMinSec = ns.getServerMinSecurityLevel(target)
-	const serverSec = ns.getServerSecurityLevel(target)
 
-	// Estimate hack threads needed
-	const hackThreads = calcHackThreadsForPercent(ns, target, hackPercent)
-
-	// Prep simulation plan
+	// Calculate prep plan with proper thresholds
 	const prepPlan = calcPrepPlan(ns, target, {
 		growThreshold: prepGrowThreshold,
 		weakenThreshold: prepWeakenThreshold,
 	})
 
-	// Estimate RAM usage
-	const growThreads = prepPlan.growThreads || 0
-	const weakenThreads = prepPlan.weakenThreads || 0
+	// Calculate hack threads
+	const hackThreads = calcHackThreadsForPercent(ns, target, hackPercent)
 
+	// Calculate RAM usage
 	const hackRam = ns.getScriptRam("lib/hack.js") * hackThreads
-	const growRam = ns.getScriptRam("lib/grow.js") * growThreads
-	const weakenRam = ns.getScriptRam("lib/weaken.js") * weakenThreads
-
+	const growRam = ns.getScriptRam("lib/grow.js") * prepPlan.growThreads
+	const weakenRam = ns.getScriptRam("lib/weaken.js") * prepPlan.weakenThreads
 	const totalRam = hackRam + growRam + weakenRam
 
-	// Simulate $/sec
+	// Calculate expected hack income
 	const expectedHackMoney = serverMaxMoney * hackPercent
 	const hackTime = ns.getHackTime(target) / 1000 // seconds
 
 	const incomePerSec = expectedHackMoney / hackTime
-	const efficiency = incomePerSec / totalRam
+	const efficiency = totalRam > 0 ? incomePerSec / totalRam : 0
 
 	// Display simulation
 	ns.tprint(`=== Simulation for ${target} ===`)
 	ns.tprint(`Server money: ${serverMoney} / ${serverMaxMoney}`)
-	ns.tprint(`Security: ${serverSec} (min: ${serverMinSec})`)
 	ns.tprint(`Hack threads: ${hackThreads}`)
-	ns.tprint(`Grow threads: ${growThreads}`)
-	ns.tprint(`Weaken threads: ${weakenThreads}`)
+	ns.tprint(`Grow threads: ${prepPlan.growThreads}`)
+	ns.tprint(`Weaken threads: ${prepPlan.weakenThreads}`)
 	ns.tprint(`Total RAM: ${totalRam.toFixed(2)} GB`)
 	ns.tprint(`Expected hack $: ${expectedHackMoney.toFixed(2)}`)
 	ns.tprint(`Hack time: ${hackTime.toFixed(2)} s`)
