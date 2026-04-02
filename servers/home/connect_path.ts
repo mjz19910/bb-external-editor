@@ -18,3 +18,7 @@ export async function main(ns: NS) {
 	ns.tprint(`Path: ${path.join(" -> ")}`);
 	ns.tprint(`Connect: ${connectString(map, target)}`);
 }
+
+export function autocomplete(d: AutocompleteData) {
+	return d.servers;
+}
