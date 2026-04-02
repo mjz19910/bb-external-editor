@@ -169,7 +169,7 @@ export async function main(ns: NS) {
 		farms.push(farm)
 	}
 
-	for (let i = 0; i < 5; i++) {
+	for (let i = 0; i < 26; i++) {
 		const farm = new MultiTargetFarm(ns, hackPct, map)
 		addFarm(farm, logger)
 	}
