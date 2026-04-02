@@ -64,9 +64,6 @@ class SmartFarm {
 	minSec: number
 	moneyMax: number
 
-	steps = 0;
-	launch_counter = 0;
-
 	constructor(public ns: NS, public target: string, public hackPct: number) {
 		this.hMem = ns.getScriptRam(HACK)
 		this.gMem = ns.getScriptRam(GROW)
@@ -94,22 +91,6 @@ class SmartFarm {
 			money,
 			plan,
 			prep,
-		}
-	}
-
-	private finalizeStep() {
-		const ns = this.ns
-		const last_launches = this.launch_counter
-		this.steps++
-
-		if (this.steps % 4 === 0) {
-			this.launch_counter = 0
-		}
-
-		if (this.steps % 20 === 0) {
-			return ns.asleep(50)
-		} else if (last_launches === 0) {
-			return ns.asleep(80)
 		}
 	}
 
@@ -240,8 +221,6 @@ class SmartFarm {
 			this.weakenTime,
 		)
 
-		this.launch_counter += h.threads + g.threads + w.threads
-
 		return {
 			hack: h.threads,
 			grow: g.threads,
@@ -285,17 +264,31 @@ class SmartFarm {
 		return { hack: 0, grow: 0, weaken: 0 }
 	}
 
+	private getNextSleep(): number {
+		if (this.workerPids.size === 0) return 500
+
+		const now = Date.now()
+		let minRemaining = Infinity
+
+		for (const endTime of this.workerPids.values()) {
+			const remaining = endTime - now
+			if (remaining > 0 && remaining < minRemaining) {
+				minRemaining = remaining
+			}
+		}
+
+		return Math.max(50, minRemaining)
+	}
+
 	runOnce() {
 		const ctx = this.initStep()
 		const phase = this.getPhase(ctx)
 
-		// we have no work
 		if (phase === "idle") {
-			return this.ns.sleep(500)
+			return this.ns.asleep(this.getNextSleep())
 		}
 
 		const order = this.planPhaseWork(ctx, phase)
-
 		const didLaunch = this.runLaunchOrder(ctx, order)
 
 		if (didLaunch) {
@@ -305,7 +298,8 @@ class SmartFarm {
 			)
 		}
 
-		return this.finalizeStep()
+		// Sleep until next worker finishes or a small fallback
+		return this.ns.asleep(this.getNextSleep())
 	}
 
 	private trackPids(pids: number[]) {
