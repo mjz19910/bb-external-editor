@@ -1,22 +1,29 @@
-export function solve(ns: NS, data: CodingContractObject, contract: string, host: string) {
-	if (data.type != "Algorithmic Stock Trader I") {
-		return false
-	}
-	const prices = data.data
-	if (prices.length < 2) {
-		return ns.tprint("Need at least 2 prices to compute profit.")
-	}
+import { ContractData } from "../contracts"
 
-	// Calculate max profit
-	const maxProfit = stock_trader1(prices)
+export default {
+	type: "Algorithmic Stock Trader I",
 
-	const reward = ns.codingcontract.attempt(maxProfit, contract, host)
-	ns.tprint(reward)
-	return ns.tprint(`Maximum profit for single transaction: ${maxProfit}`)
+	/** Solver for automation system */
+	solve: function (c_data: ContractData, ns?: NS): boolean {
+		const data = c_data.object
+		if (data.type !== "Algorithmic Stock Trader I") return false
+		const prices = data.data as number[]
+		if (!prices || prices.length < 2) return false
+
+		const maxProfit = stock_trader1(prices)
+
+		if (ns && c_data.server && c_data.filename) {
+			// Attempt contract if NS context is provided
+			const reward = ns.codingcontract.attempt(maxProfit, c_data.filename, c_data.server)
+			ns.tprint(`Attempted contract on ${c_data.server}: ${reward}`)
+		}
+
+		return true // we computed the answer
+	}
 }
 
 /** Compute max profit for single-transaction stock trader */
-export function stock_trader1(prices: number[]) {
+export function stock_trader1(prices: number[]): number {
 	let minPrice = Infinity
 	let maxProfit = 0
 

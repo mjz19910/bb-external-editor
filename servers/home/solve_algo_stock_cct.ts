@@ -20,7 +20,15 @@ export async function main(ns: NS) {
 	}
 
 	if (cc_obj.type === "Algorithmic Stock Trader I") {
-		algo_stock_trade.solve(ns, cc_obj, contract, host)
+		algo_stock_trade.default.solve({
+			type: "",
+			desc: "",
+			difficulty: 0,
+			reward: 0,
+			server: host,
+			filename: contract,
+			object: cc_obj
+		}, ns)
 		return
 	}
 	ns.tprint("missing contract solver for ", cc_obj.type)

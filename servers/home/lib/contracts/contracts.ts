@@ -5,6 +5,7 @@ export type ContractData = {
 	desc: string
 	difficulty: number
 	reward: any
+	object: CodingContractObject
 }
 
 export type Solver = {

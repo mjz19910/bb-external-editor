@@ -19,6 +19,7 @@ export async function main(ns: NS) {
 				type: ns.codingcontract.getContractType(f, s),
 				desc: ns.codingcontract.getDescription(f, s),
 				difficulty: ns.codingcontract.getData(f, s),
+				object: ns.codingcontract.getContract(f, s),
 				reward: null,
 			})
 		}
