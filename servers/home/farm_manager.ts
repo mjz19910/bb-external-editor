@@ -166,13 +166,13 @@ export async function main(ns: NS) {
 	const farms: MultiTargetFarm[] = []
 	let farmIdBase = 1
 
-	function addFarm(hackPct: number, logger: RoundRobinTargetLogger, silent = false) {
+	function addFarm(arr: MultiTargetFarm[], hackPct: number, logger: RoundRobinTargetLogger, silent = false) {
 		if (!silent) {
 			tlog(ns, `[Farm;id=${farmIdBase}] Starting`)
 		}
 		const farm = new MultiTargetFarm(ns, hackPct, map)
 		farm.setLogger(logger)
-		farms.push(farm)
+		arr.push(farm)
 		raceArr.push(farm.runForever())
 		farmIdBase++
 		return farm
@@ -194,21 +194,17 @@ export async function main(ns: NS) {
 	async function slowStart() {
 		let hadAnyErrors = false
 
-		for (let i = 0; i < 55; i++) {
-			addFarm(hackPct, logger, true)
+		for (let i = 0; i < 50; i++) {
+			addFarm(farms, hackPct, logger, true)
 		}
 
 		await ns.asleep(30_000)
 
-		for (let i = 0; i < 20; i++) {
-			if (i - 8 >= 0) {
-				farms[i - 8].noisy = false
-			}
-			const farm = addFarm(hackPct, logger)
+		for (let i = 0; i < 50; i++) {
+			addFarm(farms, hackPct, logger)
 			ns.print("added farm id=", farms.length)
-			farm.noisy = true
 			do {
-				await ns.asleep(2000)
+				await ns.asleep(3000)
 				const errs = farms.filter(v => v.hasErrors())
 				if (errs.length > 0) {
 					ns.tprint("farms that have errors ", errs.map(v => farms.indexOf(v)))
@@ -228,7 +224,7 @@ export async function main(ns: NS) {
 		ns.tprint("got messages ", msgs)
 		raceArr.push(port.nextWrite().then(() => null))
 		for (const msg of msgs) {
-			addFarm(msg.hackPct ?? hackPct, logger)
+			addFarm(farms, msg.hackPct ?? hackPct, logger)
 		}
 	}
 }
