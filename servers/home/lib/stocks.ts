@@ -6,6 +6,7 @@
  *  - Calculating risk/reward
  *  - Basic buy/sell wrappers
  */
+// TODO: add maxSpend / maxShares safety checks
 
 export type StockInfo = {
 	symbol: string
