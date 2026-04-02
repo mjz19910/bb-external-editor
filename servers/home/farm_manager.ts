@@ -187,31 +187,27 @@ export async function main(ns: NS) {
 		}
 	})
 
-	const port = new ScriptPort<{ msg: true }>(ns, 1)
-	const raceArr = []
+	const port = new ScriptPort<{
+		msg: true
+		hackPct?: number
+	}>(ns, 1)
+	const raceArr: Promise<null | void>[] = [port.nextWrite().then(() => null)]
 	for (const farm of farms) {
 		raceArr.push(farm.runForever())
 	}
-	raceArr.push(port.nextWrite().then(() => port))
 	for (; ;) {
-		const [idx, results]: [number, ScriptPort<{ msg: true }> | void] = await Promise.race(raceArr.map(async (v, i) => [i, await v] as [number, Awaited<typeof v>]))
+		const { idx, result } = await Promise.race(raceArr.map(async (promise, idx) => ({ idx, result: await promise })))
 		raceArr.splice(idx, 1)
-		if (results instanceof ScriptPort) {
-			const msgs = results.readAll()
-			ns.tprint("got messages ", msgs)
-			const nextWriteResult = results.nextWrite()
-			raceArr.push((async () => {
-				for (const _msg of msgs) {
-					raceArr.push((async () => {
-						const farm = new MultiTargetFarm(ns, hackPct, map)
-						farm.setLogger(logger)
-						farms.push(farm)
-						tlog(ns, `[Farm;id=${farms.length}] Starting`)
-						return await farm.runForever()
-					})())
-				}
-				raceArr.push(nextWriteResult.then(() => results))
-			})())
+		if (result === void 0) continue
+		const msgs = port.readAll()
+		ns.tprint("got messages ", msgs)
+		raceArr.push(port.nextWrite().then(() => null))
+		for (const msg of msgs) {
+			const farm = new MultiTargetFarm(ns, msg.hackPct ?? hackPct, map)
+			farm.setLogger(logger)
+			farms.push(farm)
+			tlog(ns, `[Farm;id=${farms.length}] Starting`)
+			raceArr.push(farm.runForever())
 		}
 	}
 }
