@@ -182,6 +182,7 @@ export async function main(ns: NS) {
 		farm.setLogger(logger)
 		farms.push(farm)
 	}
+
 	ns.atExit(() => {
 		for (const farm of farms) {
 			farm.shutdown()
