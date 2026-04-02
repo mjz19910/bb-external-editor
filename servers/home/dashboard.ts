@@ -109,7 +109,16 @@ export async function main(ns: NS) {
 
 		// --- Stocks ---
 		const symbols = stockMgr.getTrackedStocks()
-		stocksContainer.innerHTML = "\nSTOCKS:\n"
+
+		// Create header only once
+		if (!stocksContainer.dataset.initialized) {
+			const header = doc.createElement("div")
+			header.innerText = "STOCKS:"
+			stocksContainer.appendChild(header)
+			stocksContainer.dataset.initialized = "true"
+		}
+
+		// Create rows if missing, update text
 		symbols.forEach((sym) => {
 			let row = stockRows[sym]
 			if (!row) {
