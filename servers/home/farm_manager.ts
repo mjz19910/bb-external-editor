@@ -198,13 +198,12 @@ export async function main(ns: NS) {
 			addFarm(farms, hackPct, logger, true)
 		}
 
-		await ns.asleep(30_000)
-
 		for (let i = 0; i < 50; i++) {
+			await ns.asleep(4_000)
 			addFarm(farms, hackPct, logger)
 			ns.print("added farm id=", farms.length)
 			do {
-				await ns.asleep(3000)
+				await ns.asleep(4_000)
 				const errs = farms.filter(v => v.hasErrors())
 				if (errs.length > 0) {
 					ns.tprint("farms that have errors ", errs.map(v => farms.indexOf(v)))
