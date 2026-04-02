@@ -208,7 +208,7 @@ export async function main(ns: NS) {
 
 		const npc = withRam
 			.filter(s => s !== "home" && !s.startsWith("pserv-"))
-			.sort((a, b) => ns.getServerMaxRam(a) - ns.getServerMaxRam(b))
+			.sort((a, b) => ns.getServerMaxRam(b) - ns.getServerMaxRam(a))
 
 		return [...home, ...pservs, ...npc]
 	}
