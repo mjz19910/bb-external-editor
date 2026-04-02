@@ -8,6 +8,26 @@ export type NetworkNode = {
 }
 
 export class NetworkMap {
+	static loadFromDisk(ns: NS, DB_PATH: string): NetworkMap | null {
+		if (!ns.fileExists(DB_PATH)) {
+			return null
+		}
+
+		const json_txt = ns.read(DB_PATH)
+		const net_map: NetworkMap = JSON.parse(json_txt)
+
+		if (!("ramSizes" in net_map)) {
+			return null
+		}
+
+		const newMap = new NetworkMap()
+
+		newMap.hosts = net_map.hosts
+		newMap.nodes = net_map.nodes
+		newMap.ramSizes = net_map.ramSizes
+
+		return newMap
+	}
 	constructor(
 		public hosts: string[] = [],
 		public nodes: Record<string, NetworkNode> = {},
@@ -101,17 +121,9 @@ export function buildNetworkMap(ns: NS, start = "home"): NetworkMap {
 		}
 		return network_map
 	}
-	x: if (!saved_map_invalid && ns.fileExists(DB_PATH)) {
-		const json_txt = ns.read(DB_PATH)
-		const net_map: NetworkMap = JSON.parse(json_txt)
-		if (!("ramSizes" in net_map)) {
-			break x
-		}
-		network_map = new NetworkMap()
-		network_map.hosts = net_map.hosts
-		network_map.nodes = net_map.nodes
-		network_map.ramSizes = net_map.ramSizes
-		return network_map
+	if (!saved_map_invalid) {
+		network_map = NetworkMap.loadFromDisk(ns, DB_PATH)
+		if (network_map) return network_map
 	}
 	const nodes: Record<string, NetworkNode> = {}
 	const queue: string[] = [start]
@@ -276,4 +288,13 @@ export function canRunThreads(
 	if (ram <= 0) return 0
 	const ri = map.getRamInfo(ns, host)
 	return Math.floor(ri.freeRam / ram)
+}
+
+export function resetMap(ns: NS) {
+	if (!network_map) {
+		network_map = NetworkMap.build(ns, "home")
+	}
+	for (const host of network_map.hosts) {
+		ns.tprint(ns.dnsLookup(host))
+	}
 }
