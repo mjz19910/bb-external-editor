@@ -5,11 +5,11 @@ export async function main(ns: NS) {
 	const minRam = Number(ns.args[1] ?? 8)
 	const budgetMul = Number(ns.args[2] ?? 1)
 
-	for (; ;) {
-		const money = ns.getServerMoneyAvailable("home")
-		const budget = Math.max(0, money - reserve) / ns.cloud.getServerLimit() * budgetMul
-		ns.tprint(`Upgrade servers with budget $${ns.format.number(budget)}.`)
+	let money = ns.getServerMoneyAvailable("home")
+	const budget = Math.max(0, money - reserve) / ns.cloud.getServerLimit() * budgetMul
+	ns.tprint(`Upgrade servers with budget $${ns.format.number(budget)}.`)
 
+	for (; ;) {
 		const worst = worstPurchasedServer(ns)
 		if (!worst) {
 			ns.tprint("No purchased servers found.")
@@ -37,5 +37,7 @@ export async function main(ns: NS) {
 		}
 
 		ns.tprint(`[UPGRADED] ${worst.host} now ${ns.format.ram(ram)}`)
+		money -= cost
+		if (money * 2 < budget) break
 	}
 }
