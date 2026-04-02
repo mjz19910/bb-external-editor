@@ -134,14 +134,14 @@ class MultiTargetFarm {
 
 	/** Calculate how long until next worker finishes */
 	private getNextSleep(): number {
-		if (this.workerPids.size === 0) return 50
+		if (this.workerPids.size === 0) return 0
 		const now = Date.now()
 		let minRemaining = Infinity
 		for (const endTime of this.workerPids.values()) {
 			const remaining = endTime - now
 			if (remaining > 0 && remaining < minRemaining) minRemaining = remaining
 		}
-		return Math.max(1, minRemaining)
+		return Math.max(0, minRemaining)
 	}
 
 	/** Run one iteration for all targets */
