@@ -44,7 +44,8 @@ export class StateManager {
 
 	saveState(): void {
 		this.state.lastUpdated = Date.now()
-		this.ns.write(STATE_FILE, JSON.stringify(this.state), "w")
+		const saveData = JSON.stringify(this.state, void 0, "\t")
+		this.ns.write(STATE_FILE, saveData, "w")
 	}
 
 	getTarget(name: string): TargetState {

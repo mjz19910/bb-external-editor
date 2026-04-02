@@ -1,6 +1,6 @@
 // farm_all.ts
 import { StateManager } from "./lib/state"
-import { allocateThreadsSimple, allocateThreadsWithPlan, deployScriptSet } from "./lib/fleet" // your existing helpers
+import { allocateThreadsSimple } from "./lib/fleet" // your existing helpers
 
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
@@ -20,15 +20,15 @@ export async function main(ns: NS) {
 	}
 
 	// 2️⃣ Compute threads for each script (hack/grow/weaken)
-	const hackThreads = allocateThreadsSimple(ns, "hack", target)
-	const growThreads = allocateThreadsSimple(ns, "grow", target)
-	const weakenThreads = allocateThreadsSimple(ns, "weaken", target)
+	const hackThreads = allocateThreadsSimple(ns, "lib/hack.ts", target)
+	const growThreads = allocateThreadsSimple(ns, "lib/grow.ts", target)
+	const weakenThreads = allocateThreadsSimple(ns, "lib/weaken.ts", target)
 
 	// 3️⃣ Deploy scripts respecting RAM
 	const jobs = [
-		{ script: "hack.ts", threads: hackThreads },
-		{ script: "grow.ts", threads: growThreads },
-		{ script: "weaken.ts", threads: weakenThreads },
+		{ script: "lib/hack.ts", threads: hackThreads },
+		{ script: "lib/grow.ts", threads: growThreads },
+		{ script: "lib/weaken.ts", threads: weakenThreads },
 	]
 
 	for (const job of jobs) {
