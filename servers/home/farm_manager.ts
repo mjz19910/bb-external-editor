@@ -14,13 +14,14 @@ type FarmLogEvent = {
 }
 
 type TargetActivity = {
+	key: `${string}:${string}`
 	target: string
 	lastSeen: number
 	eventCount: number
 	hackThreads: number
 	growThreads: number
 	weakenThreads: number
-	lastPhase: string
+	phase: string
 }
 
 class RoundRobinTargetLogger {
@@ -28,8 +29,8 @@ class RoundRobinTargetLogger {
 	private readonly intervalMs: number
 	private readonly staleMs: number
 
-	private readonly byTarget = new Map<string, TargetActivity>()
-	private readonly rrOrder: string[]
+	private readonly byKey = new Map<`${string}:${string}`, TargetActivity>()
+	private readonly rrOrder: `${string}:${string}`[]
 	private rrIdx = 0
 	private stopped = false
 
@@ -37,24 +38,26 @@ class RoundRobinTargetLogger {
 		this.ns = ns
 		this.intervalMs = intervalMs
 		this.staleMs = staleMs
-		this.rrOrder = rrOrder
+		this.rrOrder = rrOrder.flatMap(v => [`${v}:stabilize`, `${v}:prep`, `${v}:cycle`] as const)
 		this.start()
 	}
 
 	public log(ev: FarmLogEvent) {
 		const now = Date.now()
-		let row = this.byTarget.get(ev.target)
+		const key: `${string}:${string}` = `${ev.target}:${ev.phase}`
+		let row = this.byKey.get(key)
 		if (!row) {
 			row = {
+				key,
 				target: ev.target,
 				lastSeen: now,
 				eventCount: 0,
 				hackThreads: 0,
 				growThreads: 0,
 				weakenThreads: 0,
-				lastPhase: ev.phase,
+				phase: ev.phase,
 			}
-			this.byTarget.set(ev.target, row)
+			this.byKey.set(key, row)
 		}
 
 		row.lastSeen = now
@@ -62,7 +65,7 @@ class RoundRobinTargetLogger {
 		row.hackThreads += ev.hackThreads
 		row.growThreads += ev.growThreads
 		row.weakenThreads += ev.weakenThreads
-		row.lastPhase = ev.phase
+		row.phase = ev.phase
 	}
 
 	public shutdown() {
@@ -92,7 +95,7 @@ class RoundRobinTargetLogger {
 		const rrTarget = this.nextRoundRobinTarget()
 		if (!rrTarget) return
 
-		const rrActivity = this.byTarget.get(rrTarget)
+		const rrActivity = this.byKey.get(rrTarget)
 		if (!rrActivity) return
 
 		let chosen = rrActivity
@@ -111,7 +114,7 @@ class RoundRobinTargetLogger {
 			[
 				`[Farm Activity]`,
 				`target=${chosen.target}`,
-				`phase=${chosen.lastPhase}`,
+				`phase=${chosen.phase}`,
 				`events=${chosen.eventCount}`,
 				`hack=${chosen.hackThreads}`,
 				`grow=${chosen.growThreads}`,
@@ -127,12 +130,12 @@ class RoundRobinTargetLogger {
 		chosen.weakenThreads = 0
 	}
 
-	private nextRoundRobinTarget(): string | null {
+	private nextRoundRobinTarget() {
 		let tries = this.rrOrder.length
 		while (tries-- > 0) {
 			if (this.rrIdx >= this.rrOrder.length) this.rrIdx = 0
 			const target = this.rrOrder[this.rrIdx++]
-			if (this.byTarget.has(target)) return target
+			if (this.byKey.has(target)) return target
 		}
 		return null
 	}
@@ -140,7 +143,7 @@ class RoundRobinTargetLogger {
 	private chooseMostActive(): TargetActivity | null {
 		let best: TargetActivity | null = null
 
-		for (const row of this.byTarget.values()) {
+		for (const row of this.byKey.values()) {
 			const score =
 				row.eventCount * 1000 +
 				row.hackThreads +
