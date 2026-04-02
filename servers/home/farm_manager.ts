@@ -194,11 +194,11 @@ export async function main(ns: NS) {
 	async function slowStart() {
 		let hadAnyErrors = false
 
-		for (let i = 0; i < 50; i++) {
+		for (let i = 0; i < 40; i++) {
 			addFarm(farms, hackPct, logger, true)
 		}
 
-		for (let i = 0; i < 50; i++) {
+		for (let i = 0; i < 60; i++) {
 			await ns.asleep(4_000)
 			addFarm(farms, hackPct, logger)
 			ns.print("added farm id=", farms.length)
