@@ -103,9 +103,7 @@ class SmartFarm {
 		const hackWeaken = Math.ceil(hackSec / ns.weakenAnalyze(1))
 
 		const growFactor = 1 / Math.max(0.001, 1 - this.hackPct)
-		const growThreads = Math.ceil(
-			ns.growthAnalyze(this.target, growFactor),
-		)
+		const growThreads = Math.ceil(ns.growthAnalyze(this.target, growFactor))
 		const growSec = ns.growthAnalyzeSecurity(growThreads)
 		const growWeaken = Math.ceil(growSec / ns.weakenAnalyze(1))
 
