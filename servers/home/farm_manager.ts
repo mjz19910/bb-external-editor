@@ -80,6 +80,11 @@ class RoundRobinTargetLogger {
 		})()
 	}
 
+	targetEventCount = 2
+	setFarms(farms: MultiTargetFarm[]) {
+		this.targetEventCount = farms.length
+	}
+
 	private flushOne() {
 		if (this.rrOrder.length === 0) return
 
@@ -99,6 +104,8 @@ class RoundRobinTargetLogger {
 			const hottest = this.chooseMostActive()
 			if (hottest) chosen = hottest
 		}
+
+		if (chosen.eventCount < this.targetEventCount) return
 
 		const age = now - chosen.lastSeen
 		tlog(
@@ -181,6 +188,7 @@ export async function main(ns: NS) {
 		const farm = new MultiTargetFarm(ns, hackPct, map)
 		farm.setLogger(logger)
 		farms.push(farm)
+		logger.setFarms(farms)
 	}
 
 	ns.atExit(() => {
