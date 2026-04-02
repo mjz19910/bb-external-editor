@@ -10,11 +10,7 @@ import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep"
 import { NetworkMap } from "./lib/network_map"
 import { GROW, HACK, WEAKEN } from "./lib/paths"
 
-type LaunchOrder = {
-	hack: number
-	grow: number
-	weaken: number
-}
+type LaunchOrder = { hack: number; grow: number; weaken: number }
 type CyclePlan = { hackThreads: number; growThreads: number; hackWeaken: number; growWeaken: number }
 type PrepPlan = ReturnType<typeof calcPrepPlan>
 
@@ -187,46 +183,40 @@ export class MultiTargetFarm {
 	/** Launch threads for a target, respecting memory limits */
 	private launchThreads(fleet: Fleet, order: LaunchOrder, target: string): LaunchOrder {
 		const h = this.launchOne(fleet, target, HACK, this.hMem, order.hack, this.ns.getHackTime(target))
-		if (!h) return { hack: 0, grow: 0, weaken: 0 }
 		const g = this.launchOne(fleet, target, GROW, this.gMem, order.grow, this.ns.getGrowTime(target))
-		if (!g) return { hack: h.threads, grow: 0, weaken: 0 }
 		const w = this.launchOne(fleet, target, WEAKEN, this.wMem, order.weaken, this.ns.getWeakenTime(target))
-		if (!w) return { hack: h.threads, grow: g.threads, weaken: 0 }
 		return { hack: h.threads, grow: g.threads, weaken: w.threads }
 	}
 
 	/** Launch a single script with memory allocation */
 	private launchOne(fleet: Fleet, target: string, script: string, memPerThread: number, threads: number, duration: number) {
-		if (threads <= 0) return null
-		const allocRes = allocateThreads(fleet, memPerThread, threads)
-		if (!allocRes) {
-			this.ns.tprint("failed to allocate threads to fleet")
-			return null
-		}
-		if (allocRes.remaining > 0) {
-			this.errorCount++
-		}
-		const runRes = runAllocationsTracked(this.ns, script, allocRes.allocations, [target])
-		for (const _failure of runRes.failedAllocs) {
-			this.errorCount++
-		}
-		if (this.noisy) {
-			this.ns.tprint("start jobs ", script, " ", target, " ", threads, " ", runRes.pids.length, " processes")
-		}
+		if (threads <= 0) return { threads: 0, pids: [], endTime: 0 }
+		let myErrors = 0
 		duration += 50
-		const endTime = Date.now() + duration
-		for (const pid of runRes.pids) if (pid > 0) this.workerPids.set(pid, endTime)
 		this.ns.asleep(duration).then(() => {
 			if (this.disabled) return
-			runRes.pids.forEach(pid => this.workerPids.delete(pid))
+			res.pids.forEach(pid => this.workerPids.delete(pid))
 			this.finishJobOnHost(target)
-			this.errorCount -= runRes.failedAllocs.length
-			if (allocRes.remaining > 0) {
-				this.errorCount--
-			}
+			this.errorCount -= myErrors
 		})
 		this.addJobToHost(target)
-		return { ...runRes, endTime }
+		const alloc = allocateThreads(fleet, memPerThread, threads)
+		let plannedThreads = 0
+		for (let a of alloc) {
+			plannedThreads += a.threads
+		}
+		if (plannedThreads != threads) {
+			this.ns.tprint("unable to launch enough threads wanted ", threads, " planned ", plannedThreads)
+			myErrors++
+			this.errorCount += myErrors
+			return { threads: 0, pids: [], endTime: 0 }
+		}
+		const res = runAllocationsTracked(this.ns, script, alloc, [target])
+		myErrors += res.failedAllocs.length
+		this.errorCount += myErrors
+		const endTime = Date.now() + duration
+		for (const pid of res.pids) if (pid > 0) this.workerPids.set(pid, endTime)
+		return { ...res, endTime }
 	}
 
 	private addJobToHost(host: string) {

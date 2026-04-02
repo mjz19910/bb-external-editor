@@ -166,8 +166,10 @@ export async function main(ns: NS) {
 	const farms: MultiTargetFarm[] = []
 	let farmIdBase = 1
 
-	function addFarm(hackPct: number, logger: RoundRobinTargetLogger) {
-		tlog(ns, `[Farm;id=${farmIdBase}] Starting`)
+	function addFarm(hackPct: number, logger: RoundRobinTargetLogger, silent = false) {
+		if (!silent) {
+			tlog(ns, `[Farm;id=${farmIdBase}] Starting`)
+		}
 		const farm = new MultiTargetFarm(ns, hackPct, map)
 		farm.setLogger(logger)
 		farms.push(farm)
@@ -180,6 +182,7 @@ export async function main(ns: NS) {
 		for (const farm of farms) {
 			farm.shutdown()
 		}
+		logger.shutdown()
 	})
 
 	const port = new ScriptPort<{
@@ -190,19 +193,28 @@ export async function main(ns: NS) {
 
 	async function slowStart() {
 		let hadAnyErrors = false
-		for (let i = 0; ; i++) {
-			if (i - 4 >= 0) {
-				farms[i - 4].noisy = false
+
+		for (let i = 0; i < 55; i++) {
+			addFarm(hackPct, logger, true)
+		}
+
+		await ns.asleep(30_000)
+
+		for (let i = 0; i < 20; i++) {
+			if (i - 8 >= 0) {
+				farms[i - 8].noisy = false
 			}
 			const farm = addFarm(hackPct, logger)
+			ns.print("added farm id=", farms.length)
 			farm.noisy = true
 			do {
-				ns.print("waiting for farm id=", i, " to stabilize")
-				await ns.asleep(1500)
-				if (farm.hasErrors()) {
+				await ns.asleep(2000)
+				const errs = farms.filter(v => v.hasErrors())
+				if (errs.length > 0) {
+					ns.tprint("farms that have errors ", errs.map(v => farms.indexOf(v)))
 					hadAnyErrors = true
 				}
-			} while (farm.hasErrors())
+			} while (farms.some(v => v.hasErrors()))
 			if (hadAnyErrors) break
 		}
 	}
