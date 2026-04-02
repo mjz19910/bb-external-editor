@@ -202,7 +202,7 @@ export async function main(ns: NS) {
 		// 4 =
 		// 40 = 11
 
-		for (let i = 0; i < 61; i++) {
+		for (let i = 0; i < 51; i++) {
 			addFarm(farms, hackPct, logger, true)
 		}
 		await ns.asleep(15_000)
