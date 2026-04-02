@@ -1,5 +1,6 @@
+import { ScriptPort } from "./ScriptPort"
 import { deployScriptSet } from "./lib/fleet"
-import { log } from "./lib/log"
+import { log, tlog } from "./lib/log"
 import { NetworkMap } from "./lib/network_map"
 import { HACK, GROW, WEAKEN } from "./lib/paths"
 import { MultiTargetFarm } from "./smart_farm"
@@ -27,13 +28,22 @@ export async function main(ns: NS) {
 		}
 	})
 
-	const results = await Promise.allSettled(farms.map(async (v, i) => {
+	const port = new ScriptPort<{ msg: true }>(ns, 1)
+	const allDone = Promise.all(farms.map(async (v, i) => {
 		await ns.asleep((i + 1) * 2000)
-		log(ns, `[Farm;id=${i + 1}] Starting`)
+		tlog(ns, `[Farm;id=${i + 1}] Starting`)
 		return await v.runForever()
 	}))
-
-	for (const res of results) {
-		ns.tprint("farm done ", res)
+	for (; ;) {
+		const results = await Promise.race([allDone, port.nextWrite().then(() => port)])
+		if (results instanceof ScriptPort) {
+			const msgs = results.readAll()
+			ns.tprint("got messages ", msgs)
+		} else {
+			for (const res of results) {
+				ns.tprint("farm done ", res)
+			}
+			break
+		}
 	}
 }

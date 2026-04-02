@@ -6,7 +6,7 @@ import {
 	DarknetProbeMessage,
 	PortMessage,
 } from "../type/helper";
-import { ScriptPort } from "../type/ScriptPort";
+import { ScriptPort } from "../../../servers/home/ScriptPort";
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,

@@ -1,5 +1,5 @@
 import { PortReleaseMsg } from "../type/helper";
-import { ScriptPort } from "../type/ScriptPort";
+import { ScriptPort } from "../../../servers/home/ScriptPort";
 
 export async function main(ns: NS) {
 	const reply_port = ScriptPort.open_request_port(ns);

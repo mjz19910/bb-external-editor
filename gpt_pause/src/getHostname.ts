@@ -1,4 +1,4 @@
-import { ScriptPort } from "./type/ScriptPort";
+import { ScriptPort } from "../../servers/home/ScriptPort";
 
 export async function main(ns: NS) {
 	const port = ScriptPort.open_api_port(ns);

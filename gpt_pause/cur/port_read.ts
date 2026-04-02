@@ -1,6 +1,6 @@
 import { DarknetServer } from "../src/darknet/misc";
 import { DarknetServerInfo } from "../src/darknet/types";
-import { ScriptPort } from "../src/type/ScriptPort";
+import { ScriptPort } from "../../servers/home/ScriptPort";
 import {
 	HostnameReplyMsg,
 	OnlineCheckMsg,

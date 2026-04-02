@@ -1,11 +1,6 @@
-
-export interface DarknetServer extends DarknetServerData {
-	isOnline: boolean;
-}
-
 export function isDarknetServer2(
-	s: { hostname: string } | Server | DarknetServer,
-): s is DarknetServer {
+	s: { hostname: string } | Server | DarknetServerData,
+): s is DarknetServerData {
 	return "blockedRam" in s;
 }
 

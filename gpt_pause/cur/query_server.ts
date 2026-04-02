@@ -1,7 +1,7 @@
 import { DarknetServer } from "../src/darknet/misc";
 import { DarknetServerInfo } from "../src/darknet/types";
 import { OnlineServersMessage } from "../src/type/helper";
-import { ScriptPort } from "../src/type/ScriptPort";
+import { ScriptPort } from "../../servers/home/ScriptPort";
 import { write_info_to_fs_db } from "./write_ip_db";
 
 export async function main(ns: NS) {

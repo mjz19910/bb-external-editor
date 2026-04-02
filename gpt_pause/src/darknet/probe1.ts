@@ -1,5 +1,5 @@
 import { DarknetProbeMessage } from "../type/helper";
-import { ScriptPort } from "../type/ScriptPort";
+import { ScriptPort } from "../../../servers/home/ScriptPort";
 import { DarknetServerInfo } from "./types";
 
 function post_dnet_probe(ns: NS, runner: string, port: number) {
