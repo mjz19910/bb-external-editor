@@ -55,17 +55,23 @@ type StepCtx = {
 type FarmPhase = "stabilize" | "prep" | "cycle" | "idle"
 
 class SmartFarm {
+	workerPids = new Set<number>();
+
+	hMem: number
+	gMem: number
+	wMem: number
+
 	minSec: number
 	moneyMax: number
 
 	steps = 0;
 	launch_counter = 0;
-	hMem = 1.7;
-	wgMem = 1.75;
-
-	workerPids = new Set<number>();
 
 	constructor(public ns: NS, public target: string, public hackPct: number) {
+		this.hMem = ns.getScriptRam(HACK)
+		this.gMem = ns.getScriptRam(GROW)
+		this.wMem = ns.getScriptRam(WEAKEN)
+
 		this.minSec = ns.getServerMinSecurityLevel(target)
 		this.moneyMax = ns.getServerMaxMoney(target)
 	}
@@ -221,7 +227,7 @@ class SmartFarm {
 		const g = this.launchOne(
 			fleet,
 			GROW,
-			this.wgMem,
+			this.gMem,
 			order.grow,
 			this.growTime,
 		)
@@ -229,7 +235,7 @@ class SmartFarm {
 		const w = this.launchOne(
 			fleet,
 			WEAKEN,
-			this.wgMem,
+			this.wMem,
 			order.weaken,
 			this.weakenTime,
 		)
@@ -241,6 +247,9 @@ class SmartFarm {
 			grow: g.threads,
 			weaken: w.threads,
 		}
+	}
+	wgMem(fleet: Fleet, GROW: string, wgMem: any, grow: number, growTime: number) {
+		throw new Error("Method not implemented.")
 	}
 
 	private planStabilize(ctx: StepCtx): LaunchOrder {
