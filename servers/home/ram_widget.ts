@@ -1,4 +1,4 @@
-// ram_widget_full.ts
+// ram_widget_stable.ts
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
 
@@ -24,12 +24,13 @@ export async function main(ns: NS) {
 		fontSize: "13px",
 		whiteSpace: "pre",
 		boxShadow: "0 0 12px rgba(0,255,156,0.25)",
-		minWidth: "280px",
+		minWidth: "340px",
 		cursor: "move",
 		userSelect: "none",
 	})
 	doc.body.appendChild(box)
 
+	// Close button
 	const closeBtn = doc.createElement("div")
 	closeBtn.innerText = "✖"
 	Object.assign(closeBtn.style, {
@@ -58,10 +59,10 @@ export async function main(ns: NS) {
 	box.appendChild(title)
 
 	const sep = doc.createElement("div")
-	sep.innerText = "========================"
+	sep.innerText = "===================================="
 	box.appendChild(sep)
 
-	// --- Home / Total RAM ---
+	// --- Summary rows ---
 	const createRow = (label: string) => {
 		const div = doc.createElement("div")
 		const span = doc.createElement("span")
@@ -81,101 +82,139 @@ export async function main(ns: NS) {
 	const totalFreeSpan = createRow("        Free: ")
 	const totalMax1Span = createRow("        MAX 1min: ")
 
-	// --- TOP FREE SERVERS container ---
-	const topTitle = doc.createElement("div")
-	topTitle.innerText = "\nTOP FREE SERVERS"
-	box.appendChild(topTitle)
+	// --- Servers section ---
+	const serversTitle = doc.createElement("div")
+	serversTitle.innerText = "\nSERVERS"
+	box.appendChild(serversTitle)
 
-	const topContainer = doc.createElement("div")
-	Object.assign(topContainer.style, {
-		maxHeight: "180px",
+	const serversContainer = doc.createElement("div")
+	Object.assign(serversContainer.style, {
+		maxHeight: "260px",
 		overflowY: "auto",
+		overflowX: "hidden",
+		paddingRight: "4px",
 	})
-	box.appendChild(topContainer)
+	box.appendChild(serversContainer)
 
-	// Map serverName -> row { nameSpan, freeSpan }
-	const serverRows: Record<string, { div: HTMLDivElement; nameSpan: HTMLSpanElement; freeSpan: HTMLSpanElement }> = {}
+	type ServerRow = {
+		div: HTMLDivElement
+		nameSpan: HTMLSpanElement
+		pctSpan: HTMLSpanElement
+		ramSpan: HTMLSpanElement
+		barSpan: HTMLSpanElement
+	}
+
+	const serverRows: Record<string, ServerRow> = {}
 
 	// --- Rolling buffers ---
 	const homeHistory: number[] = []
 	const totalHistory: number[] = []
 
-	// --- Update loop ---
-	while (running) {
-		const servers = getAllServers(ns)
+	try {
+		while (running) {
+			const discovered = getAllServers(ns)
+			const orderedServers = sortServersStable(discovered)
 
-		const homeMax = ns.getServerMaxRam("home")
-		const homeUsed = ns.getServerUsedRam("home")
-		const homeFree = homeMax - homeUsed
+			const homeMax = ns.getServerMaxRam("home")
+			const homeUsed = ns.getServerUsedRam("home")
+			const homeFree = homeMax - homeUsed
 
-		const totalMax = servers.reduce((sum, s) => sum + ns.getServerMaxRam(s), 0)
-		const totalUsed = servers.reduce((sum, s) => sum + ns.getServerUsedRam(s), 0)
-		const totalFree = totalMax - totalUsed
+			const totalMax = orderedServers.reduce((sum, s) => sum + ns.getServerMaxRam(s), 0)
+			const totalUsed = orderedServers.reduce((sum, s) => sum + ns.getServerUsedRam(s), 0)
+			const totalFree = totalMax - totalUsed
 
-		homeHistory.push(homeUsed)
-		if (homeHistory.length > 60) homeHistory.shift()
-		totalHistory.push(totalUsed)
-		if (totalHistory.length > 60) totalHistory.shift()
+			homeHistory.push(homeUsed)
+			if (homeHistory.length > 60) homeHistory.shift()
 
-		const homeMax1 = Math.max(...homeHistory)
-		const totalMax1 = Math.max(...totalHistory)
+			totalHistory.push(totalUsed)
+			if (totalHistory.length > 60) totalHistory.shift()
 
-		// --- Update spans for home / total RAM ---
-		homeBarSpan.innerText = bar(homeUsed, homeMax)
-		homeUsedSpan.innerText = `${fmt(homeUsed)} / ${fmt(homeMax)}`
-		homeFreeSpan.innerText = fmt(homeFree)
-		homeMax1Span.innerText = fmt(homeMax1)
+			const homeMax1 = Math.max(...homeHistory)
+			const totalMax1 = Math.max(...totalHistory)
 
-		totalBarSpan.innerText = bar(totalUsed, totalMax)
-		totalUsedSpan.innerText = `${fmt(totalUsed)} / ${fmt(totalMax)}`
-		totalFreeSpan.innerText = fmt(totalFree)
-		totalMax1Span.innerText = fmt(totalMax1)
+			// --- Summary updates ---
+			homeBarSpan.innerText = `${bar(homeUsed, homeMax)} ${pct(homeUsed, homeMax)}`
+			homeUsedSpan.innerText = `${fmt(homeUsed)} / ${fmt(homeMax)}`
+			homeFreeSpan.innerText = fmt(homeFree)
+			homeMax1Span.innerText = fmt(homeMax1)
 
-		// --- Update top servers ---
-		const ranked = servers
-			.map(s => ({
-				name: s,
-				max: ns.getServerMaxRam(s),
-				used: ns.getServerUsedRam(s),
-				free: ns.getServerMaxRam(s) - ns.getServerUsedRam(s),
-			}))
-			.filter(s => s.max > 0)
-			.sort((a, b) => b.free - a.free)
+			totalBarSpan.innerText = `${bar(totalUsed, totalMax)} ${pct(totalUsed, totalMax)}`
+			totalUsedSpan.innerText = `${fmt(totalUsed)} / ${fmt(totalMax)}`
+			totalFreeSpan.innerText = fmt(totalFree)
+			totalMax1Span.innerText = fmt(totalMax1)
 
-		// Create new rows if server not yet in DOM
-		for (const s of ranked) {
-			if (!serverRows[s.name]) {
-				const div = doc.createElement("div")
-				const nameSpan = doc.createElement("span")
-				const freeSpan = doc.createElement("span")
-				Object.assign(freeSpan.style, { float: "right" })
-				nameSpan.innerText = truncate(s.name, 14)
-				freeSpan.innerText = fmtShort(s.free)
-				div.appendChild(nameSpan)
-				div.appendChild(freeSpan)
-				topContainer.appendChild(div)
-				serverRows[s.name] = { div, nameSpan, freeSpan }
-			} else {
-				serverRows[s.name].freeSpan.innerText = fmtShort(s.free)
+			// --- Ensure rows exist in stable order ---
+			for (const name of orderedServers) {
+				const max = ns.getServerMaxRam(name)
+				if (max <= 0) continue
+
+				if (!serverRows[name]) {
+					const row = createServerRow(name)
+					serverRows[name] = row
+					serversContainer.appendChild(row.div)
+				}
 			}
-		}
 
-		// Reorder DOM based on free RAM
-		let prev: HTMLDivElement | null = null
-		for (const s of ranked) {
-			const row = serverRows[s.name].div
-			if (prev === null) {
-				topContainer.insertBefore(row, topContainer.firstChild)
-			} else if (row !== prev.nextSibling) {
-				topContainer.insertBefore(row, prev.nextSibling)
+			// --- Update only dynamic text ---
+			for (const name of orderedServers) {
+				const max = ns.getServerMaxRam(name)
+				if (max <= 0) continue
+
+				const used = ns.getServerUsedRam(name)
+				const row = serverRows[name]
+
+				row.nameSpan.innerText = truncate(name, 18).padEnd(18)
+				row.pctSpan.innerText = pct(used, max).padStart(5)
+				row.ramSpan.innerText = `${fmtShort(used).padStart(7)} / ${fmtShort(max).padStart(7)}`
+				row.barSpan.innerText = bar(used, max, 10)
 			}
-			prev = row
-		}
 
-		await ns.sleep(1000)
+			await ns.sleep(1000)
+		}
+	} finally {
+		const el = doc.getElementById(widgetId)
+		if (el) el.remove()
 	}
 
-	// --- Helpers ---
+	function createServerRow(name: string): ServerRow {
+		const div = doc.createElement("div")
+
+		const nameSpan = doc.createElement("span")
+		const pctSpan = doc.createElement("span")
+		const ramSpan = doc.createElement("span")
+		const barSpan = doc.createElement("span")
+
+		div.appendChild(nameSpan)
+		div.appendChild(doc.createTextNode(" "))
+		div.appendChild(pctSpan)
+		div.appendChild(doc.createTextNode(" "))
+		div.appendChild(ramSpan)
+		div.appendChild(doc.createTextNode(" "))
+		div.appendChild(barSpan)
+
+		nameSpan.innerText = truncate(name, 18).padEnd(18)
+		pctSpan.innerText = "0.0%"
+		ramSpan.innerText = "0.0GB / 0.0GB"
+		barSpan.innerText = "[----------]"
+
+		return { div, nameSpan, pctSpan, ramSpan, barSpan }
+	}
+
+	function sortServersStable(servers: string[]) {
+		const withRam = servers.filter(s => ns.getServerMaxRam(s) > 0)
+
+		const home = withRam.filter(s => s === "home")
+		const pservs = withRam
+			.filter(s => s.startsWith("pserv-"))
+			.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+
+		const npc = withRam
+			.filter(s => s !== "home" && !s.startsWith("pserv-"))
+			.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+
+		return [...home, ...pservs, ...npc]
+	}
+
 	function makeDraggable(el: HTMLDivElement) {
 		let isDragging = false
 		let offsetX = 0
@@ -225,13 +264,17 @@ export async function main(ns: NS) {
 		return ns.format.ram(ram, 1)
 	}
 
+	function pct(used: number, max: number) {
+		return ns.format.percent(used / (max + 1e-9))
+	}
+
 	function truncate(str: string, len: number) {
 		return str.length > len ? str.slice(0, len - 1) + "…" : str
 	}
 
 	function bar(used: number, max: number, width = 14) {
 		if (max <= 0) return "[" + "-".repeat(width) + "]"
-		const ratio = used / max
+		const ratio = Math.min(1, used / max)
 		const filled = Math.round(ratio * width)
 		return "[" + "#".repeat(filled) + "-".repeat(width - filled) + "]"
 	}
