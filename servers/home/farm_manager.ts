@@ -41,7 +41,7 @@ export async function main(ns: NS) {
 	})())
 	raceArr.push(port.nextWrite().then(() => port))
 	for (; ;) {
-		const [idx, results] = await Promise.race(raceArr.map(async (v, i) => [i, await v] as [number, Awaited<typeof v>]))
+		const [idx, results]: [number, ScriptPort<{ msg: true }> | void] = await Promise.race(raceArr.map(async (v, i) => [i, await v] as [number, Awaited<typeof v>]))
 		raceArr.splice(idx, 1)
 		if (results instanceof ScriptPort) {
 			const msgs = results.readAll()
@@ -57,7 +57,7 @@ export async function main(ns: NS) {
 					await ns.asleep(2000)
 				}
 			})())
-			raceArr.push(port.nextWrite().then(() => port))
+			raceArr.push(results.nextWrite().then(() => results))
 		}
 	}
 }
