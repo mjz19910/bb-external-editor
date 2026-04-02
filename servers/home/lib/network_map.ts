@@ -23,6 +23,12 @@ export class NetworkMap {
 		const newMap = new NetworkMap()
 
 		newMap.allHosts = net_map.allHosts
+
+		// upgrade the schema
+		if ("hosts" in net_map) {
+			newMap.allHosts = net_map.hosts as string[]
+		}
+
 		newMap.nodes = net_map.nodes
 		newMap.ramSizes = net_map.ramSizes
 
