@@ -93,6 +93,7 @@ class SmartFarm {
 
 	private finalizeStep() {
 		const ns = this.ns
+		const last_launches = this.launch_counter
 		this.steps++
 
 		if (this.steps % 4 === 0) {
@@ -101,10 +102,9 @@ class SmartFarm {
 
 		if (this.steps % 20 === 0) {
 			return ns.asleep(50)
-		} else if (this.launch_counter === 0) {
+		} else if (last_launches === 0) {
 			return ns.asleep(80)
 		}
-
 	}
 
 	private calcCyclePlan(ns: NS): CyclePlan {
