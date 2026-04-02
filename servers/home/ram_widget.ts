@@ -24,7 +24,7 @@ export async function main(ns: NS) {
 		fontSize: "13px",
 		whiteSpace: "pre",
 		boxShadow: "0 0 12px rgba(0,255,156,0.25)",
-		minWidth: "340px",
+		minWidth: "360px",
 		cursor: "move",
 		userSelect: "none",
 	})
@@ -164,7 +164,7 @@ export async function main(ns: NS) {
 				const row = serverRows[name]
 
 				row.nameSpan.innerText = truncate(name, 18).padEnd(18)
-				row.pctSpan.innerText = pct(used, max).padStart(5)
+				row.pctSpan.innerText = pct(used, max).padStart(6)
 				row.ramSpan.innerText = `${fmtShort(used).padStart(7)} / ${fmtShort(max).padStart(7)}`
 				row.barSpan.innerText = bar(used, max, 10)
 			}
@@ -265,7 +265,7 @@ export async function main(ns: NS) {
 	}
 
 	function pct(used: number, max: number) {
-		return ns.format.percent(used / (max + 1e-9))
+		return ns.format.percent(used / (max + 1e-9), 1)
 	}
 
 	function truncate(str: string, len: number) {
