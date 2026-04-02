@@ -95,9 +95,7 @@ class SmartFarm {
 	}
 
 	private calcCyclePlan(ns: NS): CyclePlan {
-		const hackThreads = Math.ceil(
-			calcHackThreadsForPercent(ns, this.target, this.hackPct),
-		)
+		const hackThreads = Math.ceil(calcHackThreadsForPercent(ns, this.target, this.hackPct))
 
 		const hackSec = ns.hackAnalyzeSecurity(hackThreads, this.target)
 		const hackWeaken = Math.ceil(hackSec / ns.weakenAnalyze(1))
@@ -195,29 +193,9 @@ class SmartFarm {
 		fleet: Fleet,
 		order: LaunchOrder,
 	): LaunchOrder {
-		const h = this.launchOne(
-			fleet,
-			HACK,
-			this.hMem,
-			order.hack,
-			this.hackTime,
-		)
-
-		const g = this.launchOne(
-			fleet,
-			GROW,
-			this.gMem,
-			order.grow,
-			this.growTime,
-		)
-
-		const w = this.launchOne(
-			fleet,
-			WEAKEN,
-			this.wMem,
-			order.weaken,
-			this.weakenTime,
-		)
+		const h = this.launchOne(fleet, HACK, this.hMem, order.hack, this.hackTime)
+		const g = this.launchOne(fleet, GROW, this.gMem, order.grow, this.growTime)
+		const w = this.launchOne(fleet, WEAKEN, this.wMem, order.weaken, this.weakenTime)
 
 		return {
 			hack: h.threads,
@@ -244,13 +222,11 @@ class SmartFarm {
 	}
 
 	private planCycle(ctx: StepCtx): LaunchOrder {
+		const weakenThreads = ctx.plan.hackWeaken + ctx.plan.growWeaken
 		return {
 			hack: missing(ctx.plan.hackThreads, ctx.jobs.hack),
 			grow: missing(ctx.plan.growThreads, ctx.jobs.grow),
-			weaken: missing(
-				ctx.plan.hackWeaken + ctx.plan.growWeaken,
-				ctx.jobs.weaken,
-			),
+			weaken: missing(weakenThreads, ctx.jobs.weaken),
 		}
 	}
 
@@ -296,7 +272,6 @@ class SmartFarm {
 			)
 		}
 
-		// Sleep until next worker finishes or a small fallback
 		return this.ns.asleep(this.getNextSleep())
 	}
 
