@@ -229,6 +229,12 @@ export async function main(ns: NS) {
 		raceArr.push(port.nextWrite().then(() => null))
 		for (const msg of msgs) {
 			addFarm(farms, msg.hackPct ?? hackPct, logger)
+			ns.print("added farm id=", farms.length)
+			await ns.asleep(5_500)
+			const errs = farms.filter(v => v.hasErrors())
+			if (errs.length > 0) {
+				ns.tprint("farms that have errors ", errs.map(v => farms.indexOf(v)))
+			}
 		}
 	}
 }
