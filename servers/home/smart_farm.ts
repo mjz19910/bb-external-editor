@@ -167,56 +167,22 @@ class SmartFarm {
 		return launched.hack > 0 || launched.grow > 0 || launched.weaken > 0;
 	}
 
-	hackOffset = 5;
-	growOffset = 5;
-	weakenOffset = 5;
-
-	killHackPids(pids: number[]) {
-		let increase_grow_offset = false;
+	private notifyEndPids(pids: number[]) {
 		for (const pid of pids) {
 			this.workerPids.delete(pid);
-			if (!this.ns.isRunning(pid)) continue;
-			increase_grow_offset = true;
 		}
-		if (!increase_grow_offset) return;
-		this.hackOffset *= 1.1;
-		this.ns.print("hck=", pids, "offset=", this.hackOffset);
 	}
 
-	killGrowPids(pids: number[]) {
-		let increase_grow_offset = false;
-		for (const pid of pids) {
-			this.workerPids.delete(pid);
-			if (!this.ns.isRunning(pid)) continue;
-			increase_grow_offset = true;
-		}
-		if (!increase_grow_offset) return;
-		this.growOffset *= 1.1;
-		this.ns.print("grw=", pids, "offset=", this.growOffset);
+	private get hackTime() {
+		return this.ns.getHackTime(this.target) + 50;
 	}
 
-	killWeakenPids(pids: number[]) {
-		let increase_weaken_offset = false;
-		for (const pid of pids) {
-			this.workerPids.delete(pid);
-			if (!this.ns.isRunning(pid)) continue;
-			increase_weaken_offset = true;
-		}
-		if (!increase_weaken_offset) return;
-		this.weakenOffset *= 1.1;
-		this.ns.print("wkn=", pids, "offset=", this.weakenOffset);
+	private get growTime() {
+		return this.ns.getGrowTime(this.target) + 50;
 	}
 
-	get hackTime() {
-		return this.ns.getHackTime(this.target) + this.hackOffset;
-	}
-
-	get growTime() {
-		return this.ns.getGrowTime(this.target) + this.growOffset;
-	}
-
-	get weakenTime() {
-		return this.ns.getWeakenTime(this.target) + this.weakenOffset;
+	private get weakenTime() {
+		return this.ns.getWeakenTime(this.target) + 50;
 	}
 
 	private launchThreads(
@@ -235,7 +201,7 @@ class SmartFarm {
 			const res = runAllocationsTracked(ns, HACK, alloc, [target]);
 			launchedH = res.threads;
 			this.trackPids(res.pids);
-			const cb = this.killHackPids.bind(this, res.pids);
+			const cb = this.notifyEndPids.bind(this, res.pids);
 			ns.asleep(this.hackTime).then(cb);
 		}
 
@@ -244,7 +210,7 @@ class SmartFarm {
 			const res = runAllocationsTracked(ns, GROW, alloc, [target]);
 			launchedG = res.threads;
 			this.trackPids(res.pids);
-			const cb = this.killGrowPids.bind(this, res.pids);
+			const cb = this.notifyEndPids.bind(this, res.pids);
 			ns.asleep(this.growTime).then(cb);
 		}
 
@@ -253,7 +219,7 @@ class SmartFarm {
 			const res = runAllocationsTracked(ns, WEAKEN, alloc, [target]);
 			launchedW = res.threads;
 			this.trackPids(res.pids);
-			const cb = this.killWeakenPids.bind(this, res.pids);
+			const cb = this.notifyEndPids.bind(this, res.pids);
 			ns.asleep(this.weakenTime).then(cb);
 		}
 
