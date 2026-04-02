@@ -6,7 +6,7 @@ import {
 	runAllocationsTracked,
 } from "./lib/fleet"
 import { getTargetJobCounts, TargetJobCounts } from "./lib/jobs"
-import { tlog } from "./lib/log"
+import { log } from "./lib/log"
 import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep"
 import { chooseBestTarget } from "./choose_best_target"
 import { NetworkMap } from "./lib/network_map"
@@ -277,7 +277,7 @@ class SmartFarm {
 		const didLaunch = this.runLaunchOrder(ctx, order)
 
 		if (didLaunch) {
-			tlog(
+			log(
 				this.ns,
 				`[SMART_FARM] phase=${phase} h=${order.hack} g=${order.grow} w=${order.weaken}`,
 			)
@@ -337,8 +337,8 @@ export async function main(ns: NS) {
 		target = best.host
 	}
 
-	ns.ui.setTailTitle(`smart_farm:${target}`)
-	tlog(ns, `[SMART_FARM] target=${target} hackPct=${hackPct}`)
+	ns.ui.setTailTitle(`smart_farm:${target}:${hackPct}`)
+	log(ns, `[SMART_FARM] target=${target} hackPct=${hackPct}`)
 
 	const map = NetworkMap.build(ns)
 	const FILES = [HACK, GROW, WEAKEN]
