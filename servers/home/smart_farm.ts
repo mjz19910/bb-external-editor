@@ -148,6 +148,7 @@ class MultiTargetFarm {
 		const endTime = Date.now() + duration / 3
 		for (const pid of res.pids) if (pid > 0) this.workerPids.set(pid, endTime)
 		this.ns.asleep(duration).then(() => {
+			if (this.disabled) return
 			res.pids.forEach(pid => this.workerPids.delete(pid))
 			this.finishJobOnHost(target)
 		})
@@ -202,7 +203,10 @@ class MultiTargetFarm {
 	cleanupWorkers() {
 		for (const pid of this.workerPids.keys()) this.ns.kill(pid)
 		this.workerPids.clear()
+		this.disabled = true
 	}
+
+	disabled = false;
 }
 
 /** Main entry point */
