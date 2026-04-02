@@ -1,5 +1,6 @@
 import { getFarmableTargets } from "./lib/target_pool"
 import { scoreTargetsEx, TargetScore } from "./lib/score_target"
+import { Events } from "./lib/events"
 
 export type ChooseBestTargetOptions = {
 	/** If true, prefer already-prepped / nearly-prepped servers */
@@ -99,10 +100,13 @@ export async function main(ns: NS) {
 		exclude,
 	})
 
+
 	if (!best) {
 		ns.tprint("No valid target found.")
 		return
 	}
+
+	updateBestTarget(best.target)
 
 	ns.tprint(`Best target: ${best.target}`)
 	ns.tprint(`Final score:      ${fmt(best.finalScore)}`)
@@ -124,4 +128,8 @@ function fmt(n: number): string {
 	if (Math.abs(n) >= 100) return n.toFixed(1)
 	if (Math.abs(n) >= 10) return n.toFixed(2)
 	return n.toFixed(4)
+}
+
+function updateBestTarget(target: string) {
+	Events.emit("NEW_BEST_TARGET", target)
 }
