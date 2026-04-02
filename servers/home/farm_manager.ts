@@ -34,7 +34,7 @@ class RoundRobinTargetLogger {
 	private rrIdx = 0
 	private stopped = false
 
-	constructor(ns: NS, rrOrder: string[], intervalMs = 10_000, staleMs = 5 * 60_000) {
+	constructor(ns: NS, rrOrder: string[], intervalMs = 500, staleMs = 5 * 60_000) {
 		this.ns = ns
 		this.intervalMs = intervalMs
 		this.staleMs = staleMs
@@ -109,19 +109,14 @@ class RoundRobinTargetLogger {
 		if (chosen.eventCount < this.targetEventCount) return
 
 		const age = now - chosen.lastSeen
-		tlog(
-			this.ns,
-			[
-				`[Farm Activity]`,
-				`target=${chosen.target}`,
-				`phase=${chosen.phase}`,
-				`events=${chosen.eventCount}`,
-				`hack=${chosen.hackThreads}`,
-				`grow=${chosen.growThreads}`,
-				`weaken=${chosen.weakenThreads}`,
-				`lastSeen=${this.ns.format.time(age)} ago`,
-			].join(" ")
-		)
+		this.ns.print(`[Farm Activity] `,
+			`target=${chosen.target} `,
+			`phase=${chosen.phase} `,
+			`events=${chosen.eventCount} `,
+			`hack=${chosen.hackThreads} `,
+			`grow=${chosen.growThreads} `,
+			`weaken=${chosen.weakenThreads} `,
+			`lastSeen=${this.ns.format.time(age)} ago`)
 
 		// reset counters after reporting, but keep lastSeen/lastPhase
 		chosen.eventCount = 0
