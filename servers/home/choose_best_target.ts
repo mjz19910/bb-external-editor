@@ -1,55 +1,80 @@
-import { buildNetworkMap, classifyServer } from "./lib/network_map";
+import { getFarmableTargets } from "./lib/target_pool"
+import { scoreTargets, TargetScore } from "./lib/score_target"
 
-type TargetScore = {
-	host: string;
-	score: number;
-	maxMoney: number;
-	minSec: number;
-	reqHack: number;
-	growth: number;
-};
+export type ChooseBestTargetOptions = {
+	/** If true, prefer already-prepped / nearly-prepped servers */
+	preferReady?: boolean
 
-export function chooseBestTarget(ns: NS): TargetScore | null {
-	const map = buildNetworkMap(ns);
-	const targets: TargetScore[] = [];
+	/** Exclude these targets */
+	exclude?: string[]
 
-	for (const host of map.allHosts) {
-		if (classifyServer(ns, host) !== "farmable") continue;
+	/** Only accept targets above this readiness */
+	minReadiness?: number
 
-		const maxMoney = ns.getServerMaxMoney(host);
-		const minSec = ns.getServerMinSecurityLevel(host);
-		const reqHack = ns.getServerRequiredHackingLevel(host);
-		const growth = ns.getServerGrowth(host);
+	/** Fraction of max money to model per batch */
+	hackFraction?: number
 
-		if (maxMoney <= 0) continue;
+	/** Require at least this hack chance */
+	minHackChance?: number
 
-		const score = (maxMoney * growth) / Math.max(1, minSec * reqHack);
-
-		targets.push({
-			host,
-			score,
-			maxMoney,
-			minSec,
-			reqHack,
-			growth,
-		});
-	}
-
-	targets.sort((a, b) => b.score - a.score);
-	return targets[0] ?? null;
+	/** Allow only servers <= playerHack * ratio */
+	maxHackLevelRatio?: number
 }
 
-export async function main(ns: NS) {
-	const best = chooseBestTarget(ns);
-	if (!best) {
-		ns.tprint("No farmable target found.");
-		return;
+/**
+ * Pick the best target from currently farmable rooted servers.
+ */
+export function chooseBestTarget(
+	ns: NS,
+	opts: ChooseBestTargetOptions = {}
+): string | null {
+	return chooseBestTargetScore(ns, opts)?.target ?? null
+}
+
+/**
+ * Same as chooseBestTarget(), but returns full score details.
+ */
+export function chooseBestTargetScore(
+	ns: NS,
+	opts: ChooseBestTargetOptions = {}
+): TargetScore | null {
+	const {
+		preferReady = true,
+		exclude = [],
+		minReadiness = 0,
+		hackFraction = 0.1,
+		minHackChance = 0.2,
+		maxHackLevelRatio = 1.0,
+	} = opts
+
+	const excluded = new Set(exclude)
+
+	const targets = getFarmableTargets(ns).filter(t => !excluded.has(t))
+	if (targets.length === 0) return null
+
+	let scored = scoreTargets(ns, targets, {
+		hackFraction,
+		minHackChance,
+		maxHackLevelRatio,
+	})
+
+	if (scored.length === 0) return null
+
+	// Optional readiness filter
+	scored = scored.filter(t => t.readiness >= minReadiness)
+	if (scored.length === 0) return null
+
+	if (!preferReady) {
+		return scored[0] ?? null
 	}
 
-	ns.tprint(`Best target: ${best.host}`);
-	ns.tprint(`Score: ${ns.format.number(best.score)}`);
-	ns.tprint(`Max money: ${ns.format.number(best.maxMoney)}`);
-	ns.tprint(`Min sec: ${best.minSec}`);
-	ns.tprint(`Growth: ${best.growth}`);
-	ns.tprint(`Req hack: ${best.reqHack}`);
+	// Prefer ready-ish targets if possible, but fall back gracefully
+	const readyThresholds = [0.98, 0.95, 0.9, 0.8, 0.7]
+
+	for (const threshold of readyThresholds) {
+		const ready = scored.filter(t => t.readiness >= threshold)
+		if (ready.length > 0) return ready[0]
+	}
+
+	return scored[0] ?? null
 }

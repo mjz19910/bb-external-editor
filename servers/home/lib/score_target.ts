@@ -47,7 +47,7 @@ export type ScoreTargetOptions = {
 
 export function scoreTarget(
 	ns: NS,
-	target: TargetInfo,
+	target: string,
 	opts: ScoreTargetOptions = {}
 ): TargetScore | null {
 	const {
@@ -58,28 +58,28 @@ export function scoreTarget(
 	} = opts
 
 	const playerHack = ns.getHackingLevel()
-	const reqHack = ns.getServerRequiredHackingLevel(target.host)
+	const reqHack = ns.getServerRequiredHackingLevel(target)
 
 	if (reqHack > playerHack * maxHackLevelRatio) return null
-	if (!ns.hasRootAccess(target.host)) return null
+	if (!ns.hasRootAccess(target)) return null
 
-	const maxMoney = ns.getServerMaxMoney(target.host)
+	const maxMoney = ns.getServerMaxMoney(target)
 	if (maxMoney <= 0) return null
 
-	const currentMoney = Math.max(1, ns.getServerMoneyAvailable(target.host))
+	const currentMoney = Math.max(1, ns.getServerMoneyAvailable(target))
 	const moneyPct = currentMoney / maxMoney
 
-	const minSec = ns.getServerMinSecurityLevel(target.host)
-	const currentSec = ns.getServerSecurityLevel(target.host)
+	const minSec = ns.getServerMinSecurityLevel(target)
+	const currentSec = ns.getServerSecurityLevel(target)
 	const secDelta = Math.max(0, currentSec - minSec)
 
-	const hackChance = ns.hackAnalyzeChance(target.host)
+	const hackChance = ns.hackAnalyzeChance(target)
 	if (hackChance < minHackChance) return null
 
-	const weakenTime = ns.getWeakenTime(target.host)
+	const weakenTime = ns.getWeakenTime(target)
 
 	// How many hack threads to steal hackFraction of current max
-	const hackPctPerThread = ns.hackAnalyze(target.host)
+	const hackPctPerThread = ns.hackAnalyze(target)
 	const hackThreadsFor10Pct =
 		hackPctPerThread > 0 ? Math.ceil(hackFraction / hackPctPerThread) : Number.MAX_SAFE_INTEGER
 
@@ -88,7 +88,7 @@ export function scoreTarget(
 	if (moneyPct < 0.999) {
 		const growthMult = maxMoney / Math.max(1, currentMoney)
 		try {
-			growThreadsToMax = Math.ceil(ns.growthAnalyze(target.host, growthMult))
+			growThreadsToMax = Math.ceil(ns.growthAnalyze(target, growthMult))
 		} catch {
 			growThreadsToMax = Number.MAX_SAFE_INTEGER
 		}
@@ -127,7 +127,7 @@ export function scoreTarget(
 	const finalScore = efficiencyScore / Math.max(0.25, prepPenalty)
 
 	return {
-		target: target.host,
+		target,
 		maxMoney,
 		currentMoney,
 		moneyPct,
@@ -150,7 +150,7 @@ export function scoreTarget(
 
 export function scoreTargets(
 	ns: NS,
-	targets: TargetInfo[],
+	targets: string[],
 	opts: ScoreTargetOptions = {}
 ): TargetScore[] {
 	return targets
