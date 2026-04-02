@@ -184,11 +184,15 @@ export async function main(ns: NS) {
 	const logger = new RoundRobinTargetLogger(ns)
 
 	const farms: MultiTargetFarm[] = []
-	for (let i = 0; i < 5; i++) {
-		const farm = new MultiTargetFarm(ns, hackPct, map)
+	function addFarm(farm: MultiTargetFarm, logger: RoundRobinTargetLogger) {
 		farm.setLogger(logger)
 		farms.push(farm)
 		logger.setFarms(farms)
+	}
+
+	for (let i = 0; i < 5; i++) {
+		const farm = new MultiTargetFarm(ns, hackPct, map)
+		addFarm(farm, logger)
 	}
 
 	ns.atExit(() => {
@@ -214,8 +218,7 @@ export async function main(ns: NS) {
 		raceArr.push(port.nextWrite().then(() => null))
 		for (const msg of msgs) {
 			const farm = new MultiTargetFarm(ns, msg.hackPct ?? hackPct, map)
-			farm.setLogger(logger)
-			farms.push(farm)
+			addFarm(farm, logger)
 			tlog(ns, `[Farm;id=${farms.length}] Starting`)
 			raceArr.push(farm.runForever())
 		}
