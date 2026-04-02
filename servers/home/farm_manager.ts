@@ -56,8 +56,8 @@ export async function main(ns: NS) {
 					})())
 					await ns.asleep(2000)
 				}
+				raceArr.push(results.nextWrite().then(() => results))
 			})())
-			raceArr.push(results.nextWrite().then(() => results))
 		}
 	}
 }
