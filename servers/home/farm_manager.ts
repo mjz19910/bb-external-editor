@@ -1,6 +1,6 @@
 import { ScriptPort } from "./ScriptPort"
 import { deployScriptSet } from "./lib/fleet"
-import { log, tlog } from "./lib/log"
+import { tlog } from "./lib/log"
 import { NetworkMap } from "./lib/network_map"
 import { HACK, GROW, WEAKEN } from "./lib/paths"
 import { MultiTargetFarm } from "./smart_farm"
@@ -170,7 +170,7 @@ export async function main(ns: NS) {
 	const map = NetworkMap.build(ns)
 
 	ns.ui.setTailTitle(`Farm Manager hackPercent=${hackPct}`)
-	log(ns, `[Farm Manager] hackPercent=${hackPct}`)
+	tlog(ns, `[Farm Manager] hackPercent=${hackPct}`)
 	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.hosts)
 
 	const logger = new RoundRobinTargetLogger(ns, 30_000, 60_000)
