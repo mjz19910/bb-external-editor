@@ -214,7 +214,6 @@ export async function main(ns: NS) {
 
 		for (let i = 0; i < 25; i++) {
 			addFarm(farms, hackPct, logger)
-			ns.print("added farm id=", farms.length)
 			do {
 				await ns.asleep(4_000)
 				if (!running) break
