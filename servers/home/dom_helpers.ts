@@ -1,4 +1,4 @@
-const doc = globalThis["document"]
+export const doc = globalThis["document"]
 
 export function createRow(label: string) {
 	const div = doc.createElement("div")

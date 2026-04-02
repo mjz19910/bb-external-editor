@@ -1,12 +1,12 @@
 // dashboard.ts
 import { StateManager, TargetState, ServerState } from "./lib/state"
 import { getConfig } from "./lib/config_helpers"
+import { doc } from "./dom_helpers"
 
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
 
 	const state = new StateManager(ns)
-	const doc = eval("document") as Document
 	const widgetId = "dashboard-widget"
 
 	// Remove old widget if present

@@ -1,10 +1,9 @@
-import { createRow } from "./dom_helpers"
+import { createRow, doc } from "./dom_helpers"
 
 // ram_widget.ts
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
 
-	const doc = eval("document") as Document
 	const widgetId = "ram-widget"
 
 	const old = doc.getElementById(widgetId)
