@@ -204,6 +204,7 @@ export async function main(ns: NS) {
 
 		for (let i = 0; i < 55; i++) {
 			addFarm(farms, hackPct, logger, true)
+			await ns.asleep(500)
 		}
 		await ns.asleep(15_000)
 		const errs = farms.filter(v => v.hasErrors())
