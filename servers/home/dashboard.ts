@@ -80,6 +80,37 @@ export async function main(ns: NS) {
 	const refreshMs = getConfig("dashboardRefreshMs", 500)
 	let running = true
 
+	// --- Make dashboard draggable ---
+	function makeDraggable(el: HTMLDivElement, handle?: HTMLElement) {
+		let isDragging = false
+		let offsetX = 0
+		let offsetY = 0
+
+		const dragHandle = handle ?? el
+
+		dragHandle.addEventListener("mousedown", (e) => {
+			if (e.target === closeBtn) return // ignore clicks on close button
+			isDragging = true
+			offsetX = e.clientX - el.offsetLeft
+			offsetY = e.clientY - el.offsetTop
+			e.preventDefault()
+		})
+
+		document.addEventListener("mousemove", (e) => {
+			if (!isDragging) return
+			el.style.left = `${e.clientX - offsetX}px`
+			el.style.top = `${e.clientY - offsetY}px`
+			el.style.right = "auto" // remove right to allow left/top positioning
+		})
+
+		document.addEventListener("mouseup", () => {
+			isDragging = false
+		})
+	}
+
+	// Apply it to the dashboard box
+	makeDraggable(box)
+
 	while (running) {
 		// --- Servers ---
 		const servers = Object.values(state.state.servers)
