@@ -12,7 +12,7 @@ export const modules: Module[] = [
 	{ name: "manage_empire.ts", type: "script", dependsOn: ["buy_servers.ts", "upgrade_servers.ts", "lib/fleet.ts"] },
 
 	// Farming Manager
-	{ name: "farm_manager.ts", type: "script", dependsOn: ["farm_all.ts", "retarget_farm.ts", "target_pool.ts"] },
+	{ name: "farm_manager.ts", type: "script", isEmpty: true, dependsOn: ["farm_all.ts", "retarget_farm.ts", "target_pool.ts"] },
 	{ name: "farm_all.ts", type: "script", dependsOn: ["lib/fleet.ts", "prep_all.ts"] },
 	{ name: "retarget_farm.ts", type: "script", dependsOn: ["best_target.ts", "target_pool.ts"] },
 
@@ -63,12 +63,12 @@ export const modules: Module[] = [
 	{ name: "contracts_solve.ts", type: "script", dependsOn: ["lib/contracts/solvers/algo_stock_trade.ts"] },
 
 	// Corp / Stock
-	{ name: "corp_manager.ts", type: "script", isEmpty: true, dependsOn: ["lib/stocks.ts"] },
-	{ name: "stock_manager.ts", type: "script", isEmpty: true, dependsOn: ["lib/stocks.ts"] },
+	{ name: "corp_manager.ts", type: "script", dependsOn: ["lib/stocks.ts"] },
+	{ name: "stock_manager.ts", type: "script", dependsOn: ["lib/stocks.ts"] },
 	{ name: "lib/stocks.ts", type: "library" },
 
 	// Dashboard / Utilities
-	{ name: "dashboard.ts", type: "script", isEmpty: true, dependsOn: ["lib/config_helpers.ts", "lib/events.ts", "lib/state.ts", "ram_widget.ts"] },
+	{ name: "dashboard.ts", type: "script", dependsOn: ["lib/config_helpers.ts", "lib/events.ts", "lib/state.ts", "ram_widget.ts"] },
 	{ name: "ram_widget.ts", type: "script" },
 	{ name: "recovery.ts", type: "script" },
 	{ name: "lib/config_helpers.ts", type: "library" },
