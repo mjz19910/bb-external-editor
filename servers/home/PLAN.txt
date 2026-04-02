@@ -208,7 +208,7 @@ into:
 
 ## 6) A **simulation / planner tool**
 
-This is a very “late-midgame coder” move, and it’s worth it.
+This is a very “late-mid-game coder” move, and it’s worth it.
 
 ### Add:
 
