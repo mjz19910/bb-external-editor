@@ -34,7 +34,7 @@ class RoundRobinTargetLogger {
 	private rrIdx = 0
 	private stopped = false
 
-	constructor(ns: NS, rrOrder: string[], intervalMs = 500, staleMs = 5 * 60_000) {
+	constructor(ns: NS, rrOrder: string[], intervalMs = 15_000, staleMs = 15 * 60_000) {
 		this.ns = ns
 		this.intervalMs = intervalMs
 		this.staleMs = staleMs
