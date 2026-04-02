@@ -67,7 +67,13 @@ export async function main(ns: NS) {
 
 	log(`Starting prep of ${targets.length} servers...`)
 
-	const jobsEndTimes = new Map<string, number>()
+	const jobsEndTimes: Map<string, {
+		target: string
+		times: {
+			type: "grow" | "weaken"
+			end: number
+		}[]
+	}> = new Map()
 
 	while (targets.length > 0) {
 		// Launch all jobs that are still needed
@@ -86,11 +92,9 @@ export async function main(ns: NS) {
 				continue
 			}
 
-			const tasks: { script: string; threads: number; duration: number }[] = []
-			if (needsWeaken) tasks.push({ script: WEAK, threads: threadsNeeded(target, WEAK), duration: ns.getWeakenTime(target) })
-			if (needsGrow) tasks.push({ script: GROW, threads: threadsNeeded(target, GROW), duration: ns.getGrowTime(target) })
-
-			let maxEnd = 0
+			const tasks: { type: "grow" | "weaken", script: string; threads: number; duration: number }[] = []
+			if (needsGrow) tasks.push({ type: "grow", script: GROW, threads: threadsNeeded(target, GROW), duration: ns.getGrowTime(target) })
+			if (needsWeaken) tasks.push({ type: "weaken", script: WEAK, threads: threadsNeeded(target, WEAK), duration: ns.getWeakenTime(target) })
 
 			for (const task of tasks) {
 				if (!scriptRamMap.has(task.script)) scriptRamMap.set(task.script, ns.getScriptRam(task.script))
@@ -121,12 +125,18 @@ export async function main(ns: NS) {
 
 				if (launched > 0) {
 					const endTime = Date.now() + task.duration
-					maxEnd = Math.max(maxEnd, endTime)
+					if (jobsEndTimes.has(target)) {
+						const et = jobsEndTimes.get(target)!
+						et.times.push({ type: task.type, end: endTime })
+					} else {
+						jobsEndTimes.set(target, {
+							target,
+							times: [{ type: task.type, end: endTime }]
+						})
+					}
 					log(`${target}: launched ${task.script} x${launched}, ETA ${ns.format.time(task.duration)}`)
 				}
 			}
-
-			if (maxEnd > 0) jobsEndTimes.set(target, maxEnd)
 		}
 
 		// Remove finished targets
@@ -139,10 +149,12 @@ export async function main(ns: NS) {
 		if (jobsEndTimes.size === 0) break
 
 		// Wait for the next job to finish (shortest end time)
-		const nextEnd = Math.min(...jobsEndTimes.values())
-		const sleepMs = Math.max(0, nextEnd - Date.now() + 50) // 50ms buffer
-		const [target] = [...jobsEndTimes.entries()].find(v => v[1] == nextEnd)!
-		log(`${target}: waiting ${ns.format.time(sleepMs)} for next prep`)
+		const times = [...jobsEndTimes.values()].flatMap(v => v.times).map(v => v.end)
+		const nextEnd = Math.min(...times)
+		const sleepMs = Math.max(0, nextEnd - Date.now() + 50)
+		const [target, val] = [...jobsEndTimes.entries()].find(v => v[1].times.find(v => v.end === nextEnd))!
+		const timeInfo = val.times.find(v => v.end === nextEnd)!
+		log(`${target}: waiting ${ns.format.time(sleepMs)} for next ${timeInfo.type} prep`)
 		await ns.sleep(sleepMs)
 	}
 
