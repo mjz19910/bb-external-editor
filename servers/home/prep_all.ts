@@ -5,14 +5,13 @@
  *   run prep_all_class_main.ts --reserve 32
  */
 import { buildNetworkMap } from "./lib/network_map"
+import { StateManager } from "./lib/state"
 
 const GROW = "lib/prep_grow.ts"
 const WEAK = "lib/prep_weak.ts"
 const all_scripts = [GROW, WEAK]
 
 class PrepAll {
-	private ns: NS
-	private reserve: number
 	private map: ReturnType<typeof buildNetworkMap>
 	private hosts: string[]
 	private targets: string[]
@@ -21,9 +20,7 @@ class PrepAll {
 	private maxRamByHost = new Map<string, number>()
 	private scriptRamMap = new Map<string, number>()
 
-	constructor(ns: NS, reserve: number = 32) {
-		this.ns = ns
-		this.reserve = reserve
+	constructor(public ns: NS, public sm: StateManager, public reserve: number = 32) {
 		this.map = buildNetworkMap(ns)
 		this.hosts = this.map.allHosts.filter(h => ns.hasRootAccess(h))
 		this.targets = this.hosts.filter(h => h !== "home")
@@ -136,7 +133,11 @@ class PrepAll {
 			const sec = this.ns.getServerSecurityLevel(target)
 			const minSec = this.srvMinSec.get(target)!
 			this.log(`${target}: READY (${this.formatMoney(money)} / ${this.formatMoney(maxMoney)}, sec ${sec.toFixed(2)} / ${minSec.toFixed(2)})`)
+
+			const tState = this.sm.getTarget(target)
+			tState.isPrepped = true
 		}
+		this.sm.saveState()
 	}
 }
 
@@ -148,7 +149,8 @@ export async function main(ns: NS) {
 	ns.clearLog()
 
 	const reserve = ns.args.includes("--reserve") ? Number(ns.args[ns.args.indexOf("--reserve") + 1] ?? 32) : 32
-	const prep = new PrepAll(ns, reserve)
+	const sm = new StateManager(ns)
+	const prep = new PrepAll(ns, sm, reserve)
 
 	await prep.copyScripts()
 
