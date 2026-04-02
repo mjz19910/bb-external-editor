@@ -1,12 +1,15 @@
 // dashboard.ts
 import { StateManager, TargetState, ServerState } from "./lib/state"
+// import { Events } from "./lib/events"
 import { getConfig } from "./lib/config_helpers"
+import { StockManager } from "./stock_manager"
 import { doc } from "./dom_helpers"
 
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
 
 	const state = new StateManager(ns)
+	const stockMgr = new StockManager(ns)
 	const widgetId = "dashboard-widget"
 
 	// Remove old widget if present
@@ -64,19 +67,21 @@ export async function main(ns: NS) {
 	// --- Section containers ---
 	const serversContainer = doc.createElement("div")
 	const targetsContainer = doc.createElement("div")
+	const stocksContainer = doc.createElement("div")
 	box.appendChild(serversContainer)
 	box.appendChild(targetsContainer)
+	box.appendChild(stocksContainer)
 
 	// --- Track rows for dynamic updates ---
 	const serverRows: Record<string, HTMLDivElement> = {}
 	const targetRows: Record<string, HTMLDivElement> = {}
+	const stockRows: Record<string, HTMLDivElement> = {}
 
-	// --- Main update loop ---
 	const refreshMs = getConfig("dashboardRefreshMs", 500)
 	let running = true
 
 	while (running) {
-		// Servers
+		// --- Servers ---
 		const servers = Object.values(state.state.servers)
 		serversContainer.innerHTML = "SERVERS:\n"
 		servers.forEach((s: ServerState) => {
@@ -89,7 +94,7 @@ export async function main(ns: NS) {
 			row.innerText = `${s.hostname.padEnd(12)} | RAM: ${s.usedRam.toFixed(1)}/${s.maxRam} | Jobs: ${s.activeJobs.length}`
 		})
 
-		// Targets
+		// --- Targets ---
 		const targets = Object.values(state.state.targets)
 		targetsContainer.innerHTML = "\nTARGETS:\n"
 		targets.forEach((t: TargetState) => {
@@ -100,6 +105,22 @@ export async function main(ns: NS) {
 				targetsContainer.appendChild(row)
 			}
 			row.innerText = `${t.name.padEnd(12)} | Money: ${(t.moneyPercent * 100).toFixed(1)}% | Security: ${t.security.toFixed(2)} | Prepped: ${t.isPrepped} | Active Batches: ${t.activeBatches}`
+		})
+
+		// --- Stocks ---
+		const symbols = stockMgr.getTrackedStocks()
+		stocksContainer.innerHTML = "\nSTOCKS:\n"
+		symbols.forEach((sym) => {
+			let row = stockRows[sym]
+			if (!row) {
+				row = doc.createElement("div")
+				stockRows[sym] = row
+				stocksContainer.appendChild(row)
+			}
+			const price = stockMgr.getPrice(sym)
+			const forecast = stockMgr.getForecast(sym)
+			const shares = stockMgr.getShares(sym)
+			row.innerText = `${sym.padEnd(6)} | Price: $${price.toFixed(2)} | Forecast: ${forecast.toFixed(2)} | Shares: ${shares}`
 		})
 
 		await ns.sleep(refreshMs)
