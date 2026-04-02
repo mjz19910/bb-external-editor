@@ -92,3 +92,52 @@ export function computeBatchTiming(
 		totalDuration,
 	}
 }
+
+/**
+ * How much time a batch occupies from first land to last land.
+ */
+export function getBatchLandingWindow(gapMs = 200): number {
+	return gapMs * 3
+}
+
+/**
+ * Suggested minimum spacing between batch anchors.
+ * Conservative so overlapping batches don't stomp each other.
+ */
+export function getSuggestedBatchSpacing(
+	ns: NS,
+	target: string,
+	gapMs = 200
+): number {
+	// Conservative starter value; can tighten later once your engine is stable
+	return gapMs * 4
+}
+
+/**
+ * Compute the next anchor time after an existing batch anchor.
+ */
+export function getNextBatchAnchor(
+	prevAnchorTime: number,
+	spacingMs: number
+): number {
+	return prevAnchorTime + spacingMs
+}
+
+/**
+ * Pretty print batch timing for logs/debugging.
+ */
+export function formatBatchTiming(t: BatchTiming): string {
+	return [
+		`target=${t.target}`,
+		`hackDelay=${t.hackDelay}ms`,
+		`w1Delay=${t.weaken1Delay}ms`,
+		`growDelay=${t.growDelay}ms`,
+		`w2Delay=${t.weaken2Delay}ms`,
+		`lands=[H:${rel(t.hackEnd, t.now)} W1:${rel(t.weaken1End, t.now)} G:${rel(t.growEnd, t.now)} W2:${rel(t.weaken2End, t.now)}]`,
+		`total=${t.totalDuration}ms`,
+	].join("  ")
+}
+
+function rel(t: number, base: number): string {
+	return `+${Math.round(t - base)}ms`
+}
