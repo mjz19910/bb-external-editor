@@ -19,6 +19,7 @@ function manager_run_once(
 	exec_if(ns, "root_all.ts", "home", 1);
 	exec_if(ns, "buy_servers.ts", "home", 1, reserve, buyMinRam);
 	exec_if(ns, "upgrade_servers.ts", "home", 1, reserve, upgradeMinRam);
+	exec_if(ns, "hacknet_manager.ts", "home", 1);
 }
 
 export async function main(ns: NS) {
