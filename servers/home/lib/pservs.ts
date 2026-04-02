@@ -1,36 +1,36 @@
 export type PurchasedServerInfo = {
-	host: string;
-	ram: number;
-	usedRam: number;
-	freeRam: number;
-};
+	host: string
+	ram: number
+	usedRam: number
+	freeRam: number
+}
 
 export function getPurchasedServersInfo(ns: NS): PurchasedServerInfo[] {
 	return ns.cloud.getServerNames()
 		.map((host) => {
-			const ram = ns.getServerMaxRam(host);
-			const usedRam = ns.getServerUsedRam(host);
+			const ram = ns.getServerMaxRam(host)
+			const usedRam = ns.getServerUsedRam(host)
 
 			return {
 				host,
 				ram,
 				usedRam,
 				freeRam: ram - usedRam,
-			};
+			}
 		})
-		.sort((a, b) => a.ram - b.ram);
+		.sort((a, b) => a.ram - b.ram)
 }
 
 export function maxPurchasedServerRam(ns: NS): number {
-	return ns.cloud.getRamLimit();
+	return ns.cloud.getRamLimit()
 }
 
 export function purchasedServerLimit(ns: NS): number {
-	return ns.cloud.getServerLimit();
+	return ns.cloud.getServerLimit()
 }
 
 export function purchasedServerCost(ns: NS, ram: number): number {
-	return ns.cloud.getServerCost(ram);
+	return ns.cloud.getServerCost(ram)
 }
 
 export function nextAffordableRam(
@@ -39,17 +39,17 @@ export function nextAffordableRam(
 	minRam = 8,
 	maxRam = ns.cloud.getRamLimit(),
 ): number {
-	let ram = minRam;
-	let best = 0;
+	let ram = minRam
+	let best = 0
 
 	while (ram <= maxRam) {
-		const cost = ns.cloud.getServerCost(ram);
-		if (cost > budget) break;
-		best = ram;
-		ram *= 2;
+		const cost = ns.cloud.getServerCost(ram)
+		if (cost > budget) break
+		best = ram
+		ram *= 2
 	}
 
-	return best;
+	return best
 }
 
 export function nextAffordableRamUpgrade(
@@ -58,25 +58,32 @@ export function nextAffordableRamUpgrade(
 	budget: number,
 	minRam = 8,
 	maxRam = maxPurchasedServerRam(ns),
-): number {
-	let ram = minRam;
-	let best = 0;
+): { best: number, nextCost: number } {
+	let next = 0
+	let ram = minRam
+	let best = 0
 
 	while (ram <= maxRam) {
-		const cost = ns.cloud.getServerUpgradeCost(host, ram);
-		if (cost > budget) break;
-		best = ram;
-		ram *= 2;
+		const cost = ns.cloud.getServerUpgradeCost(host, ram)
+		if (cost > budget) {
+			next = cost
+			break
+		}
+		best = ram
+		ram *= 2
 	}
 
-	return best;
+	return {
+		best,
+		nextCost: next,
+	}
 }
 
 export function worstPurchasedServer(ns: NS): PurchasedServerInfo | null {
-	return getPurchasedServersInfo(ns)[0] ?? null;
+	return getPurchasedServersInfo(ns)[0] ?? null
 }
 
 export function bestPurchasedServer(ns: NS): PurchasedServerInfo | null {
-	const list = getPurchasedServersInfo(ns);
-	return list[list.length - 1] ?? null;
+	const list = getPurchasedServersInfo(ns)
+	return list[list.length - 1] ?? null
 }

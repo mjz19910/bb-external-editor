@@ -1,47 +1,37 @@
-import { nextAffordableRamUpgrade, worstPurchasedServer } from "./lib/pservs";
+import { nextAffordableRamUpgrade, worstPurchasedServer } from "./lib/pservs"
 
 export async function main(ns: NS) {
-	const reserve = Number(ns.args[0] ?? 0);
-	const minRam = Number(ns.args[1] ?? 8);
+	const reserve = Number(ns.args[0] ?? 0)
+	const minRam = Number(ns.args[1] ?? 8)
 
-	const money = ns.getServerMoneyAvailable("home");
-	const budget = Math.max(0, money - reserve);
+	const money = ns.getServerMoneyAvailable("home")
+	const budget = Math.max(0, money - reserve)
 
-	const worst = worstPurchasedServer(ns);
+	const worst = worstPurchasedServer(ns)
 	if (!worst) {
-		ns.tprint("No purchased servers found.");
-		return;
+		ns.tprint("No purchased servers found.")
+		return
 	}
 
-	const ram = nextAffordableRamUpgrade(ns, worst.host, budget, minRam);
+	const { best: ram, nextCost } = nextAffordableRamUpgrade(ns, worst.host, budget, minRam)
 	if (ram <= 0) {
-		ns.tprint("Cannot afford any upgrade.");
-		return;
+		ns.tprint("Cannot afford any upgrade.")
+		return
 	}
 
 	if (ram <= worst.ram) {
-		ns.tprint(
-			`No worthwhile upgrade. Worst=${worst.host} ${
-				ns.format.ram(worst.ram)
-			}, affordable=${ns.format.ram(ram)}`,
-		);
-		return;
+		ns.tprint(`No worthwhile upgrade. Worst=${worst.host} ${ns.format.ram(worst.ram)}, nextCost=${ns.format.number(nextCost)}`)
+		return
 	}
 
-	const cost = ns.cloud.getServerUpgradeCost(worst.host, ram);
-	ns.tprint(
-		`Upgrading ${worst.host} from ${ns.format.ram(worst.ram)} -> ${
-			ns.format.ram(ram)
-		} for ${ns.format.number(cost)}`,
-	);
+	const cost = ns.cloud.getServerUpgradeCost(worst.host, ram)
+	ns.tprint(`Upgrading ${worst.host} from ${ns.format.ram(worst.ram)} -> ${ns.format.ram(ram)} for ${ns.format.number(cost)}`)
 
-	const succuss = ns.cloud.upgradeServer(worst.host, ram);
+	const succuss = ns.cloud.upgradeServer(worst.host, ram)
 	if (!succuss) {
-		ns.tprint(
-			`[FAIL] Could not upgrade ${worst.host} to ${ns.format.ram(ram)}`,
-		);
-		return;
+		ns.tprint(`[FAIL] Could not upgrade ${worst.host} to ${ns.format.ram(ram)}`)
+		return
 	}
 
-	ns.tprint(`[UPGRADED] ${worst.host} now ${ns.format.ram(ram)}`);
+	ns.tprint(`[UPGRADED] ${worst.host} now ${ns.format.ram(ram)}`)
 }
