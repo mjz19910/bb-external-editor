@@ -237,6 +237,7 @@ export async function main(ns: NS) {
 	ns.atExit(() => farm.cleanupWorkers())
 
 	while (true) {
+		if (farm.disabled) return
 		await farm.runOnce()
 	}
 }
