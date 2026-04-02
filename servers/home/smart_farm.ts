@@ -30,18 +30,24 @@ class MultiTargetFarm {
 	hMem: number
 	gMem: number
 	wMem: number
+	hackingLevel: number
 
-	constructor(public ns: NS, public hackPct: number, public targets: string[]) {
+	constructor(public ns: NS, public hackPct: number, public map: NetworkMap) {
 		this.hMem = ns.getScriptRam(HACK)
 		this.gMem = ns.getScriptRam(GROW)
 		this.wMem = ns.getScriptRam(WEAKEN)
+		this.hackingLevel = ns.getHackingLevel()
 	}
 
 	/** Initialize all target states */
 	private initTargets(): TargetState[] {
 		const ns = this.ns
-		return this.targets
-			.filter(host => ns.getServerMaxMoney(host) > 0) // skip servers with 0 money
+		return this.map.hosts
+			.filter(host => {
+				if (ns.getServerMaxMoney(host) <= 0) return false
+				if (ns.getServerRequiredHackingLevel(host) > this.hackingLevel) return false
+				return true
+			})
 			.map(host => {
 				const minSec = ns.getServerMinSecurityLevel(host)
 				const moneyMax = ns.getServerMaxMoney(host)
@@ -184,27 +190,16 @@ export async function main(ns: NS) {
 	ns.disableLog("getServerMoneyAvailable")
 	ns.disableLog("scan")
 	ns.disableLog("scp")
+	ns.disableLog("getHackingLevel")
 
 	const hackPct = Number(ns.args[0] ?? 0.1)
-
-	const hackingLevel = ns.getHackingLevel();
-	// Get all hackable targets with money
-	const allTargets = ns.scan()
-		.filter(s => ns.getServerRequiredHackingLevel(s) <= hackingLevel)
-		.filter(s => ns.getServerMaxMoney(s) > 0)
-
-	if (allTargets.length === 0) {
-		ns.tprint("No hackable targets found.")
-		return
-	}
+	const map = NetworkMap.build(ns)
 
 	ns.ui.setTailTitle(`multi_farm:${hackPct}`)
-	log(ns, `[MULTI_FARM] targets=${allTargets.length} hackPct=${hackPct}`)
-
-	const map = NetworkMap.build(ns)
+	log(ns, `[MULTI_FARM] hackPct=${hackPct}`)
 	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.hosts)
 
-	const farm = new MultiTargetFarm(ns, hackPct, allTargets)
+	const farm = new MultiTargetFarm(ns, hackPct, map)
 	ns.atExit(() => farm.cleanupWorkers())
 
 	while (true) {
