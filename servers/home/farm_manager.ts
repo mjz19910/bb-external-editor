@@ -71,8 +71,9 @@ class RoundRobinTargetLogger {
 
 	private start() {
 		(async () => {
+			await this.ns.asleep(250)
 			while (!this.stopped) {
-				await this.ns.asleep(this.intervalMs + 50)
+				await this.ns.asleep(this.intervalMs)
 				if (this.stopped) break
 				this.flushOne()
 			}
