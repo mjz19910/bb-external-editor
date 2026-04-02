@@ -194,8 +194,8 @@ export async function main(ns: NS) {
 	async function slowStart() {
 		let hadAnyErrors = false
 		// 1 = 131.04TB + 216.96TB
-		// 2 = 38.26% of pserv-01
-		// 3 = 63.64% of pserv-01
+		// 2 = 38% of pserv-01
+		// 3 = 70% of pserv-01
 		// 40 = 11
 
 		for (let i = 0; i < 2; i++) {
