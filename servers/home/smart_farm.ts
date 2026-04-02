@@ -291,6 +291,12 @@ class SmartFarm {
 	runOnce() {
 		const ctx = this.initStep()
 		const phase = this.getPhase(ctx)
+
+		// we have no work
+		if (phase === "idle") {
+			return this.ns.sleep(500)
+		}
+
 		const order = this.planPhaseWork(ctx, phase)
 
 		const didLaunch = this.runLaunchOrder(ctx, order)
