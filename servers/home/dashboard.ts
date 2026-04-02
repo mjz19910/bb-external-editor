@@ -11,6 +11,7 @@ export async function main(ns: NS) {
 	const state = new StateManager(ns)
 	const stockMgr = new StockManager(ns)
 	const widgetId = "dashboard-widget"
+	let running = true
 
 	// Remove old widget if present
 	const old = doc.getElementById(widgetId)
@@ -50,7 +51,10 @@ export async function main(ns: NS) {
 		fontWeight: "bold",
 		userSelect: "none",
 	})
-	closeBtn.addEventListener("click", () => box.remove())
+	closeBtn.addEventListener("click", () => {
+		box.remove()
+		running = false
+	})
 	box.appendChild(closeBtn)
 
 	// --- Header ---
@@ -78,7 +82,6 @@ export async function main(ns: NS) {
 	const stockRows: Record<string, HTMLDivElement> = {}
 
 	const refreshMs = getConfig("dashboardRefreshMs", 500)
-	let running = true
 
 	// --- Make dashboard draggable ---
 	function makeDraggable(el: HTMLDivElement, handle?: HTMLElement) {
