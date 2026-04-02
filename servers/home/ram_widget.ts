@@ -31,6 +31,23 @@ export async function main(ns: NS) {
 	box.innerText = "Loading RAM..."
 	doc.body.appendChild(box)
 
+	// Close button
+	const closeBtn = doc.createElement("div")
+	closeBtn.innerText = "✖"
+	closeBtn.style.position = "absolute"
+	closeBtn.style.top = "4px"
+	closeBtn.style.right = "6px"
+	closeBtn.style.cursor = "pointer"
+	closeBtn.style.color = "#ff4b4b"
+	closeBtn.style.fontWeight = "bold"
+	closeBtn.style.userSelect = "none"
+	box.appendChild(closeBtn)
+
+	closeBtn.addEventListener("click", () => {
+		box.remove()
+		running = false // stop the update loop
+	})
+
 	// Drag support
 	makeDraggable(box)
 
@@ -38,8 +55,10 @@ export async function main(ns: NS) {
 	const homeHistory = []
 	const totalHistory = []
 
+	let running = true
+
 	try {
-		while (true) {
+		while (running) {
 			const servers = getAllServers(ns)
 
 			const homeMax = ns.getServerMaxRam("home")
@@ -91,6 +110,7 @@ export async function main(ns: NS) {
 			}
 
 			box.innerText = text
+			box.appendChild(closeBtn)
 
 			await ns.sleep(1000)
 		}
@@ -105,6 +125,7 @@ export async function main(ns: NS) {
 		let offsetY = 0
 
 		el.addEventListener("mousedown", (e) => {
+			if (e.target === closeBtn) return
 			isDragging = true
 			offsetX = e.clientX - el.offsetLeft
 			offsetY = e.clientY - el.offsetTop
@@ -144,7 +165,7 @@ export async function main(ns: NS) {
 	}
 
 	function fmtShort(ram: number) {
-		return ns.format.ram(ram, 0)
+		return ns.format.ram(ram, 1)
 	}
 
 	function truncate(str: string, len: number) {
