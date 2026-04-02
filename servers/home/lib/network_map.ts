@@ -303,3 +303,8 @@ export function resetMap(ns: NS) {
 		ns.tprint(ns.dnsLookup(host))
 	}
 }
+
+export function main(ns: NS) {
+	const map = NetworkMap.build(ns, "home")
+	ns.tprint(map)
+}
