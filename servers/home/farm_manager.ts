@@ -18,7 +18,7 @@ export async function main(ns: NS) {
 	deployScriptSet(ns, [HACK, GROW, WEAKEN], map.hosts)
 
 	const farms: MultiTargetFarm[] = []
-	for (let i = 0; i < 10; i++) {
+	for (let i = 0; i < 1; i++) {
 		const farm = new MultiTargetFarm(ns, hackPct, map)
 		farms.push(farm)
 	}
