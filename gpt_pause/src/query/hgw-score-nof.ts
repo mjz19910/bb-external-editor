@@ -1,7 +1,7 @@
 /** score-hwgw-nof.ts
  * Rank rooted servers for HWGW XP / money without Formulas.exe
  */
-import { buildNetworkMap } from "../../cur2/lib/network_map"
+import { buildNetworkMap } from "../../../servers/home/src2/network_map"
 
 type ScoreRow = {
 	target: string

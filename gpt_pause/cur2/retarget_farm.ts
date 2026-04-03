@@ -1,5 +1,5 @@
-import { getFleet } from "./lib/fleet";
-import { GROW, HACK, WEAKEN } from "./lib/paths";
+import { getFleet } from "../../servers/home/src2/fleet";
+import { GROW, HACK, WEAKEN } from "../../servers/home/src2/paths";
 import { chooseBestTarget } from "./lib/targeting";
 
 const WORKERS = new Set([

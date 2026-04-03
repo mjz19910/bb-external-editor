@@ -1,4 +1,4 @@
-import { buildNetworkMap, classifyServer } from "./lib/network_map";
+import { buildNetworkMap, classifyServer } from "../../servers/home/src2/network_map";
 
 type TargetScore = {
 	host: string;

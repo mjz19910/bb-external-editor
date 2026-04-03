@@ -1,11 +1,4 @@
-
-export type PrepPlanV1 = {
-	needWeaken: number
-	needGrow: number
-	needGrowWeaken: number
-	totalWeaken: number
-	isPrepped: boolean
-}
+import { PrepPlan, PrepPlanOptions, PrepPlanV1 } from "./types"
 
 export function calcPrepPlanV1(ns: NS, target: string): PrepPlanV1 {
 	const sec = ns.getServerSecurityLevel(target)
@@ -56,15 +49,6 @@ export function calcHackThreadsForPercent(
  * so it can be safely hacked at desired hack percent.
  */
 
-interface PrepPlanOptions {
-	growThreshold?: number    // e.g., 0.98 -> grow until 98% max money
-	weakenThreshold?: number  // e.g., 1.02 -> weaken until security <= 2% above min
-}
-
-export interface PrepPlan {
-	growThreads: number
-	weakenThreads: number
-}
 
 /**
  * Calculate prep plan for a target

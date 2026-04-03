@@ -1,4 +1,4 @@
-import { buildNetworkMap } from "./lib/network_map";
+import { buildNetworkMap } from "../../servers/home/src2/network_map";
 
 export async function main(ns: NS) {
 	const map = buildNetworkMap(ns);

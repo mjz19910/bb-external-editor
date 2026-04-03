@@ -1,21 +1,4 @@
-type FarmLogEvent = {
-	target: string
-	phase: string
-	hackThreads: number
-	growThreads: number
-	weakenThreads: number
-}
-
-type TargetActivity = {
-	key: `${string}:${string}`
-	target: string
-	lastSeen: number
-	eventCount: number
-	hackThreads: number
-	growThreads: number
-	weakenThreads: number
-	phase: string
-}
+import { FarmLogEvent, TargetActivity } from "./types"
 
 export class RoundRobinTargetLogger {
 	private readonly ns: NS

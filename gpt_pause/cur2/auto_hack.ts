@@ -1,5 +1,5 @@
-import { buildNetworkMap } from "./lib/network_map";
-import { GROW, HACK, WEAKEN } from "./lib/paths";
+import { buildNetworkMap } from "../../servers/home/src2/network_map";
+import { GROW, HACK, WEAKEN } from "../../servers/home/src2/paths";
 
 export async function main(ns: NS) {
 	ns.disableLog("ALL");

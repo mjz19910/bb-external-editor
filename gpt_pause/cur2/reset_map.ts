@@ -1,4 +1,4 @@
-import { resetMap } from "./lib/network_map"
+import { resetMap } from "../../servers/home/src2/network_map"
 
 export function main(ns: NS) {
 	resetMap(ns)

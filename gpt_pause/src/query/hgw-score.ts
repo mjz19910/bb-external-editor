@@ -1,4 +1,4 @@
-import { buildNetworkMap } from "../../cur2/lib/network_map"
+import { buildNetworkMap } from "../../../servers/home/src2/network_map"
 
 /** hgw-score.ts
  * Rank rooted servers for HGW XP / money using Formulas.exe

@@ -1,16 +1,15 @@
-
 export function log(ns: NS, msg: string) {
-	ns.print(msg);
+	ns.print(msg)
 }
 
 export function tlog(ns: NS, msg: string) {
-	ns.tprint(msg);
+	ns.tprint(msg)
 }
 
 export function fmtMoney(ns: NS, n: number): string {
-	return ns.format.number(n);
+	return ns.format.number(n)
 }
 
 export function fmtRam(ns: NS, n: number): string {
-	return `${ns.format.number(n)}GB`;
+	return `${ns.format.number(n)}GB`
 }

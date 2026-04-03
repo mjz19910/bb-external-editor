@@ -1,4 +1,4 @@
-import { buildNetworkMap, classifyServer } from "./network_map"
+import { buildNetworkMap, classifyServer } from "../../../servers/home/src2/network_map"
 
 export type TargetInfo = {
 	host: string

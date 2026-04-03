@@ -1,6 +1,6 @@
 // farm_all.ts
 import { StateManager } from "./lib/state"
-import { allocateThreadsSimple } from "./lib/fleet" // your existing helpers
+import { allocateThreadsSimple } from "../../servers/home/src2/fleet" // your existing helpers
 
 export async function main(ns: NS) {
 	ns.disableLog("ALL")

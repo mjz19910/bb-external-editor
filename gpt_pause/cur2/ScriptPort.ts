@@ -218,10 +218,7 @@ export function rawReadOpt<T>(port: NS_Port): Optional<T> {
 	return optFromRaw<T>(readPort(port))
 }
 
-export function rawWriteOpt<TIn, TOut = TIn>(
-	port: NS_Port,
-	input: TIn,
-): Optional<TOut> {
+export function rawWriteOpt<TIn, TOut = TIn>(port: NS_Port, input: TIn): Optional<TOut> {
 	return optFromRaw<TOut>(writePort(port, input))
 }
 
@@ -237,18 +234,11 @@ export function rawRead<T>(port: NS_Port): T | undefined {
 	return fromRaw(readPort(port))
 }
 
-export function rawWrite<TIn, TOut = TIn>(
-	port: NS_Port,
-	input: TIn,
-): TOut | undefined {
+export function rawWrite<TIn, TOut = TIn>(port: NS_Port, input: TIn): TOut | undefined {
 	return fromRaw(writePort(port, input))
 }
 
-export function readIntoObj<T, K extends string>(
-	port: NS_Port,
-	obj: Record<K, T>,
-	key: K,
-) {
+export function readIntoObj<T, K extends string>(port: NS_Port, obj: Record<K, T>, key: K) {
 	const data = readPort<T>(port)
 	if (data === "NULL PORT DATA") return false
 	obj[key] = data
@@ -275,6 +265,19 @@ export function rawReadAll<T>(port: NS_Port) {
 	return results
 }
 
+function assertNotNull<U>(value: U | Null): U {
+	if (value === Null) throw new Error("Invalid state")
+	return value
+}
+
+function mustRead<T>(port: NetscriptPort): T {
+	return assertNotNull(readPort(port))
+}
+
+function mustPeek<T>(port: NetscriptPort): T {
+	return assertNotNull(peek(port))
+}
+
 export class ScriptPort<BaseType> {
 	static open_api_port(ns: NS) {
 		return new ScriptPort<ApiMessage>(ns, API_PORT)
@@ -288,7 +291,6 @@ export class ScriptPort<BaseType> {
 	readonly ns: NS
 	port_id: number
 	readonly #port: NS_Port
-	private logging = false;
 
 	constructor(ns: NS, port_id: number) {
 		this.ns = ns
@@ -296,115 +298,47 @@ export class ScriptPort<BaseType> {
 		this.#port = ns.getPortHandle(port_id)
 	}
 
-	config({ logging }: { logging: boolean }) {
-		this.logging = logging
+	peek<T extends BaseType = BaseType>(): T {
+		return mustPeek<T>(this.#port)
 	}
 
-	private log(
-		user_msg: string | undefined,
-		port: keyof ScriptPort<BaseType>,
-		...args: any[]
-	) {
-		if (!this.logging) return
-		this.ns.tprint(
-			`port(${this.port_id}).${port}()${user_msg == null ? "" : ` ${user_msg}`
-			}`,
-			...args,
-		)
+	read<T extends BaseType = BaseType>(): T {
+		return mustRead<T>(this.#port)
 	}
 
-	peek<T extends BaseType = BaseType>(log_msg?: string): T {
-		const data = rawPeek<T>(this.#port)
-		this.log(log_msg, "peek", data)
-		if (data === void 0) throw new PortEmptyError(this.port_id)
-		return data
+	tryRead<T extends BaseType = BaseType>(): T | undefined {
+		return rawRead<T>(this.#port)
 	}
 
-	read<T extends BaseType = BaseType>(log_msg?: string): T {
-		const data = rawRead<T>(this.#port)
-		this.log(log_msg, "read", data)
-		if (data === void 0) throw new PortEmptyError(this.port_id)
-		return data
+	readOpt<T extends BaseType = BaseType>(): Optional<T> {
+		return rawReadOpt<T>(this.#port)
 	}
 
-	tryRead<T extends BaseType = BaseType>(log_msg?: string): T | undefined {
-		const data = rawRead<T>(this.#port)
-		this.log(log_msg, "tryRead", data)
-		return data
+	readAll<T extends BaseType = BaseType>() {
+		return rawReadAll<T>(this.#port)
 	}
 
-	readOpt<T extends BaseType = BaseType>(log_msg?: string): Optional<T> {
-		const data = rawReadOpt<T>(this.#port)
-		this.log(log_msg, "readOpt", data)
-		return data
+	writeOpt<T extends BaseType = BaseType>(data: T): Optional<T> {
+		return rawWriteOpt<T>(this.#port, data)
 	}
 
-	readAll<T extends BaseType = BaseType>(log_msg?: string): T[] {
-		const results: T[] = []
-		for (; ;) {
-			const data = rawRead<T>(this.#port)
-			if (data === void 0) break
-			results.push(data)
-		}
-		this.log(log_msg, "readAll", results)
-		return results
+	tryWrite<T extends BaseType = BaseType>(data: T): boolean {
+		return this.#port.tryWrite(data)
 	}
 
-	write<T extends BaseType = BaseType>(data: T, log_msg?: string): void {
-		if (this.#port.full()) throw new PortFullError(this.port_id)
-		const prev = rawWrite<T, Null>(this.#port, data)
-		this.log(log_msg, "write", some_opt(data), "prev", some_opt(prev))
-	}
-
-	writePrev<T extends BaseType = BaseType>(
-		data: T,
-		log_msg?: string,
-	): T | undefined {
-		const prev = rawWrite<T>(this.#port, data)
-		this.log(log_msg, "writePrev", some_opt(data), "prev", some_opt(prev))
-		return fromRaw(prev)
-	}
-
-	writePrevOpt<T extends BaseType = BaseType>(
-		data: T,
-		log_msg?: string,
-	): Optional<T> {
-		const prev = rawWriteOpt<T>(this.#port, data)
-		this.log(log_msg, "writePrevOpt", some_opt(data), "prev", prev)
-		return prev
-	}
-
-	tryWrite<T extends BaseType = BaseType>(
-		data: T,
-		log_msg?: string,
-	): boolean {
-		const success = this.#port.tryWrite(data)
-		this.log(
-			log_msg,
-			"tryWrite",
-			some_opt(data),
-			success ? "success" : "failed",
-		)
-		return success
-	}
-
-	nextWrite(log_msg?: string) {
-		this.log(log_msg, "nextWrite")
+	nextWrite() {
 		return this.#port.nextWrite()
 	}
 
-	full(log_msg?: string) {
-		this.log(log_msg, "full")
+	full() {
 		return this.#port.full()
 	}
 
-	empty(log_msg?: string) {
-		this.log(log_msg, "empty")
+	empty() {
 		return this.#port.empty()
 	}
 
-	clear(log_msg?: string) {
-		this.log(log_msg, "clear")
+	clear() {
 		this.#port.clear()
 	}
 }

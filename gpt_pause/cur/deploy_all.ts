@@ -1,5 +1,5 @@
-import { buildNetworkMap, runnableHosts } from "../cur2/lib/network_map";
-import { tlog } from "../cur2/lib/log";
+import { buildNetworkMap, runnableHosts } from "../../servers/home/src2/network_map";
+import { tlog } from "../../servers/home/src2/log";
 
 const FILES = [
 	"gpt_pause/src/hack_worker.ts",

@@ -29,3 +29,40 @@ export type NetworkNode = {
 	depth: number
 	neighbors: string[]
 }
+
+export type FarmLogEvent = {
+	target: string
+	phase: string
+	hackThreads: number
+	growThreads: number
+	weakenThreads: number
+}
+
+export type TargetActivity = {
+	key: `${string}:${string}`
+	target: string
+	lastSeen: number
+	eventCount: number
+	hackThreads: number
+	growThreads: number
+	weakenThreads: number
+	phase: string
+}
+
+export type PrepPlanV1 = {
+	needWeaken: number
+	needGrow: number
+	needGrowWeaken: number
+	totalWeaken: number
+	isPrepped: boolean
+}
+
+export interface PrepPlanOptions {
+	growThreshold?: number    // e.g., 0.98 -> grow until 98% max money
+	weakenThreshold?: number  // e.g., 1.02 -> weaken until security <= 2% above min
+}
+
+export interface PrepPlan {
+	growThreads: number
+	weakenThreads: number
+}

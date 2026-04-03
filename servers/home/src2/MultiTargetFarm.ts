@@ -1,14 +1,13 @@
 import {
 	allocateThreadsWithPlan,
-	deployScriptSet,
 	Fleet,
 	getFleet,
 	runAllocationsTracked,
-} from "./lib/fleet"
-import { log } from "./lib/log"
-import { calcHackThreadsForPercent, calcPrepPlanV1 } from "./lib/prep"
-import { NetworkMap } from "./lib/network_map"
-import { GROW, HACK, WEAKEN } from "./lib/paths"
+} from "./fleet"
+import { log } from "./log"
+import { calcHackThreadsForPercent, calcPrepPlanV1 } from "./prep"
+import { NetworkMap } from "./network_map"
+import { GROW, HACK, WEAKEN } from "./paths"
 
 type LaunchOrder = { hack: number; grow: number; weaken: number }
 type CyclePlan = { hackThreads: number; growThreads: number; hackWeaken: number; growWeaken: number }

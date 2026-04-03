@@ -1,6 +1,6 @@
 // lib/ram_allocator.ts
 
-import { Fleet, FleetHost } from "./fleet"
+import { Fleet, FleetHost } from "../../../servers/home/src2/fleet"
 
 export type RamReservation = {
 	host: string

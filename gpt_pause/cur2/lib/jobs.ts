@@ -1,5 +1,5 @@
-import { Fleet, getFleet } from "./fleet";
-import { GROW, HACK, WEAKEN } from "./paths";
+import { Fleet, getFleet } from "../../../servers/home/src2/fleet";
+import { GROW, HACK, WEAKEN } from "../../../servers/home/src2/paths";
 
 export type TargetJobCounts = {
 	target: string;

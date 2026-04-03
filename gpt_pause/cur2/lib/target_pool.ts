@@ -1,6 +1,6 @@
 // lib/target_pool.ts
 
-import { NetworkMap } from "./network_map"
+import { NetworkMap } from "../../../servers/home/src2/network_map"
 
 export function getFarmableTargets(ns: NS): string[] {
 	const map = NetworkMap.build(ns)

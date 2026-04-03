@@ -1,4 +1,4 @@
-import { getFleet } from "./lib/fleet"
+import { getFleet } from "../../servers/home/src2/fleet"
 import { getJobSnapshot } from "./lib/jobs"
 
 export async function main(ns: NS) {

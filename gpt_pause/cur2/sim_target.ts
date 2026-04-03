@@ -4,7 +4,7 @@
  */
 
 import { getConfig } from "./lib/config_helpers"
-import { calcHackThreadsForPercent, calcPrepPlan } from "./lib/prep"
+import { calcHackThreadsForPercent, calcPrepPlan } from "../../servers/home/src2/prep"
 
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
