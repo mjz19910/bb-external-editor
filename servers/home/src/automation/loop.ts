@@ -30,12 +30,13 @@ export async function runAutomationLoop(ns: NS): Promise<void> {
 		ns.print(`Best Target: ${state.bestTarget?.hostname ?? "none"}`)
 		ns.print(`Desired Workloads: ${desiredWorkloads.length}`)
 		ns.print(`Running Workloads: ${runningFleet.workloads.length}`)
+		ns.print(`Running Allocations: ${runningFleet.allocations.length}`)
 		ns.print(`Changed: ${reconcile.changed ? "yes" : "no"}`)
 		ns.print(`Reconcile: ${reconcile.reason}`)
 		ns.print(`Threads: ${reconcile.totalThreads}`)
 		ns.print(`Hosts Used: ${reconcile.hostsUsed}`)
-		ns.print(`Processes: ${reconcile.launchedProcesses}`)
-		ns.print(`Allocations: ${reconcile.scheduledAllocations}`)
+		ns.print(`Processes Launched: ${reconcile.launchedProcesses}`)
+		ns.print(`Scheduled Allocations: ${reconcile.scheduledAllocations}`)
 		ns.print("---")
 
 		for (const workload of desiredWorkloads.slice(0, 8)) {

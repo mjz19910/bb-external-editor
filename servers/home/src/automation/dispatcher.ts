@@ -9,7 +9,7 @@ export function executePlan(
 ): DispatchResult | null {
 	if (!plan.target) return null
 
-	const hosts = getExecutionHosts(ns, rootedServers)
+	const hosts = getExecutionHosts(rootedServers)
 	if (hosts.length === 0) return null
 
 	ensureWorkerScripts(

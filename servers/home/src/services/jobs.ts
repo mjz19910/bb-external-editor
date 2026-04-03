@@ -1,5 +1,5 @@
 import { CONFIG } from "../core/config"
-import { RunningFleetState, RunningJobProcess, RunningWorkloadGroup, ServerState } from "../core/types"
+import { ServerState, RunningFleetState, RunningJobProcess, RunningWorkloadGroup, ScheduledAllocation } from "../core/types"
 
 export function getRunningFleetState(
 	ns: NS,
@@ -18,9 +18,12 @@ export function getRunningFleetState(
 		}
 	}
 
+	const allocations = processesToAllocations(processes)
+
 	return {
 		processes,
 		workloads: groupRunningWorkloads(processes),
+		allocations,
 	}
 }
 
@@ -84,4 +87,15 @@ function groupRunningWorkloads(
 	}
 
 	return workloads.sort((a, b) => b.totalThreads - a.totalThreads)
+}
+
+function processesToAllocations(
+	processes: RunningJobProcess[]
+): ScheduledAllocation[] {
+	return processes.map((process) => ({
+		hostname: process.hostname,
+		action: getActionForScript(process.script)!,
+		target: process.target,
+		threads: process.threads,
+	}))
 }

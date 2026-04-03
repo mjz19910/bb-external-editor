@@ -1,47 +1,10 @@
 import { CONFIG } from "../core/config"
-import { ServerState, ExecutionHost, DispatchResult, ScheduledAllocation } from "../core/types"
-
-export function getExecutionHosts(
-	ns: NS,
-	rootedServers: ServerState[]
-): ExecutionHost[] {
-	return rootedServers
-		.filter((server) => server.maxRam > 0)
-		.map((server) => {
-			const reserved =
-				server.hostname === "home" ? CONFIG.reservedHomeRam : 0
-			const freeRam = Math.max(0, server.maxRam - server.usedRam - reserved)
-
-			return {
-				hostname: server.hostname,
-				freeRam,
-			}
-		})
-		.filter((host) => host.freeRam > 0)
-		.sort((a, b) => b.freeRam - a.freeRam)
-}
-
-export async function ensureWorkerScripts(
-	ns: NS,
-	hosts: string[]
-): Promise<void> {
-	const files = Object.values(CONFIG.workerScripts)
-
-	for (const host of hosts) {
-		if (host === "home") continue
-		await ns.scp(files, host, "home")
-	}
-}
-
-export function killManagedScripts(ns: NS, hosts: string[]): void {
-	const files = Object.values(CONFIG.workerScripts)
-
-	for (const host of hosts) {
-		for (const file of files) {
-			ns.scriptKill(file, host)
-		}
-	}
-}
+import {
+	DispatchResult,
+	ExecutionHost,
+	ScheduledAllocation,
+	ServerState,
+} from "../core/types"
 
 export function dispatchScript(
 	ns: NS,
@@ -87,6 +50,75 @@ export function dispatchScript(
 	}
 }
 
+export function getExecutionHosts(rootedServers: ServerState[]): ExecutionHost[] {
+	return rootedServers
+		.filter((server) => server.maxRam > 0)
+		.map((server) => {
+			const reserved =
+				server.hostname === "home" ? CONFIG.reservedHomeRam : 0
+			const freeRam = Math.max(0, server.maxRam - server.usedRam - reserved)
+
+			return {
+				hostname: server.hostname,
+				freeRam,
+			}
+		})
+		.filter((host) => host.freeRam > 0)
+		.sort((a, b) => b.freeRam - a.freeRam)
+}
+
+export async function ensureWorkerScripts(
+	ns: NS,
+	hosts: string[]
+): Promise<void> {
+	const files = Object.values(CONFIG.workerScripts)
+
+	for (const host of hosts) {
+		if (host === "home") continue
+		await ns.scp(files, host, "home")
+	}
+}
+
+export function killManagedScripts(ns: NS, hosts: string[]): void {
+	const files = Object.values(CONFIG.workerScripts)
+
+	for (const host of hosts) {
+		for (const file of files) {
+			ns.scriptKill(file, host)
+		}
+	}
+}
+
+export function killSpecificAllocations(
+	ns: NS,
+	allocationsToStop: ScheduledAllocation[]
+): number {
+	let killed = 0
+
+	for (const allocation of allocationsToStop) {
+		const script = CONFIG.workerScripts[allocation.action]
+		const processes = ns.ps(allocation.hostname)
+			.filter(
+				(p) =>
+					p.filename === script &&
+					p.args[0] === allocation.target
+			)
+			.sort((a, b) => b.threads - a.threads)
+
+		let remainingThreadsToKill = allocation.threads
+
+		for (const process of processes) {
+			if (remainingThreadsToKill <= 0) break
+
+			ns.kill(process.pid)
+			killed += 1
+			remainingThreadsToKill -= process.threads
+		}
+	}
+
+	return killed
+}
+
 export function dispatchSchedule(
 	ns: NS,
 	allocations: ScheduledAllocation[]
@@ -94,6 +126,8 @@ export function dispatchSchedule(
 	const results = new Map<string, DispatchResult>()
 
 	for (const allocation of allocations) {
+		if (allocation.threads <= 0) continue
+
 		const script = CONFIG.workerScripts[allocation.action]
 		const pid = ns.exec(
 			script,

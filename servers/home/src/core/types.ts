@@ -1,10 +1,3 @@
-export type RunningWorkloadState = {
-	action: "hack" | "grow" | "weaken" | null
-	target: string | null
-	totalThreads: number
-	processes: RunningJobProcess[]
-}
-
 export type AutomationMode =
 	| "bootstrap"
 	| "income"
@@ -12,7 +5,7 @@ export type AutomationMode =
 	| "batch"
 	| "expansion"
 
-export type ServerState = {
+export interface ServerState {
 	hostname: string
 	rooted: boolean
 	requiredHackingLevel: number
@@ -26,12 +19,12 @@ export type ServerState = {
 	growth: number
 }
 
-export type PlayerState = {
+export interface PlayerState {
 	hackingLevel: number
 	money: number
 }
 
-export type GameState = {
+export interface GameState {
 	timestamp: number
 	mode: AutomationMode
 	player: PlayerState
@@ -49,18 +42,18 @@ export type ActionType =
 	| "scan"
 	| "idle"
 
-export type ActionPlan = {
+export interface ActionPlan {
 	type: ActionType
 	target?: string
 	reason: string
 }
 
-export type ExecutionHost = {
+export interface ExecutionHost {
 	hostname: string
 	freeRam: number
 }
 
-export type DispatchResult = {
+export interface DispatchResult {
 	script: string
 	target: string
 	totalThreads: number
@@ -68,7 +61,7 @@ export type DispatchResult = {
 	hostsUsed: number
 }
 
-export type DesiredWorkload = {
+export interface DesiredWorkload {
 	action: "hack" | "grow" | "weaken"
 	target: string
 	desiredThreads: number
@@ -76,14 +69,14 @@ export type DesiredWorkload = {
 	reason: string
 }
 
-export type ScheduledAllocation = {
+export interface ScheduledAllocation {
 	hostname: string
 	action: "hack" | "grow" | "weaken"
 	target: string
 	threads: number
 }
 
-export type RunningJobProcess = {
+export interface RunningJobProcess {
 	hostname: string
 	script: string
 	target: string
@@ -91,26 +84,26 @@ export type RunningJobProcess = {
 	pid: number
 }
 
-export type RunningWorkloadGroup = {
+export interface RunningWorkloadGroup {
 	action: "hack" | "grow" | "weaken"
 	target: string
 	totalThreads: number
 	processes: RunningJobProcess[]
 }
 
-export type RunningFleetState = {
+export interface RunningFleetState {
 	processes: RunningJobProcess[]
 	workloads: RunningWorkloadGroup[]
 	allocations: ScheduledAllocation[]
 }
 
-export type AllocationDiff = {
+export interface AllocationDiff {
 	keep: ScheduledAllocation[]
 	start: ScheduledAllocation[]
 	stop: ScheduledAllocation[]
 }
 
-export type ReconcileResult = {
+export interface ReconcileResult {
 	changed: boolean
 	reason: string
 	totalThreads: number
