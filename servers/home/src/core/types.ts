@@ -5,6 +5,14 @@ export type AutomationMode =
 	| "batch"
 	| "expansion"
 
+export type TargetLifecycleState =
+	| "UNAVAILABLE"
+	| "UNPREPPED"
+	| "WEAKENING"
+	| "GROWING"
+	| "READY"
+	| "FARMING"
+
 export interface ServerState {
 	hostname: string
 	rooted: boolean
@@ -24,6 +32,17 @@ export interface PlayerState {
 	money: number
 }
 
+export interface TargetState {
+	hostname: string
+	lifecycle: TargetLifecycleState
+	maxMoney: number
+	currentMoney: number
+	minSecurity: number
+	currentSecurity: number
+	score: number
+	isHackable: boolean
+}
+
 export interface GameState {
 	timestamp: number
 	mode: AutomationMode
@@ -32,6 +51,7 @@ export interface GameState {
 	rootedServers: ServerState[]
 	hackableTargets: ServerState[]
 	bestTarget: ServerState | null
+	targetStates: TargetState[]
 }
 
 export type ActionType =

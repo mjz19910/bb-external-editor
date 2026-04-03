@@ -1,50 +1,22 @@
-import { CONFIG } from "./config"
-import { GameState, AutomationMode, ServerState } from "./types"
-
-export function collectGameState(ns: NS): GameState {
-	const discovered = discoverAllServers(ns)
-	const servers = discovered.map((hostname) => getServerState(ns, hostname))
-	const rootedServers = servers.filter((s) => s.rooted)
-	const hackableTargets = rootedServers.filter(
-		(s) =>
-			s.maxMoney > 0 &&
-			s.requiredHackingLevel <= ns.getHackingLevel() &&
-			s.hostname !== "home"
-	)
-
-	const bestTarget = selectBestTarget(hackableTargets)
-
-	return {
-		timestamp: Date.now(),
-		mode: determineMode(ns, hackableTargets.length),
-		player: {
-			hackingLevel: ns.getHackingLevel(),
-			money: ns.getServerMoneyAvailable("home"),
-		},
-		servers,
-		rootedServers,
-		hackableTargets,
-		bestTarget,
-	}
-}
-
-function determineMode(ns: NS, hackableTargetCount: number): AutomationMode {
-	if (hackableTargetCount === 0) return "bootstrap"
-	if (ns.getHackingLevel() < 200) return "income"
-	return "prep"
-}
+import {
+	AutomationMode,
+	GameState,
+	PlayerState,
+	ServerState,
+} from "./types"
+import { buildTargetStates } from "../services/targetLifecycle"
 
 export function discoverAllServers(ns: NS): string[] {
 	const visited = new Set<string>()
 	const queue: string[] = ["home"]
 
 	while (queue.length > 0) {
-		const current = queue.shift()
-		if (!current || visited.has(current)) continue
+		const host = queue.shift()
+		if (!host || visited.has(host)) continue
 
-		visited.add(current)
+		visited.add(host)
 
-		for (const neighbor of ns.scan(current)) {
+		for (const neighbor of ns.scan(host)) {
 			if (!visited.has(neighbor)) {
 				queue.push(neighbor)
 			}
@@ -56,46 +28,91 @@ export function discoverAllServers(ns: NS): string[] {
 
 export function getServerState(ns: NS, hostname: string): ServerState {
 	const server = ns.getServer(hostname)
-	if (server.backdoorInstalled === void 0) throw new Error("Invalid state")
+
+	if ("isOnline" in server) throw new Error("Invalid state")
+
 	return {
 		hostname,
-		rooted: ns.hasRootAccess(hostname),
-		requiredHackingLevel: ns.getServerRequiredHackingLevel(hostname),
-		maxMoney: ns.getServerMaxMoney(hostname),
-		currentMoney: ns.getServerMoneyAvailable(hostname),
-		minSecurity: ns.getServerMinSecurityLevel(hostname),
-		currentSecurity: ns.getServerSecurityLevel(hostname),
-		maxRam: ns.getServerMaxRam(hostname),
-		usedRam: ns.getServerUsedRam(hostname),
-		hasBackdoor: server.backdoorInstalled,
-		growth: ns.getServerGrowth(hostname),
+		rooted: server.hasAdminRights,
+		requiredHackingLevel: server.requiredHackingSkill!,
+		maxMoney: server.moneyMax!,
+		currentMoney: server.moneyAvailable!,
+		minSecurity: server.minDifficulty!,
+		currentSecurity: server.hackDifficulty!,
+		maxRam: server.maxRam,
+		usedRam: server.ramUsed,
+		hasBackdoor: server.backdoorInstalled!,
+		growth: server.serverGrowth!,
 	}
 }
 
-function selectBestTarget(servers: ServerState[]): ServerState | null {
-	if (servers.length === 0) return null
-	return [...servers].sort((a, b) => scoreServer(b) - scoreServer(a))[0] ?? null
+export function getPlayerState(ns: NS): PlayerState {
+	const player = ns.getPlayer()
+
+	return {
+		hackingLevel: player.skills.hacking,
+		money: player.money,
+	}
 }
 
-function scoreServer(server: ServerState): number {
-	if (server.maxMoney <= 0) return 0
+export function determineMode(state: {
+	player: PlayerState
+	rootedServers: ServerState[]
+}): AutomationMode {
+	if (state.rootedServers.length < 5) return "bootstrap"
+	if (state.player.hackingLevel < 200) return "income"
+	return "prep"
+}
 
-	const securityGap = Math.max(
-		1,
-		server.currentSecurity - server.minSecurity + 1
+export function collectGameState(ns: NS): GameState {
+	const hostnames = discoverAllServers(ns)
+	const servers = hostnames.map((hostname) => getServerState(ns, hostname))
+	const rootedServers = servers.filter((server) => server.rooted)
+	const player = getPlayerState(ns)
+
+	const hackableTargets = servers.filter(
+		(server) =>
+			server.rooted &&
+			server.requiredHackingLevel <= player.hackingLevel &&
+			server.maxMoney > 0
 	)
 
-	const moneyRatio =
-		server.maxMoney > 0 ? server.currentMoney / server.maxMoney : 0.1
+	const bestTarget =
+		[...hackableTargets].sort((a, b) => scoreServer(b) - scoreServer(a))[0] ??
+		null
 
-	return (server.maxMoney * server.growth * (0.5 + moneyRatio)) / securityGap
+	const partialState = {
+		timestamp: Date.now(),
+		mode: determineMode({ player, rootedServers }),
+		player,
+		servers,
+		rootedServers,
+		hackableTargets,
+		bestTarget,
+	}
+
+	const targetStates = buildTargetStates(partialState)
+
+	return {
+		...partialState,
+		targetStates,
+	}
 }
 
 export function shouldWeaken(server: ServerState): boolean {
-	return server.currentSecurity - server.minSecurity > CONFIG.weakenThreshold
+	return server.currentSecurity > server.minSecurity + 5
 }
 
 export function shouldGrow(server: ServerState): boolean {
 	if (server.maxMoney <= 0) return false
-	return server.currentMoney / server.maxMoney < CONFIG.growThresholdRatio
+	return server.currentMoney < server.maxMoney * 0.75
+}
+
+export function scoreServer(server: ServerState): number {
+	const securityPenalty = Math.max(
+		1,
+		server.currentSecurity - server.minSecurity + 1
+	)
+
+	return (server.maxMoney * Math.max(1, server.growth)) / securityPenalty
 }

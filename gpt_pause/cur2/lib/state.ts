@@ -1,5 +1,5 @@
 // lib/state.ts
-export type TargetState = {
+type TargetState = {
 	name: string
 	moneyPercent: number
 	security: number
