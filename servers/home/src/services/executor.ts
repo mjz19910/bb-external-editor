@@ -1,7 +1,7 @@
 import { CONFIG } from "../core/config"
 
 export function getExecutionHosts(
-	_ns: NS,
+	ns: NS,
 	rootedServers: ServerState[]
 ): ExecutionHost[] {
 	return rootedServers
@@ -20,12 +20,15 @@ export function getExecutionHosts(
 		.sort((a, b) => b.freeRam - a.freeRam)
 }
 
-export function ensureWorkerScripts(ns: NS, hosts: string[]) {
+export async function ensureWorkerScripts(
+	ns: NS,
+	hosts: string[]
+): Promise<void> {
 	const files = Object.values(CONFIG.workerScripts)
 
 	for (const host of hosts) {
 		if (host === "home") continue
-		ns.scp(files, host, "home")
+		await ns.scp(files, host, "home")
 	}
 }
 
@@ -43,6 +46,7 @@ export function dispatchScript(
 	ns: NS,
 	script: string,
 	target: string,
+	desiredThreads: number,
 	hosts: ExecutionHost[]
 ): DispatchResult {
 	const scriptRam = ns.getScriptRam(script, "home")
@@ -51,18 +55,23 @@ export function dispatchScript(
 		throw new Error(`Invalid script RAM cost for ${script}`)
 	}
 
+	let remainingThreads = desiredThreads
 	let totalThreads = 0
 	let launchedProcesses = 0
 	let hostsUsed = 0
 
 	for (const host of hosts) {
-		const threads = Math.floor(host.freeRam / scriptRam)
-		if (threads <= 0) continue
+		if (remainingThreads <= 0) break
 
+		const maxThreadsOnHost = Math.floor(host.freeRam / scriptRam)
+		if (maxThreadsOnHost <= 0) continue
+
+		const threads = Math.min(maxThreadsOnHost, remainingThreads)
 		const pid = ns.exec(script, host.hostname, threads, target)
 
 		if (pid !== 0) {
 			totalThreads += threads
+			remainingThreads -= threads
 			launchedProcesses++
 			hostsUsed++
 		}

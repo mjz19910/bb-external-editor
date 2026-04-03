@@ -85,4 +85,11 @@ declare global {
 		hostsUsed: number
 		launchedProcesses: number
 	}
+
+	interface RunningWorkloadState {
+		action: "hack" | "grow" | "weaken" | null
+		target: string | null
+		totalThreads: number
+		processes: RunningJobProcess[]
+	}
 }

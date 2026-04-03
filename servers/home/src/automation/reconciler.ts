@@ -64,7 +64,7 @@ export async function reconcileDesiredJobState(
 	)
 
 	const script = CONFIG.workerScripts[desired.action]
-	const result = dispatchScript(ns, script, desired.target, hosts)
+	const result = dispatchScript(ns, script, desired.target, 1, hosts)
 
 	return {
 		changed: true,

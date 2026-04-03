@@ -23,13 +23,13 @@ export function executePlan(
 
 	switch (plan.type) {
 		case "hack":
-			return dispatchScript(ns, CONFIG.workerScripts.hack, plan.target, hosts)
+			return dispatchScript(ns, CONFIG.workerScripts.hack, plan.target, 1, hosts)
 
 		case "grow":
-			return dispatchScript(ns, CONFIG.workerScripts.grow, plan.target, hosts)
+			return dispatchScript(ns, CONFIG.workerScripts.grow, plan.target, 1, hosts)
 
 		case "weaken":
-			return dispatchScript(ns, CONFIG.workerScripts.weaken, plan.target, hosts)
+			return dispatchScript(ns, CONFIG.workerScripts.weaken, plan.target, 1, hosts)
 
 		default:
 			return null
