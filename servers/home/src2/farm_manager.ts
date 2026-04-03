@@ -1,6 +1,6 @@
 import { deployScriptSet } from "./fleet"
 import { tlog } from "./log"
-import { NetworkMap } from "./network_map"
+import { NetworkMap } from "./NetworkMap"
 import { HACK, GROW, WEAKEN } from "./paths"
 import { MultiTargetFarm } from "./MultiTargetFarm"
 import { RoundRobinTargetLogger } from "./RoundRobinTargetLogger"
