@@ -1,5 +1,5 @@
 import { runAutomationLoop } from "../automation/loop"
 
-export async function main(ns: NS): Promise<void> {
-	await runAutomationLoop(ns)
+export function main(ns: NS) {
+	return runAutomationLoop(ns)
 }

@@ -6,6 +6,17 @@ export const CONFIG = {
 
 	reservedHomeRam: 32,
 
+	prep: {
+		maxWeakenThreads: 5000,
+		maxGrowThreads: 5000,
+		maxHackThreads: 5000,
+		targetHackFraction: 0.25,
+	},
+
+	workloadTolerance: {
+		minThreadDifferenceToRedeploy: 0.15, // 15%
+	},
+
 	workerScripts: {
 		hack: "/src/scripts/hack.ts",
 		grow: "/src/scripts/grow.ts",

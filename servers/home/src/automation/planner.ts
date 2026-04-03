@@ -1,5 +1,4 @@
 import { shouldWeaken, shouldGrow } from "../core/state"
-import { GameState, ActionPlan, DesiredJobState } from "../core/types"
 
 export function buildPlan(state: GameState): ActionPlan {
 	if (!state.bestTarget) {

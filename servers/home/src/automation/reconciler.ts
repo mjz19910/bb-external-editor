@@ -1,5 +1,4 @@
 import { CONFIG } from "../core/config"
-import { DesiredJobState, RunningJobState, ServerState, ReconcileResult } from "../core/types"
 import { killManagedScripts, getExecutionHosts, ensureWorkerScripts, dispatchScript } from "../services/executor"
 
 export async function reconcileDesiredJobState(

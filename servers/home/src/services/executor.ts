@@ -1,5 +1,4 @@
 import { CONFIG } from "../core/config"
-import { ServerState, ExecutionHost, DispatchResult } from "../core/types"
 
 export function getExecutionHosts(
 	_ns: NS,

@@ -1,5 +1,4 @@
 import { CONFIG } from "../core/config"
-import { ServerState, RunningJobState, RunningJobProcess } from "../core/types"
 
 export function getRunningJobState(
 	ns: NS,
