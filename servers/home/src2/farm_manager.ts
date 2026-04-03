@@ -179,13 +179,13 @@ export async function main(ns: NS) {
 	raceArr.push(port.nextWrite().then(() => null))
 
 	async function slowStart() {
-		for (let i = 0; i < 10; i++) {
-			addFarm(farms, hackPct, logger)
-		}
+		// for (let i = 0; i < 10; i++) {
+		// 	addFarm(farms, hackPct, logger)
+		// }
 
 		let hadAnyErrors = false
 		for (let i = 0; i < 10; i++) {
-			for (let j = 0; j < 100; j++) {
+			for (let j = 0; j < 50; j++) {
 				addFarm(farms, hackPct, logger)
 			}
 			ns.print("added farm id=", farms.length)
