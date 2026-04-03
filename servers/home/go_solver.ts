@@ -1,4 +1,4 @@
-/** auto_go_safe.ts **/
+/** auto_go_safe_group.ts **/
 /** @param {NS} ns **/
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
@@ -19,18 +19,31 @@ export async function main(ns: NS) {
 		return moves
 	}
 
-	// Check if a cell has at least one liberty (neighboring empty or connected)
-	function hasLiberty(board: number[][], x: number, y: number, player: number) {
-		const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]]
-		for (const [dx, dy] of dirs) {
-			const nx = x + dx
-			const ny = y + dy
-			if (nx < 0 || nx >= board.length || ny < 0 || ny >= board[0].length) continue
-			const cell = board[nx][ny]
-			if (cell === EMPTY) return true
-			if (cell === player) return true // connected to your stones
+	// Check if the candidate move is safe: the connected group has at least one liberty
+	function isMoveSafe(board: number[][], x: number, y: number, player: number) {
+		const width = board.length
+		const height = board[0].length
+		const visited = new Set<string>()
+		const stack = [{ x, y }]
+
+		while (stack.length > 0) {
+			const { x: cx, y: cy } = stack.pop()!
+			const key = `${cx},${cy}`
+			if (visited.has(key)) continue
+			visited.add(key)
+
+			const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]]
+			for (const [dx, dy] of dirs) {
+				const nx = cx + dx
+				const ny = cy + dy
+				if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue
+				const cell = board[nx][ny]
+				if (cell === EMPTY) return true // found liberty, safe move
+				if (cell === player) stack.push({ x: nx, y: ny }) // check connected stones
+			}
 		}
-		return false
+
+		return false // no liberty found, unsafe
 	}
 
 	// Check rows, columns, diagonals for 2-in-a-row (win or block)
@@ -82,14 +95,13 @@ export async function main(ns: NS) {
 		// Try to win or block
 		let move = findCriticalMove(board, MY) || findCriticalMove(board, OPP)
 
-		// Otherwise pick first legal move with a liberty
+		// Otherwise pick first legal move that is safe
 		if (!move) {
-			const moves = getValidMoves(board).filter(m => hasLiberty(board, m.x, m.y, MY))
+			const moves = getValidMoves(board).filter(m => isMoveSafe(board, m.x, m.y, MY))
 			if (moves.length === 0) break
 			move = moves[0]
 		}
 
-		// Make the move
 		const r = await ns.go.makeMove(move.x, move.y)
 		if (r.type === "gameOver") break
 		await ns.sleep(50)
