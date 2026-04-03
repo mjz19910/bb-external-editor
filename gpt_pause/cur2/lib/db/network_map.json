@@ -1,0 +1,1051 @@
+{
+	"allHosts": [
+		"home",
+		"n00dles",
+		"foodnstuff",
+		"sigma-cosmetics",
+		"joesguns",
+		"hong-fang-tea",
+		"harakiri-sushi",
+		"iron-gym",
+		"pserv-01",
+		"pserv-02",
+		"pserv-03",
+		"pserv-04",
+		"pserv-05",
+		"pserv-06",
+		"pserv-07",
+		"pserv-08",
+		"pserv-09",
+		"pserv-10",
+		"pserv-11",
+		"pserv-12",
+		"pserv-13",
+		"pserv-14",
+		"pserv-15",
+		"pserv-16",
+		"pserv-17",
+		"pserv-18",
+		"pserv-19",
+		"pserv-20",
+		"pserv-21",
+		"pserv-22",
+		"pserv-23",
+		"pserv-24",
+		"pserv-25",
+		"zer0",
+		"nectar-net",
+		"CSEC",
+		"max-hardware",
+		"silver-helix",
+		"phantasy",
+		"omega-net",
+		"neo-net",
+		"crush-fitness",
+		"avmnite-02h",
+		"computek",
+		"netlink",
+		"johnson-ortho",
+		"the-hub",
+		"catalyst",
+		"syscore",
+		"zb-institute",
+		"summit-uni",
+		"I.I.I.I",
+		"rothman-uni",
+		"rho-construction",
+		"aevum-police",
+		"lexo-corp",
+		"millenium-fitness",
+		"alpha-ent",
+		"global-pharm",
+		"aerocorp",
+		"galactic-cyber",
+		"snap-fitness",
+		"deltaone",
+		"unitalife",
+		"omnia",
+		"defcomm",
+		"zeus-med",
+		"icarus",
+		"univ-energy",
+		"solaris",
+		"infocomm",
+		"zb-def",
+		"nova-med",
+		"taiyang-digital",
+		"microdyne",
+		"run4theh111z",
+		"titan-labs",
+		"applied-energetics",
+		"stormtech",
+		"fulcrumtech",
+		"helios",
+		"vitalife",
+		"omnitek",
+		"4sigma",
+		"kuai-gong",
+		".",
+		"nwo",
+		"powerhouse-fitness",
+		"clarkinc",
+		"b-and-a",
+		"blade",
+		"The-Cave",
+		"megacorp",
+		"ecorp",
+		"fulcrumassets"
+	],
+	"nodes": {
+		"home": {
+			"host": "home",
+			"parent": null,
+			"depth": 0,
+			"neighbors": [
+				"n00dles",
+				"foodnstuff",
+				"sigma-cosmetics",
+				"joesguns",
+				"hong-fang-tea",
+				"harakiri-sushi",
+				"iron-gym",
+				"pserv-01",
+				"pserv-02",
+				"pserv-03",
+				"pserv-04",
+				"pserv-05",
+				"pserv-06",
+				"pserv-07",
+				"pserv-08",
+				"pserv-09",
+				"pserv-10",
+				"pserv-11",
+				"pserv-12",
+				"pserv-13",
+				"pserv-14",
+				"pserv-15",
+				"pserv-16",
+				"pserv-17",
+				"pserv-18",
+				"pserv-19",
+				"pserv-20",
+				"pserv-21",
+				"pserv-22",
+				"pserv-23",
+				"pserv-24",
+				"pserv-25"
+			]
+		},
+		"n00dles": {
+			"host": "n00dles",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"foodnstuff": {
+			"host": "foodnstuff",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home",
+				"zer0"
+			]
+		},
+		"sigma-cosmetics": {
+			"host": "sigma-cosmetics",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home",
+				"nectar-net",
+				"CSEC"
+			]
+		},
+		"joesguns": {
+			"host": "joesguns",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"hong-fang-tea": {
+			"host": "hong-fang-tea",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"harakiri-sushi": {
+			"host": "harakiri-sushi",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home",
+				"max-hardware"
+			]
+		},
+		"iron-gym": {
+			"host": "iron-gym",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-01": {
+			"host": "pserv-01",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-02": {
+			"host": "pserv-02",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-03": {
+			"host": "pserv-03",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-04": {
+			"host": "pserv-04",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-05": {
+			"host": "pserv-05",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-06": {
+			"host": "pserv-06",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-07": {
+			"host": "pserv-07",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-08": {
+			"host": "pserv-08",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-09": {
+			"host": "pserv-09",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-10": {
+			"host": "pserv-10",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-11": {
+			"host": "pserv-11",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-12": {
+			"host": "pserv-12",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-13": {
+			"host": "pserv-13",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-14": {
+			"host": "pserv-14",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-15": {
+			"host": "pserv-15",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-16": {
+			"host": "pserv-16",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-17": {
+			"host": "pserv-17",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-18": {
+			"host": "pserv-18",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-19": {
+			"host": "pserv-19",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-20": {
+			"host": "pserv-20",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-21": {
+			"host": "pserv-21",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-22": {
+			"host": "pserv-22",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-23": {
+			"host": "pserv-23",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-24": {
+			"host": "pserv-24",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"pserv-25": {
+			"host": "pserv-25",
+			"parent": "home",
+			"depth": 1,
+			"neighbors": [
+				"home"
+			]
+		},
+		"zer0": {
+			"host": "zer0",
+			"parent": "foodnstuff",
+			"depth": 2,
+			"neighbors": [
+				"foodnstuff",
+				"silver-helix",
+				"phantasy",
+				"omega-net"
+			]
+		},
+		"nectar-net": {
+			"host": "nectar-net",
+			"parent": "sigma-cosmetics",
+			"depth": 2,
+			"neighbors": [
+				"sigma-cosmetics",
+				"neo-net"
+			]
+		},
+		"CSEC": {
+			"host": "CSEC",
+			"parent": "sigma-cosmetics",
+			"depth": 2,
+			"neighbors": [
+				"sigma-cosmetics"
+			]
+		},
+		"max-hardware": {
+			"host": "max-hardware",
+			"parent": "harakiri-sushi",
+			"depth": 2,
+			"neighbors": [
+				"harakiri-sushi"
+			]
+		},
+		"silver-helix": {
+			"host": "silver-helix",
+			"parent": "zer0",
+			"depth": 3,
+			"neighbors": [
+				"zer0",
+				"crush-fitness",
+				"avmnite-02h"
+			]
+		},
+		"phantasy": {
+			"host": "phantasy",
+			"parent": "zer0",
+			"depth": 3,
+			"neighbors": [
+				"zer0",
+				"computek",
+				"netlink"
+			]
+		},
+		"omega-net": {
+			"host": "omega-net",
+			"parent": "zer0",
+			"depth": 3,
+			"neighbors": [
+				"zer0",
+				"johnson-ortho"
+			]
+		},
+		"neo-net": {
+			"host": "neo-net",
+			"parent": "nectar-net",
+			"depth": 3,
+			"neighbors": [
+				"nectar-net",
+				"the-hub"
+			]
+		},
+		"crush-fitness": {
+			"host": "crush-fitness",
+			"parent": "silver-helix",
+			"depth": 4,
+			"neighbors": [
+				"silver-helix"
+			]
+		},
+		"avmnite-02h": {
+			"host": "avmnite-02h",
+			"parent": "silver-helix",
+			"depth": 4,
+			"neighbors": [
+				"silver-helix",
+				"catalyst"
+			]
+		},
+		"computek": {
+			"host": "computek",
+			"parent": "phantasy",
+			"depth": 4,
+			"neighbors": [
+				"phantasy"
+			]
+		},
+		"netlink": {
+			"host": "netlink",
+			"parent": "phantasy",
+			"depth": 4,
+			"neighbors": [
+				"phantasy",
+				"syscore"
+			]
+		},
+		"johnson-ortho": {
+			"host": "johnson-ortho",
+			"parent": "omega-net",
+			"depth": 4,
+			"neighbors": [
+				"omega-net",
+				"zb-institute",
+				"summit-uni",
+				"I.I.I.I"
+			]
+		},
+		"the-hub": {
+			"host": "the-hub",
+			"parent": "neo-net",
+			"depth": 4,
+			"neighbors": [
+				"neo-net",
+				"rothman-uni"
+			]
+		},
+		"catalyst": {
+			"host": "catalyst",
+			"parent": "avmnite-02h",
+			"depth": 5,
+			"neighbors": [
+				"avmnite-02h"
+			]
+		},
+		"syscore": {
+			"host": "syscore",
+			"parent": "netlink",
+			"depth": 5,
+			"neighbors": [
+				"netlink",
+				"rho-construction",
+				"aevum-police"
+			]
+		},
+		"zb-institute": {
+			"host": "zb-institute",
+			"parent": "johnson-ortho",
+			"depth": 5,
+			"neighbors": [
+				"johnson-ortho"
+			]
+		},
+		"summit-uni": {
+			"host": "summit-uni",
+			"parent": "johnson-ortho",
+			"depth": 5,
+			"neighbors": [
+				"johnson-ortho"
+			]
+		},
+		"I.I.I.I": {
+			"host": "I.I.I.I",
+			"parent": "johnson-ortho",
+			"depth": 5,
+			"neighbors": [
+				"johnson-ortho",
+				"lexo-corp",
+				"millenium-fitness"
+			]
+		},
+		"rothman-uni": {
+			"host": "rothman-uni",
+			"parent": "the-hub",
+			"depth": 5,
+			"neighbors": [
+				"the-hub",
+				"alpha-ent"
+			]
+		},
+		"rho-construction": {
+			"host": "rho-construction",
+			"parent": "syscore",
+			"depth": 6,
+			"neighbors": [
+				"syscore"
+			]
+		},
+		"aevum-police": {
+			"host": "aevum-police",
+			"parent": "syscore",
+			"depth": 6,
+			"neighbors": [
+				"syscore",
+				"global-pharm"
+			]
+		},
+		"lexo-corp": {
+			"host": "lexo-corp",
+			"parent": "I.I.I.I",
+			"depth": 6,
+			"neighbors": [
+				"I.I.I.I",
+				"aerocorp"
+			]
+		},
+		"millenium-fitness": {
+			"host": "millenium-fitness",
+			"parent": "I.I.I.I",
+			"depth": 6,
+			"neighbors": [
+				"I.I.I.I",
+				"galactic-cyber"
+			]
+		},
+		"alpha-ent": {
+			"host": "alpha-ent",
+			"parent": "rothman-uni",
+			"depth": 6,
+			"neighbors": [
+				"rothman-uni",
+				"snap-fitness"
+			]
+		},
+		"global-pharm": {
+			"host": "global-pharm",
+			"parent": "aevum-police",
+			"depth": 7,
+			"neighbors": [
+				"aevum-police"
+			]
+		},
+		"aerocorp": {
+			"host": "aerocorp",
+			"parent": "lexo-corp",
+			"depth": 7,
+			"neighbors": [
+				"lexo-corp",
+				"deltaone",
+				"unitalife"
+			]
+		},
+		"galactic-cyber": {
+			"host": "galactic-cyber",
+			"parent": "millenium-fitness",
+			"depth": 7,
+			"neighbors": [
+				"millenium-fitness"
+			]
+		},
+		"snap-fitness": {
+			"host": "snap-fitness",
+			"parent": "alpha-ent",
+			"depth": 7,
+			"neighbors": [
+				"alpha-ent",
+				"omnia"
+			]
+		},
+		"deltaone": {
+			"host": "deltaone",
+			"parent": "aerocorp",
+			"depth": 8,
+			"neighbors": [
+				"aerocorp",
+				"defcomm",
+				"zeus-med"
+			]
+		},
+		"unitalife": {
+			"host": "unitalife",
+			"parent": "aerocorp",
+			"depth": 8,
+			"neighbors": [
+				"aerocorp"
+			]
+		},
+		"omnia": {
+			"host": "omnia",
+			"parent": "snap-fitness",
+			"depth": 8,
+			"neighbors": [
+				"snap-fitness",
+				"icarus",
+				"univ-energy",
+				"solaris"
+			]
+		},
+		"defcomm": {
+			"host": "defcomm",
+			"parent": "deltaone",
+			"depth": 9,
+			"neighbors": [
+				"deltaone"
+			]
+		},
+		"zeus-med": {
+			"host": "zeus-med",
+			"parent": "deltaone",
+			"depth": 9,
+			"neighbors": [
+				"deltaone",
+				"infocomm"
+			]
+		},
+		"icarus": {
+			"host": "icarus",
+			"parent": "omnia",
+			"depth": 9,
+			"neighbors": [
+				"omnia",
+				"zb-def",
+				"nova-med"
+			]
+		},
+		"univ-energy": {
+			"host": "univ-energy",
+			"parent": "omnia",
+			"depth": 9,
+			"neighbors": [
+				"omnia"
+			]
+		},
+		"solaris": {
+			"host": "solaris",
+			"parent": "omnia",
+			"depth": 9,
+			"neighbors": [
+				"omnia",
+				"taiyang-digital"
+			]
+		},
+		"infocomm": {
+			"host": "infocomm",
+			"parent": "zeus-med",
+			"depth": 10,
+			"neighbors": [
+				"zeus-med",
+				"microdyne"
+			]
+		},
+		"zb-def": {
+			"host": "zb-def",
+			"parent": "icarus",
+			"depth": 10,
+			"neighbors": [
+				"icarus"
+			]
+		},
+		"nova-med": {
+			"host": "nova-med",
+			"parent": "icarus",
+			"depth": 10,
+			"neighbors": [
+				"icarus",
+				"run4theh111z"
+			]
+		},
+		"taiyang-digital": {
+			"host": "taiyang-digital",
+			"parent": "solaris",
+			"depth": 10,
+			"neighbors": [
+				"solaris",
+				"titan-labs",
+				"applied-energetics"
+			]
+		},
+		"microdyne": {
+			"host": "microdyne",
+			"parent": "infocomm",
+			"depth": 11,
+			"neighbors": [
+				"infocomm"
+			]
+		},
+		"run4theh111z": {
+			"host": "run4theh111z",
+			"parent": "nova-med",
+			"depth": 11,
+			"neighbors": [
+				"nova-med",
+				"stormtech"
+			]
+		},
+		"titan-labs": {
+			"host": "titan-labs",
+			"parent": "taiyang-digital",
+			"depth": 11,
+			"neighbors": [
+				"taiyang-digital"
+			]
+		},
+		"applied-energetics": {
+			"host": "applied-energetics",
+			"parent": "taiyang-digital",
+			"depth": 11,
+			"neighbors": [
+				"taiyang-digital",
+				"fulcrumtech",
+				"helios",
+				"vitalife"
+			]
+		},
+		"stormtech": {
+			"host": "stormtech",
+			"parent": "run4theh111z",
+			"depth": 12,
+			"neighbors": [
+				"run4theh111z"
+			]
+		},
+		"fulcrumtech": {
+			"host": "fulcrumtech",
+			"parent": "applied-energetics",
+			"depth": 12,
+			"neighbors": [
+				"applied-energetics",
+				"omnitek",
+				"4sigma",
+				"kuai-gong"
+			]
+		},
+		"helios": {
+			"host": "helios",
+			"parent": "applied-energetics",
+			"depth": 12,
+			"neighbors": [
+				"applied-energetics",
+				"."
+			]
+		},
+		"vitalife": {
+			"host": "vitalife",
+			"parent": "applied-energetics",
+			"depth": 12,
+			"neighbors": [
+				"applied-energetics"
+			]
+		},
+		"omnitek": {
+			"host": "omnitek",
+			"parent": "fulcrumtech",
+			"depth": 13,
+			"neighbors": [
+				"fulcrumtech",
+				"nwo",
+				"powerhouse-fitness"
+			]
+		},
+		"4sigma": {
+			"host": "4sigma",
+			"parent": "fulcrumtech",
+			"depth": 13,
+			"neighbors": [
+				"fulcrumtech"
+			]
+		},
+		"kuai-gong": {
+			"host": "kuai-gong",
+			"parent": "fulcrumtech",
+			"depth": 13,
+			"neighbors": [
+				"fulcrumtech",
+				"clarkinc"
+			]
+		},
+		".": {
+			"host": ".",
+			"parent": "helios",
+			"depth": 13,
+			"neighbors": [
+				"helios",
+				"b-and-a",
+				"blade"
+			]
+		},
+		"nwo": {
+			"host": "nwo",
+			"parent": "omnitek",
+			"depth": 14,
+			"neighbors": [
+				"omnitek",
+				"The-Cave"
+			]
+		},
+		"powerhouse-fitness": {
+			"host": "powerhouse-fitness",
+			"parent": "omnitek",
+			"depth": 14,
+			"neighbors": [
+				"omnitek",
+				"megacorp"
+			]
+		},
+		"clarkinc": {
+			"host": "clarkinc",
+			"parent": "kuai-gong",
+			"depth": 14,
+			"neighbors": [
+				"kuai-gong",
+				"ecorp",
+				"fulcrumassets"
+			]
+		},
+		"b-and-a": {
+			"host": "b-and-a",
+			"parent": ".",
+			"depth": 14,
+			"neighbors": [
+				"."
+			]
+		},
+		"blade": {
+			"host": "blade",
+			"parent": ".",
+			"depth": 14,
+			"neighbors": [
+				"."
+			]
+		},
+		"The-Cave": {
+			"host": "The-Cave",
+			"parent": "nwo",
+			"depth": 15,
+			"neighbors": [
+				"nwo"
+			]
+		},
+		"megacorp": {
+			"host": "megacorp",
+			"parent": "powerhouse-fitness",
+			"depth": 15,
+			"neighbors": [
+				"powerhouse-fitness"
+			]
+		},
+		"ecorp": {
+			"host": "ecorp",
+			"parent": "clarkinc",
+			"depth": 15,
+			"neighbors": [
+				"clarkinc"
+			]
+		},
+		"fulcrumassets": {
+			"host": "fulcrumassets",
+			"parent": "clarkinc",
+			"depth": 15,
+			"neighbors": [
+				"clarkinc"
+			]
+		}
+	},
+	"ramSizes": {
+		"home": 131072,
+		"n00dles": 4,
+		"foodnstuff": 16,
+		"sigma-cosmetics": 16,
+		"joesguns": 16,
+		"hong-fang-tea": 16,
+		"harakiri-sushi": 16,
+		"iron-gym": 32,
+		"pserv-01": 1048576,
+		"pserv-02": 1048576,
+		"pserv-03": 1048576,
+		"pserv-04": 1048576,
+		"pserv-05": 1048576,
+		"pserv-06": 1048576,
+		"pserv-07": 1048576,
+		"pserv-08": 1048576,
+		"pserv-09": 1048576,
+		"pserv-10": 1048576,
+		"pserv-11": 1048576,
+		"pserv-12": 1048576,
+		"pserv-13": 1048576,
+		"pserv-14": 1048576,
+		"pserv-15": 1048576,
+		"pserv-16": 1048576,
+		"pserv-17": 1048576,
+		"pserv-18": 1048576,
+		"pserv-19": 1048576,
+		"pserv-20": 1048576,
+		"pserv-21": 1048576,
+		"pserv-22": 1048576,
+		"pserv-23": 1048576,
+		"pserv-24": 1048576,
+		"pserv-25": 1048576,
+		"zer0": 32,
+		"nectar-net": 16,
+		"CSEC": 8,
+		"max-hardware": 32,
+		"silver-helix": 64,
+		"phantasy": 32,
+		"omega-net": 32,
+		"neo-net": 32,
+		"crush-fitness": 0,
+		"avmnite-02h": 32,
+		"computek": 0,
+		"netlink": 64,
+		"johnson-ortho": 0,
+		"the-hub": 16,
+		"catalyst": 32,
+		"syscore": 0,
+		"zb-institute": 64,
+		"summit-uni": 16,
+		"I.I.I.I": 128,
+		"rothman-uni": 16,
+		"rho-construction": 32,
+		"aevum-police": 16,
+		"lexo-corp": 16,
+		"millenium-fitness": 256,
+		"alpha-ent": 16,
+		"global-pharm": 64,
+		"aerocorp": 0,
+		"galactic-cyber": 0,
+		"snap-fitness": 0,
+		"deltaone": 0,
+		"unitalife": 16,
+		"omnia": 32,
+		"defcomm": 0,
+		"zeus-med": 0,
+		"icarus": 0,
+		"univ-energy": 64,
+		"solaris": 128,
+		"infocomm": 0,
+		"zb-def": 0,
+		"nova-med": 0,
+		"taiyang-digital": 0,
+		"microdyne": 16,
+		"run4theh111z": 64,
+		"titan-labs": 128,
+		"applied-energetics": 0,
+		"stormtech": 0,
+		"fulcrumtech": 1024,
+		"helios": 256,
+		"vitalife": 128,
+		"omnitek": 128,
+		"4sigma": 0,
+		"kuai-gong": 0,
+		".": 16,
+		"nwo": 0,
+		"powerhouse-fitness": 16,
+		"clarkinc": 0,
+		"b-and-a": 0,
+		"blade": 64,
+		"The-Cave": 0,
+		"megacorp": 0,
+		"ecorp": 0,
+		"fulcrumassets": 0
+	}
+}

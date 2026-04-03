@@ -1,4 +1,3 @@
-import { isNormalServer } from "./lib/helper";
 import { HostInfoDB } from "./HostInfoDB";
 
 export async function main(ns: NS) {
@@ -9,7 +8,7 @@ export async function main(ns: NS) {
 	const target = f.target;
 	const db = new HostInfoDB(ns);
 	const srv = db.find(target).server;
-	if (!isNormalServer(srv)) return;
+	if ("hasStasisLink" in srv) return;
 	if (srv === null) return ns.tprint("missing targetSrv");
 	if (srv.openPortCount === void 0) return ns.tprint("missing openPortCount");
 	if (srv.numOpenPortsRequired === void 0) {

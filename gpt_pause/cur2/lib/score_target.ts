@@ -161,15 +161,9 @@ function clamp01(x: number): number {
 	return Math.max(0, Math.min(1, x))
 }
 
-function isNormalServer(
-	s: { hostname: string } | Server | DarknetServerData,
-): s is Server {
-	return "moneyMax" in s
-}
-
 export function scoreTarget(ns: NS, target: string): number {
 	const server = ns.getServer(target)
-	if (!isNormalServer(server)) throw new Error("Unable to handle darkweb server")
+	if ("isOnline" in server) throw new Error("Unable to handle darkweb server")
 
 	// Skip servers you can't hack
 	if (ns.getHackingLevel() < server.requiredHackingSkill!) return -Infinity

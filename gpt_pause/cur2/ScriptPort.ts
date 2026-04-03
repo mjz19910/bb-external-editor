@@ -2,6 +2,41 @@ export const REQUEST_PORT = 1
 export const REPLY_PORT = 2
 export const API_PORT = 3
 
+export type HeartbleedPasswordAttempt = {
+	code: 401
+	message: string
+	passwordAttempted: string
+}
+export type DeepGreenBleedData = {
+	code: 401
+	message: string
+	passwordAttempted: string
+}
+export interface FactorsBleedResult extends DarknetResult {
+	code: DarknetResult["code"] & {}
+	message: string
+	data: `${boolean}`
+	passwordAttempted: string
+}
+export type SubmitAuthArgs = [
+	opts: AuthFlowState,
+	auth: DarknetResult,
+	password: string,
+]
+export type AccMgrBleedData = {
+	code: 401
+	message: string
+	passwordAttempted: string
+	data: string
+} | {
+	code: 200
+}
+export type AuthFlowState = {
+	runner: string
+	host: string
+	port: ScriptPort<PortMessage>
+	info: DarknetServerInfo
+}
 export type WaitMessage = {
 	type: "wait"
 	on: "darknet.nextMutation"
@@ -43,18 +78,14 @@ export type DarknetServerInfo = {
 	ip: string
 	connectedToParent: boolean
 	host?: string
-	server?: DarknetServer
+	server?: DarknetServerData
 	authDetails?: ServerAuthDetails2
 	parent?: string
 	password?: string
 }
 
-export interface DarknetServer extends DarknetServerData {
-	isOnline: boolean;
-}
-
-export type QuitMessage = { type: "quit" };
-export type TimeoutCheckMsg = { type: "timeout_check" };
+export type QuitMessage = { type: "quit" }
+export type TimeoutCheckMsg = { type: "timeout_check" }
 export type ServerAuthDetails2 = {
 	isOnline: boolean
 	isConnectedToCurrentServer: boolean
@@ -110,12 +141,12 @@ export type OptNone = { type: "None" }
 export type OptSome<T> = { type: "Some"; value: T }
 export type Optional<T> = OptNone | OptSome<T>
 export type OnlineServersMessage = {
-	type: "online_servers";
+	type: "online_servers"
 	result: {
-		darkweb: DarknetServer[];
-		normal: Server[];
-	};
-};
+		darkweb: DarknetServerData[]
+		normal: Server[]
+	}
+}
 export type PortMessage =
 	| DarknetAuthenticateMessage
 	| DarknetFoundPassProbeMessage

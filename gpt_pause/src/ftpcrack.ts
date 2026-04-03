@@ -1,16 +1,14 @@
-import { isNormalServer } from "./lib/helper";
-import { HostInfoDB } from "./HostInfoDB";
+import { HostInfoDB } from "./HostInfoDB"
 
 export async function main(ns: NS) {
-	const db = new HostInfoDB(ns);
+	const db = new HostInfoDB(ns)
 	for (const info of db.data) {
-		const srv = info.server;
-		if (srv === null) continue;
-		if (!isNormalServer(srv)) continue;
-		if (srv.openPortCount === void 0) continue;
-		if (srv.numOpenPortsRequired === void 0) continue;
-		if (srv.numOpenPortsRequired < 2) continue;
-		if (srv.ftpPortOpen) continue;
+		const { server: srv } = info
+		if ("hasStasisLink" in srv) continue
+		if (srv.openPortCount === void 0) continue
+		if (srv.numOpenPortsRequired === void 0) continue
+		if (srv.numOpenPortsRequired < 2) continue
+		if (srv.ftpPortOpen) continue
 		if (ns.ftpcrack(srv.hostname)) {
 			ns.tprint(
 				"key update ftpPortOpen ",
@@ -19,10 +17,10 @@ export async function main(ns: NS) {
 				true,
 				" old ",
 				srv.ftpPortOpen,
-			);
-			srv.ftpPortOpen = true;
-			const prev_opc = srv.openPortCount;
-			srv.openPortCount += 1;
+			)
+			srv.ftpPortOpen = true
+			const prev_opc = srv.openPortCount
+			srv.openPortCount += 1
 			ns.tprint(
 				"key update openPortCount ",
 				srv.hostname,
@@ -30,11 +28,11 @@ export async function main(ns: NS) {
 				srv.openPortCount,
 				" old ",
 				prev_opc,
-			);
-			db.notify_changed();
+			)
+			db.notify_changed()
 		} else {
-			ns.tprint("error ftpcrack for ", srv.hostname);
+			ns.tprint("error ftpcrack for ", srv.hostname)
 		}
 	}
-	if (db.was_content_modified) db.save();
+	if (db.was_content_modified) db.save()
 }

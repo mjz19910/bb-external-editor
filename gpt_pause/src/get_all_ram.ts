@@ -1,4 +1,4 @@
-import { buildNetworkMap } from "../../servers/home/lib/network_map";
+import { buildNetworkMap } from "../cur2/lib/network_map";
 
 export type NetworkRamInfo = {
 	total: number;

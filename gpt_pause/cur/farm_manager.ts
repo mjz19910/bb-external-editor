@@ -1,10 +1,10 @@
-import { deployScriptSet } from "../../servers/home/lib/fleet"
-import { tlog } from "../../servers/home/lib/log"
-import { NetworkMap } from "../../servers/home/lib/network_map"
-import { HACK, GROW, WEAKEN } from "../../servers/home/lib/paths"
-import { MultiTargetFarm } from "../../servers/home/MultiTargetFarm"
-import { RoundRobinTargetLogger } from "../../servers/home/RoundRobinTargetLogger"
-import { ScriptPort } from "../../servers/home/ScriptPort"
+import { deployScriptSet } from "../cur2/lib/fleet"
+import { tlog } from "../cur2/lib/log"
+import { NetworkMap } from "../cur2/lib/network_map"
+import { HACK, GROW, WEAKEN } from "../cur2/lib/paths"
+import { MultiTargetFarm } from "../cur2/MultiTargetFarm"
+import { RoundRobinTargetLogger } from "../cur2/RoundRobinTargetLogger"
+import { ScriptPort } from "../cur2/ScriptPort"
 
 /** Main entry point */
 export async function main(ns: NS) {

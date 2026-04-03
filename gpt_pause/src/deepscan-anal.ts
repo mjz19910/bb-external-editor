@@ -16,7 +16,7 @@
 	other features not present on `analyze` or `scan-analyze`.
 */
 
-import { buildNetworkMap } from "../../servers/home/lib/network_map";
+import { buildNetworkMap } from "../cur2/lib/network_map";
 
 function security_info(ns: NS, server: string) {
 	const cur = ns.getServerSecurityLevel(server);

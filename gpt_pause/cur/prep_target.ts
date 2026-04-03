@@ -1,6 +1,6 @@
-import { canRunThreads, runnableHosts } from "../../servers/home/lib/network_map";
-import { buildNetworkMap } from "../../servers/home/lib/network_map";
-import { log, tlog } from "../../servers/home/lib/log";
+import { canRunThreads, runnableHosts } from "../cur2/lib/network_map";
+import { buildNetworkMap } from "../cur2/lib/network_map";
+import { log, tlog } from "../cur2/lib/log";
 
 const WEAKEN = "gpt_pause/src/weaken_worker.ts";
 const GROW = "gpt_pause/src/grow_worker.ts";
