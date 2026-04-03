@@ -74,7 +74,7 @@ export class JobPhaseRunner {
 		}
 	}
 
-	private calculateThreadsNeeded(target: string, phase: JobPhase): number {
+	private calculateThreadsNeeded(target: string, phase: JobPhase, opts: { hackFrac?: number }): number {
 		if (phase === "weaken") {
 			const sec = this.ns.getServerSecurityLevel(target)
 			const minSec = this.srvMinSec.get(target)!
@@ -94,7 +94,8 @@ export class JobPhaseRunner {
 			if (maxMoney <= 0) return 0
 
 			// Hack 25% of max money by default
-			const targetHackFraction = 0.25
+			let targetHackFraction = 0.25
+			if (opts && opts.hackFrac !== void 0) targetHackFraction = opts.hackFrac
 			const hackPercentPerThread = this.ns.hackAnalyze(target)
 
 			if (hackPercentPerThread <= 0) return 0
@@ -112,14 +113,14 @@ export class JobPhaseRunner {
 		}
 	}
 
-	async runPhase(phase: JobPhase) {
+	async runPhase(phase: JobPhase, opts: { hackFrac?: number } = {}) {
 		const script = this.getPhaseScript(phase)
 		const jobsEndTimes: Map<string, number[]> = new Map()
 
 		this.sortTargetsForPhase(phase)
 
 		for (const target of this.jobTargets) {
-			const threads = this.calculateThreadsNeeded(target, phase)
+			const threads = this.calculateThreadsNeeded(target, phase, opts)
 			if (threads <= 0) continue
 
 			if (!this.scriptRamMap.has(script)) {

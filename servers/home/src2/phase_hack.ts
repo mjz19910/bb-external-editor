@@ -11,7 +11,7 @@ export async function main(ns: NS) {
 	runner.copyScripts()
 
 	runner.log("=== Hacking servers ===")
-	await runner.runPhase("hack")
+	await runner.runPhase("hack", { hackFrac: 1 })
 
 	runner.showStatus()
 	runner.log("Complete.")
