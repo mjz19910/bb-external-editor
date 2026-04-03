@@ -127,7 +127,7 @@ export async function main(ns: NS) {
 	}
 
 	// Reset board
-	const rawBoard = ns.go.resetBoardState("Netburners", 7)
+	const rawBoard = ns.go.resetBoardState("Slum Snakes", 13)
 	if (!rawBoard) {
 		ns.tprint("Failed to reset board")
 		return
