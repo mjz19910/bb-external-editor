@@ -23,9 +23,9 @@ export const CONFIG = {
 	},
 
 	workerScripts: {
-		hack: "/src/scripts/hack.ts",
-		grow: "/src/scripts/grow.ts",
-		weaken: "/src/scripts/weaken.ts",
+		hack: "src/scripts/hack.ts",
+		grow: "src/scripts/grow.ts",
+		weaken: "src/scripts/weaken.ts",
 	},
 
 	scriptRamCost: {
