@@ -5,7 +5,6 @@ import { HACK, GROW, WEAKEN } from "./paths"
 import { MultiTargetFarm } from "./MultiTargetFarm"
 import { RoundRobinTargetLogger } from "./RoundRobinTargetLogger"
 
-
 const Null = "NULL PORT DATA" as const
 type Null = typeof Null
 
