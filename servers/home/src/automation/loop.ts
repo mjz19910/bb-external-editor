@@ -1,14 +1,20 @@
-import { CONFIG } from "../core/config"
-import { getTargetRegistry, setTargetRegistry } from "../core/registry"
 import { collectGameState } from "../core/state"
 import { getRunningFleetState } from "../services/jobs"
+import { buildDesiredWorkloads } from "../automation/planner"
+import { reconcileFleetWorkloads } from "../automation/reconciler"
+import {
+	getTargetRegistry,
+	setTargetRegistry,
+	loadTargetRegistry,
+	saveTargetRegistry,
+} from "../core/registry"
 import { reconcileTargetRegistry } from "../services/targetLifecycle"
-import { buildDesiredWorkloads } from "./planner"
-import { reconcileFleetWorkloads } from "./reconciler"
 
 export async function runAutomationLoop(ns: NS): Promise<void> {
 	ns.disableLog("ALL")
 	ns.ui.openTail()
+
+	loadTargetRegistry(ns)
 
 	while (true) {
 		const state = collectGameState(ns)
@@ -30,6 +36,8 @@ export async function runAutomationLoop(ns: NS): Promise<void> {
 			state.rootedServers
 		)
 
+		saveTargetRegistry(ns)
+
 		ns.clearLog()
 		ns.print(`Mode: ${state.mode}`)
 		ns.print(`Rooted: ${state.rootedServers.length}/${state.servers.length}`)
@@ -45,18 +53,11 @@ export async function runAutomationLoop(ns: NS): Promise<void> {
 		ns.print(`Hosts Used: ${reconcile.hostsUsed}`)
 		ns.print(`Processes Launched: ${reconcile.launchedProcesses}`)
 		ns.print(`Scheduled Allocations: ${reconcile.scheduledAllocations}`)
-
 		ns.print("--- DESIRED ---")
+
 		for (const workload of desiredWorkloads.slice(0, 8)) {
 			ns.print(
 				`D: ${workload.action} ${workload.target} ${workload.desiredThreads}t p=${workload.priority.toFixed(1)}`
-			)
-		}
-
-		ns.print("--- WORKLOAD ---")
-		for (const workload of runningFleet.workloads.slice(0, 8)) {
-			ns.print(
-				`R: ${workload.action} ${workload.target} ${workload.totalThreads}t`
 			)
 		}
 
@@ -69,20 +70,6 @@ export async function runAutomationLoop(ns: NS): Promise<void> {
 			)
 		}
 
-		ns.print("--- ALLOCATIONS ---")
-		for (const allocation of runningFleet.allocations.slice(0, 10)) {
-			ns.print(
-				`A: ${allocation.hostname} ${allocation.action} ${allocation.target} ${allocation.threads}t`
-			)
-		}
-
-		ns.print("--- TARGET STATES ---")
-		for (const target of state.targetStates.slice(0, 10)) {
-			ns.print(
-				`T: ${target.hostname} ${target.lifecycle} score=${target.score.toFixed(0)} money=${target.currentMoney.toFixed(0)}/${target.maxMoney.toFixed(0)} sec=${target.currentSecurity.toFixed(2)}/${target.minSecurity.toFixed(2)}`
-			)
-		}
-
-		await ns.sleep(CONFIG.loopIntervalMs)
+		await ns.sleep(2000)
 	}
 }

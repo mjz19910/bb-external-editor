@@ -118,25 +118,6 @@ export function reconcileTargetRegistry(
 	}
 }
 
-function determineTrackedLifecycle(
-	observed: TargetState,
-	prior?: TrackedTargetState
-): TargetLifecycleState {
-	if (!prior) return observed.lifecycle
-
-	if (!observed.isHackable) return "UNAVAILABLE"
-
-	if (observed.lifecycle === "READY" || observed.lifecycle === "FARMING") {
-		if (prior.lifecycle === "WEAKENING" || prior.lifecycle === "UNPREPPED") {
-			return "GROWING"
-		}
-
-		return "READY"
-	}
-
-	return observed.lifecycle
-}
-
 function chooseActiveFarmTarget(
 	targets: Record<string, TrackedTargetState>,
 	previousActiveFarmTarget: string | null
@@ -175,4 +156,34 @@ export function scoreTarget(server: ServerState): number {
 	)
 
 	return (server.maxMoney * Math.max(1, server.growth)) / securityPenalty
+}
+
+const MIN_READY_STREAK = 3 // only consider a target READY after 3 consecutive loops
+const MIN_TRANSITION_INTERVAL = 5000 // ms, minimal time between transitions
+
+export function determineTrackedLifecycle(
+	observed: TargetState,
+	prior?: TrackedTargetState,
+	now: number = Date.now()
+): TargetLifecycleState {
+	if (!prior) return observed.lifecycle
+
+	if (!observed.isHackable) return "UNAVAILABLE"
+
+	const timeSinceLastTransition = now - (prior.lastTransitionAt ?? 0)
+
+	// enforce minimal interval between transitions
+	if (timeSinceLastTransition < MIN_TRANSITION_INTERVAL) {
+		return prior.lifecycle
+	}
+
+	// hysteresis for READY/FARMING
+	if (observed.lifecycle === "READY" || observed.lifecycle === "FARMING") {
+		if ((prior.readyStreak ?? 0) < MIN_READY_STREAK) {
+			return "GROWING" // give it some loops to stabilize
+		}
+		return "READY"
+	}
+
+	return observed.lifecycle
 }
