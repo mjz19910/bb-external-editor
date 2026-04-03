@@ -179,18 +179,15 @@ export async function main(ns: NS) {
 	raceArr.push(port.nextWrite().then(() => null))
 
 	async function slowStart() {
-		for (let i = 0; i < 20; i++) {
+		for (let i = 0; i < 10; i++) {
 			addFarm(farms, hackPct, logger)
 		}
 
 		let hadAnyErrors = false
-		// 1 = 131.04TB + 216.96TB
-		// 2 = 38% of pserv-01
-		// 3 = 1.26PB
-		// 4 =
-		// 40 = 11
 		for (let i = 0; i < 18; i++) {
-			addFarm(farms, hackPct, logger)
+			for (let j = 0; j < 10; j++) {
+				addFarm(farms, hackPct, logger)
+			}
 			ns.print("added farm id=", farms.length)
 			do {
 				await ns.asleep(5_500)
