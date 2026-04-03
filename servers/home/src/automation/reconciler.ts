@@ -1,7 +1,17 @@
-import { DesiredWorkload, RunningFleetState, ServerState, ReconcileResult } from "../core/types"
-import { diffAllocations } from "../services/allocationDiff"
-import { getExecutionHosts, killSpecificAllocations, ensureWorkerScripts, dispatchSchedule } from "../services/executor"
+import {
+	DesiredWorkload,
+	ReconcileResult,
+	RunningFleetState,
+	ServerState,
+} from "../core/types"
+import {
+	dispatchSchedule,
+	ensureWorkerScripts,
+	getExecutionHosts,
+	killSpecificAllocations,
+} from "../services/executor"
 import { buildSchedule } from "../services/scheduler"
+import { diffAllocations } from "../services/allocationDiff"
 import { workloadSetsMatch } from "../services/workloadCompare"
 
 export async function reconcileFleetWorkloads(
@@ -11,7 +21,12 @@ export async function reconcileFleetWorkloads(
 	rootedServers: ServerState[]
 ): Promise<ReconcileResult> {
 	const hosts = getExecutionHosts(rootedServers)
-	const desiredSchedule = buildSchedule(ns, desiredWorkloads, hosts)
+	const desiredSchedule = buildSchedule(
+		ns,
+		desiredWorkloads,
+		hosts,
+		runningFleet.allocations
+	)
 
 	if (desiredWorkloads.length === 0) {
 		if (runningFleet.processes.length === 0) {

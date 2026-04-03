@@ -53,6 +53,13 @@ export async function runAutomationLoop(ns: NS): Promise<void> {
 			)
 		}
 
+		ns.print("--- ALLOCATIONS ---")
+		for (const allocation of runningFleet.allocations.slice(0, 10)) {
+			ns.print(
+				`A: ${allocation.hostname} ${allocation.action} ${allocation.target} ${allocation.threads}t`
+			)
+		}
+
 		await ns.sleep(CONFIG.loopIntervalMs)
 	}
 }
