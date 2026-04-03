@@ -1,80 +1,26 @@
 import { CONFIG } from "../core/config"
-import { shouldWeaken, shouldGrow } from "../core/state"
-import { GameState, ActionPlan, DesiredWorkload } from "../core/types"
+import { GameState, DesiredWorkload, TargetState, ServerState } from "../core/types"
 import { estimateWeakenThreads, estimateGrowThreads, estimateHackThreads } from "../services/plannerMath"
-
-export function buildPlan(state: GameState): ActionPlan {
-	if (!state.bestTarget) {
-		return {
-			type: "scan",
-			reason: "No valid target available yet.",
-		}
-	}
-
-	const target = state.bestTarget
-
-	if (shouldWeaken(target)) {
-		return {
-			type: "weaken",
-			target: target.hostname,
-			reason: `Security above threshold (${target.currentSecurity.toFixed(2)} / min ${target.minSecurity.toFixed(2)}).`,
-		}
-	}
-
-	if (shouldGrow(target)) {
-		return {
-			type: "grow",
-			target: target.hostname,
-			reason: `Money below threshold (${target.currentMoney.toFixed(0)} / ${target.maxMoney.toFixed(0)}).`,
-		}
-	}
-
-	return {
-		type: "hack",
-		target: target.hostname,
-		reason: "Target is in profitable state.",
-	}
-}
 
 export function buildDesiredWorkloads(
 	ns: NS,
 	state: GameState
 ): DesiredWorkload[] {
-	const candidates = [...state.hackableTargets]
+	const candidates = state.targetStates
+		.filter((target) => target.isHackable)
+		.sort((a, b) => b.score - a.score)
 		.slice(0, CONFIG.planner.maxTargetsToEvaluate)
 
 	const workloads: DesiredWorkload[] = []
 
-	for (const server of candidates) {
-		if (shouldWeaken(server)) {
-			workloads.push({
-				action: "weaken",
-				target: server.hostname,
-				desiredThreads: estimateWeakenThreads(ns, server),
-				priority: 100 + server.maxMoney / 1_000_000,
-				reason: "Security reduction needed.",
-			})
-			continue
-		}
+	for (const target of candidates) {
+		const server = state.servers.find((s) => s.hostname === target.hostname)
+		if (!server) continue
 
-		if (shouldGrow(server)) {
-			workloads.push({
-				action: "grow",
-				target: server.hostname,
-				desiredThreads: estimateGrowThreads(ns, server),
-				priority: 80 + server.maxMoney / 1_000_000,
-				reason: "Money recovery needed.",
-			})
-			continue
+		const workload = buildWorkloadForTargetState(ns, server, target)
+		if (workload) {
+			workloads.push(workload)
 		}
-
-		workloads.push({
-			action: "hack",
-			target: server.hostname,
-			desiredThreads: estimateHackThreads(ns, server),
-			priority: 50 + server.maxMoney / 1_000_000,
-			reason: "Profitable target ready for hacking.",
-		})
 	}
 
 	return workloads
@@ -83,45 +29,45 @@ export function buildDesiredWorkloads(
 		.slice(0, CONFIG.planner.maxDesiredWorkloads)
 }
 
-export function planToDesiredWorkload(
+function buildWorkloadForTargetState(
 	ns: NS,
-	state: GameState,
-	plan: ActionPlan
+	server: ServerState,
+	target: TargetState
 ): DesiredWorkload | null {
-	if (!plan.target) return null
+	switch (target.lifecycle) {
+		case "UNAVAILABLE":
+			return null
 
-	const server = state.servers.find((s) => s.hostname === plan.target)
-	if (!server) return null
+		case "UNPREPPED":
+		case "WEAKENING":
+			return {
+				action: "weaken",
+				target: target.hostname,
+				desiredThreads: estimateWeakenThreads(ns, server),
+				priority: 100 + target.score / 1_000_000,
+				reason: `Target lifecycle=${target.lifecycle}, reduce security first.`,
+			}
 
-	if (plan.type === "weaken") {
-		return {
-			action: "weaken",
-			target: plan.target,
-			desiredThreads: estimateWeakenThreads(ns, server),
-			priority: 0,
-			reason: ""
-		}
+		case "GROWING":
+			return {
+				action: "grow",
+				target: target.hostname,
+				desiredThreads: estimateGrowThreads(ns, server),
+				priority: 80 + target.score / 1_000_000,
+				reason: `Target lifecycle=${target.lifecycle}, restore money.`,
+			}
+
+		case "READY":
+		case "FARMING":
+			return {
+				action: "hack",
+				target: target.hostname,
+				desiredThreads: estimateHackThreads(ns, server),
+				priority: 50 + target.score / 1_000_000,
+				reason: `Target lifecycle=${target.lifecycle}, profitable farming.`,
+			}
+
+		default:
+			return null
 	}
-
-	if (plan.type === "grow") {
-		return {
-			action: "grow",
-			target: plan.target,
-			desiredThreads: estimateGrowThreads(ns, server),
-			priority: 0,
-			reason: ""
-		}
-	}
-
-	if (plan.type === "hack") {
-		return {
-			action: "hack",
-			target: plan.target,
-			desiredThreads: estimateHackThreads(ns, server),
-			priority: 0,
-			reason: ""
-		}
-	}
-
-	return null
 }
