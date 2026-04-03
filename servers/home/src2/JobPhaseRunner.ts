@@ -113,6 +113,10 @@ export class JobPhaseRunner {
 		}
 	}
 
+	async runPhase(phase: "hack", opts?: { hackFrac?: number }): Promise<void>
+	async runPhase(phase: "grow"): Promise<void>
+	async runPhase(phase: "weaken"): Promise<void>
+
 	async runPhase(phase: JobPhase, opts: { hackFrac?: number } = {}) {
 		const script = this.getPhaseScript(phase)
 		const jobsEndTimes: Map<string, number[]> = new Map()
