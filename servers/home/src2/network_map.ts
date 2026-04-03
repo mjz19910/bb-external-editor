@@ -1,6 +1,6 @@
 import { DB_PATH } from "./paths"
 
-export type NetworkNode = {
+type NetworkNode = {
 	host: string
 	parent: string | null
 	depth: number
