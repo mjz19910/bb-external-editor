@@ -1,4 +1,4 @@
-import { createRow, doc } from "../../../gpt_pause/cur2/dom_helpers"
+import { createRow, doc } from "./dom_helpers"
 
 // ram_widget.ts
 export async function main(ns: NS) {

@@ -3,7 +3,7 @@ import { StateManager, TargetState, ServerState } from "./lib/state"
 // import { Events } from "./lib/events"
 import { getConfig } from "./lib/config_helpers"
 import { StockManager } from "./stock_manager"
-import { doc } from "./dom_helpers"
+import { doc } from "../../servers/home/src2/dom_helpers"
 
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
