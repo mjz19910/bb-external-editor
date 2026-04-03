@@ -8,7 +8,7 @@ export type TargetState = {
 	activeBatches: number
 }
 
-export type ServerState = {
+type ServerState = {
 	hostname: string
 	maxRam: number
 	usedRam: number
