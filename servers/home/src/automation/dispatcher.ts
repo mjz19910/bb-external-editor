@@ -1,4 +1,5 @@
 import { CONFIG } from "../core/config"
+import { ActionPlan, ServerState, DispatchResult } from "../core/types"
 import { dispatchScript, ensureWorkerScripts, getExecutionHosts, killManagedScripts } from "../services/executor"
 
 export function executePlan(

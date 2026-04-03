@@ -1,4 +1,5 @@
 import { CONFIG } from "../core/config"
+import { ServerState } from "../core/types"
 
 export function estimateWeakenThreads(ns: NS, server: ServerState): number {
 	const securityGap = Math.max(0, server.currentSecurity - server.minSecurity)

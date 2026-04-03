@@ -1,20 +1,7 @@
-import { shouldGrow, shouldWeaken } from "../core/state"
+import { CONFIG } from "../core/config"
+import { shouldWeaken, shouldGrow } from "../core/state"
+import { GameState, ActionPlan, DesiredWorkload } from "../core/types"
 import { estimateWeakenThreads, estimateGrowThreads, estimateHackThreads } from "../services/plannerMath"
-
-export function planToDesiredJobState(
-	plan: ActionPlan
-): DesiredJobState | null {
-	if (!plan.target) return null
-
-	if (plan.type === "hack" || plan.type === "grow" || plan.type === "weaken") {
-		return {
-			action: plan.type,
-			target: plan.target,
-		}
-	}
-
-	return null
-}
 
 export function buildPlan(state: GameState): ActionPlan {
 	if (!state.bestTarget) {
@@ -49,6 +36,53 @@ export function buildPlan(state: GameState): ActionPlan {
 	}
 }
 
+export function buildDesiredWorkloads(
+	ns: NS,
+	state: GameState
+): DesiredWorkload[] {
+	const candidates = [...state.hackableTargets]
+		.slice(0, CONFIG.planner.maxTargetsToEvaluate)
+
+	const workloads: DesiredWorkload[] = []
+
+	for (const server of candidates) {
+		if (shouldWeaken(server)) {
+			workloads.push({
+				action: "weaken",
+				target: server.hostname,
+				desiredThreads: estimateWeakenThreads(ns, server),
+				priority: 100 + server.maxMoney / 1_000_000,
+				reason: "Security reduction needed.",
+			})
+			continue
+		}
+
+		if (shouldGrow(server)) {
+			workloads.push({
+				action: "grow",
+				target: server.hostname,
+				desiredThreads: estimateGrowThreads(ns, server),
+				priority: 80 + server.maxMoney / 1_000_000,
+				reason: "Money recovery needed.",
+			})
+			continue
+		}
+
+		workloads.push({
+			action: "hack",
+			target: server.hostname,
+			desiredThreads: estimateHackThreads(ns, server),
+			priority: 50 + server.maxMoney / 1_000_000,
+			reason: "Profitable target ready for hacking.",
+		})
+	}
+
+	return workloads
+		.filter((w) => w.desiredThreads > 0)
+		.sort((a, b) => b.priority - a.priority)
+		.slice(0, CONFIG.planner.maxDesiredWorkloads)
+}
+
 export function planToDesiredWorkload(
 	ns: NS,
 	state: GameState,
@@ -64,6 +98,8 @@ export function planToDesiredWorkload(
 			action: "weaken",
 			target: plan.target,
 			desiredThreads: estimateWeakenThreads(ns, server),
+			priority: 0,
+			reason: ""
 		}
 	}
 
@@ -72,6 +108,8 @@ export function planToDesiredWorkload(
 			action: "grow",
 			target: plan.target,
 			desiredThreads: estimateGrowThreads(ns, server),
+			priority: 0,
+			reason: ""
 		}
 	}
 
@@ -80,6 +118,8 @@ export function planToDesiredWorkload(
 			action: "hack",
 			target: plan.target,
 			desiredThreads: estimateHackThreads(ns, server),
+			priority: 0,
+			reason: ""
 		}
 	}
 

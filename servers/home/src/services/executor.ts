@@ -1,4 +1,5 @@
 import { CONFIG } from "../core/config"
+import { ServerState, ExecutionHost, DispatchResult, ScheduledAllocation } from "../core/types"
 
 export function getExecutionHosts(
 	ns: NS,
@@ -84,4 +85,42 @@ export function dispatchScript(
 		launchedProcesses,
 		hostsUsed,
 	}
+}
+
+export function dispatchSchedule(
+	ns: NS,
+	allocations: ScheduledAllocation[]
+): DispatchResult[] {
+	const results = new Map<string, DispatchResult>()
+
+	for (const allocation of allocations) {
+		const script = CONFIG.workerScripts[allocation.action]
+		const pid = ns.exec(
+			script,
+			allocation.hostname,
+			allocation.threads,
+			allocation.target
+		)
+
+		if (pid === 0) continue
+
+		const key = `${script}::${allocation.target}`
+		const existing = results.get(key)
+
+		if (existing) {
+			existing.totalThreads += allocation.threads
+			existing.launchedProcesses += 1
+			existing.hostsUsed += 1
+		} else {
+			results.set(key, {
+				script,
+				target: allocation.target,
+				totalThreads: allocation.threads,
+				launchedProcesses: 1,
+				hostsUsed: 1,
+			})
+		}
+	}
+
+	return [...results.values()]
 }

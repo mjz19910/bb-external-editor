@@ -1,4 +1,5 @@
 import { CONFIG } from "./config"
+import { GameState, AutomationMode, ServerState } from "./types"
 
 export function collectGameState(ns: NS): GameState {
 	const discovered = discoverAllServers(ns)

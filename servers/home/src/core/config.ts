@@ -13,6 +13,11 @@ export const CONFIG = {
 		targetHackFraction: 0.25,
 	},
 
+	planner: {
+		maxTargetsToEvaluate: 5,
+		maxDesiredWorkloads: 6,
+	},
+
 	workloadTolerance: {
 		minThreadDifferenceToRedeploy: 0.15, // 15%
 	},
