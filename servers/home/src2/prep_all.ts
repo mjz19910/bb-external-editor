@@ -1,5 +1,5 @@
 // network_map.ts
-const DB_PATH = "lib/db/network_map.json"
+const DB_PATH = "data/network_map.json"
 
 type NetworkNode = {
 	host: string
@@ -199,7 +199,7 @@ function countPortOpeners(ns: NS): number {
 }
 
 // lib/state.ts
-const STATE_FILE = "/lib/db/state.json"
+const STATE_FILE = "data/state.json"
 
 type TargetState = {
 	name: string
