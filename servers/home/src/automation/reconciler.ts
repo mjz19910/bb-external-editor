@@ -81,3 +81,99 @@ function isDesiredStateSatisfied(
 ): boolean {
 	return running.action === desired.action && running.target === desired.target
 }
+
+export async function reconcileDesiredWorkload(
+	ns: NS,
+	desired: DesiredWorkload | null,
+	running: RunningWorkloadState,
+	rootedServers: ServerState[]
+): Promise<ReconcileResult> {
+	if (!desired) {
+		if (running.processes.length === 0) {
+			return {
+				changed: false,
+				reason: "No desired workload and no managed workload running.",
+				totalThreads: 0,
+				hostsUsed: 0,
+				launchedProcesses: 0,
+			}
+		}
+
+		killManagedScripts(
+			ns,
+			rootedServers.map((s) => s.hostname)
+		)
+
+		return {
+			changed: true,
+			reason: "Stopped managed workload because no desired workload exists.",
+			totalThreads: 0,
+			hostsUsed: 0,
+			launchedProcesses: 0,
+		}
+	}
+
+	if (isDesiredWorkloadSatisfied(desired, running)) {
+		return {
+			changed: false,
+			reason: "Desired workload already satisfied.",
+			totalThreads: running.totalThreads,
+			hostsUsed: new Set(running.processes.map((p) => p.hostname)).size,
+			launchedProcesses: running.processes.length,
+		}
+	}
+
+	const hosts = getExecutionHosts(ns, rootedServers)
+	if (hosts.length === 0) {
+		return {
+			changed: false,
+			reason: "No execution hosts with free RAM available.",
+			totalThreads: 0,
+			hostsUsed: 0,
+			launchedProcesses: 0,
+		}
+	}
+
+	await ensureWorkerScripts(
+		ns,
+		rootedServers.map((s) => s.hostname)
+	)
+
+	killManagedScripts(
+		ns,
+		rootedServers.map((s) => s.hostname)
+	)
+
+	const script = CONFIG.workerScripts[desired.action]
+	const result = dispatchScript(
+		ns,
+		script,
+		desired.target,
+		desired.desiredThreads,
+		hosts
+	)
+
+	return {
+		changed: true,
+		reason: `Deployed ${desired.action} workload on ${desired.target} with ${result.totalThreads}/${desired.desiredThreads} threads.`,
+		totalThreads: result.totalThreads,
+		hostsUsed: result.hostsUsed,
+		launchedProcesses: result.launchedProcesses,
+	}
+}
+
+function isDesiredWorkloadSatisfied(
+	desired: DesiredWorkload,
+	running: RunningWorkloadState
+): boolean {
+	if (running.action !== desired.action) return false
+	if (running.target !== desired.target) return false
+
+	const desiredThreads = Math.max(1, desired.desiredThreads)
+	const differenceRatio =
+		Math.abs(running.totalThreads - desiredThreads) / desiredThreads
+
+	return (
+		differenceRatio <= CONFIG.workloadTolerance.minThreadDifferenceToRedeploy
+	)
+}

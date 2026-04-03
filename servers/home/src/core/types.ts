@@ -92,4 +92,10 @@ declare global {
 		totalThreads: number
 		processes: RunningJobProcess[]
 	}
+
+	interface DesiredWorkload {
+		action: "hack" | "grow" | "weaken"
+		target: string
+		desiredThreads: number
+	}
 }
