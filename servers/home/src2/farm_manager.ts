@@ -179,6 +179,10 @@ export async function main(ns: NS) {
 	raceArr.push(port.nextWrite().then(() => null))
 
 	async function slowStart() {
+		for (let i = 0; i < 20; i++) {
+			addFarm(farms, hackPct, logger)
+		}
+
 		let hadAnyErrors = false
 		// 1 = 131.04TB + 216.96TB
 		// 2 = 38% of pserv-01
