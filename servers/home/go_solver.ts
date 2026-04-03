@@ -1,4 +1,8 @@
 /** auto_go_column.ts **/
+const MY = 1 // X
+const OPP = 2 // O
+const EMPTY = 0
+const DEAD = -1
 
 function hasLiberty(board: number[][], x: number, y: number, player: number) {
 	const width = board.length
@@ -33,8 +37,8 @@ function boardToNumbers(columns: string[]): number[][] {
 			const c = col[y]
 			if (c === "X") board[x][y] = 1
 			else if (c === "O") board[x][y] = 2
-			else if (c === ".") board[x][y] = 0
-			else board[x][y] = -1
+			else if (c === ".") board[x][y] = EMPTY
+			else board[x][y] = DEAD
 		}
 	}
 	return board
@@ -107,11 +111,6 @@ function findCriticalMove(board: number[][], player: number) {
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
 
-	const MY = 1 // X
-	const OPP = 2 // O
-	const EMPTY = 0
-	const DEAD = -1
-
 	while (true) {
 		const rawBoard = ns.go.getBoardState() // array of column strings
 		const board = boardToNumbers(rawBoard)
@@ -124,7 +123,7 @@ export async function main(ns: NS) {
 
 		// Otherwise pick first valid empty spot
 		if (!move) {
-			const moves = getValidMoves(board)
+			const moves = getValidMoves(board).filter(m => hasLiberty(board, m.x, m.y, MY))
 			if (moves.length === 0) break
 			move = moves[0]
 		}
