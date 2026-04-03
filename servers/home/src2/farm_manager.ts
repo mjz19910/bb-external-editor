@@ -185,7 +185,7 @@ export async function main(ns: NS) {
 
 		let hadAnyErrors = false
 		for (let i = 0; i < 10; i++) {
-			for (let j = 0; j < 50; j++) {
+			for (let j = 0; j < 25; j++) {
 				addFarm(farms, hackPct, logger)
 			}
 			ns.print("added farm id=", farms.length)
