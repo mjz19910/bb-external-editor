@@ -43,6 +43,26 @@ export interface TargetState {
 	isHackable: boolean
 }
 
+export interface TrackedTargetState {
+	hostname: string
+	lifecycle: TargetLifecycleState
+	observedLifecycle: TargetLifecycleState
+	score: number
+	isHackable: boolean
+	isActiveFarm: boolean
+	firstSeenAt: number
+	lastSeenAt: number
+	lastTransitionAt: number
+	transitions: number
+	readyStreak: number
+}
+
+export interface TargetRegistry {
+	byHostname: Record<string, TrackedTargetState>
+	activeFarmTarget: string | null
+	lastUpdatedAt: number
+}
+
 export interface GameState {
 	timestamp: number
 	mode: AutomationMode

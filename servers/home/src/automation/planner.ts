@@ -1,23 +1,24 @@
 import { CONFIG } from "../core/config"
-import { GameState, DesiredWorkload, TargetState, ServerState } from "../core/types"
+import { GameState, TargetRegistry, DesiredWorkload, ServerState, TrackedTargetState } from "../core/types"
 import { estimateWeakenThreads, estimateGrowThreads, estimateHackThreads } from "../services/plannerMath"
 
 export function buildDesiredWorkloads(
 	ns: NS,
-	state: GameState
+	state: GameState,
+	registry: TargetRegistry
 ): DesiredWorkload[] {
-	const candidates = state.targetStates
+	const trackedTargets = Object.values(registry.byHostname)
 		.filter((target) => target.isHackable)
 		.sort((a, b) => b.score - a.score)
 		.slice(0, CONFIG.planner.maxTargetsToEvaluate)
 
 	const workloads: DesiredWorkload[] = []
 
-	for (const target of candidates) {
-		const server = state.servers.find((s) => s.hostname === target.hostname)
+	for (const tracked of trackedTargets) {
+		const server = state.servers.find((s) => s.hostname === tracked.hostname)
 		if (!server) continue
 
-		const workload = buildWorkloadForTargetState(ns, server, target)
+		const workload = buildWorkloadForTrackedTarget(ns, server, tracked, registry)
 		if (workload) {
 			workloads.push(workload)
 		}
@@ -29,10 +30,11 @@ export function buildDesiredWorkloads(
 		.slice(0, CONFIG.planner.maxDesiredWorkloads)
 }
 
-function buildWorkloadForTargetState(
+function buildWorkloadForTrackedTarget(
 	ns: NS,
 	server: ServerState,
-	target: TargetState
+	target: TrackedTargetState,
+	registry: TargetRegistry
 ): DesiredWorkload | null {
 	switch (target.lifecycle) {
 		case "UNAVAILABLE":
@@ -45,7 +47,7 @@ function buildWorkloadForTargetState(
 				target: target.hostname,
 				desiredThreads: estimateWeakenThreads(ns, server),
 				priority: 100 + target.score / 1_000_000,
-				reason: `Target lifecycle=${target.lifecycle}, reduce security first.`,
+				reason: `Tracked lifecycle=${target.lifecycle}, reduce security.`,
 			}
 
 		case "GROWING":
@@ -53,8 +55,9 @@ function buildWorkloadForTargetState(
 				action: "grow",
 				target: target.hostname,
 				desiredThreads: estimateGrowThreads(ns, server),
-				priority: 80 + target.score / 1_000_000,
-				reason: `Target lifecycle=${target.lifecycle}, restore money.`,
+				priority:
+					(target.isActiveFarm ? 95 : 80) + target.score / 1_000_000,
+				reason: `Tracked lifecycle=${target.lifecycle}, restore money.`,
 			}
 
 		case "READY":
@@ -63,8 +66,10 @@ function buildWorkloadForTargetState(
 				action: "hack",
 				target: target.hostname,
 				desiredThreads: estimateHackThreads(ns, server),
-				priority: 50 + target.score / 1_000_000,
-				reason: `Target lifecycle=${target.lifecycle}, profitable farming.`,
+				priority:
+					(registry.activeFarmTarget === target.hostname ? 120 : 50) +
+					target.score / 1_000_000,
+				reason: `Tracked lifecycle=${target.lifecycle}, profitable farming.`,
 			}
 
 		default:
