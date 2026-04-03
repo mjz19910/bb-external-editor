@@ -60,6 +60,13 @@ export async function runAutomationLoop(ns: NS): Promise<void> {
 			)
 		}
 
+		ns.print("--- TARGET STATES ---")
+		for (const target of state.targetStates.slice(0, 10)) {
+			ns.print(
+				`T: ${target.hostname} ${target.lifecycle} score=${target.score.toFixed(0)} money=${target.currentMoney.toFixed(0)}/${target.maxMoney.toFixed(0)} sec=${target.currentSecurity.toFixed(2)}/${target.minSecurity.toFixed(2)}`
+			)
+		}
+
 		await ns.sleep(CONFIG.loopIntervalMs)
 	}
 }
