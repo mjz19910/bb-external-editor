@@ -1,10 +1,15 @@
 const BIND_META = Symbol("bindMeta")
 /** @typedef {{originalFn: Function;thisArg: any;boundArgs: any[]}} BindMeta */
 
+/** @param {object} obj @returns {obj is {__intercepted: boolean}} */
+function hasInterceptor(obj) {
+    return "__intercepted" in obj
+}
+
 export function interceptFunctionBind() {
     const originalBind = Function.prototype.bind
     // Prevent double-patching
-    if (Function.prototype.bind.__intercepted) {
+    if (hasInterceptor(originalBind)) {
         return
     }
     /**
