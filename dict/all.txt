@@ -17,6 +17,7 @@ Bladeburners
 bnlvl
 brutessh
 btime
+cint
 clarkinc
 codepaths
 codingcontract
