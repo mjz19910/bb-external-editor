@@ -41,10 +41,17 @@ type PreactVNode = {
 	type?: PreactVNodeType
 }
 
+type InspectorNodeKind = "host" | "component" | "memo" | "unknown"
+
 type InspectorNode = {
 	id: number
-	typeName: string
+	typeName: string              // raw readable name
+	effectiveTypeName: string     // cleaned name (e.g. "Button" instead of "Memo(Button)")
 	rawType: PreactVNodeType
+	kind: InspectorNodeKind
+	isMemo: boolean
+	memoInnerName: string | null
+
 	depth: number
 	parentId: number | null
 	childIds: number[]
@@ -348,6 +355,99 @@ export class PreactTreeInspector {
 		}
 	}
 
+	private getDisplayName(type: PreactVNodeType, node: PreactVNode): string {
+		if (typeof type === "string") return type
+
+		if (typeof type === "function") {
+			return (type as Function & { displayName?: string }).displayName || type.name || "(anonymous)"
+		}
+
+		if (type && typeof type === "object") {
+			const maybeNamed = type as { displayName?: string; name?: string }
+			return maybeNamed.displayName || maybeNamed.name || "(object-type)"
+		}
+
+		if (node?.__c?.constructor && typeof node.__c.constructor === "function") {
+			const c = node.__c.constructor as Function & { displayName?: string }
+			return c.displayName || c.name || "(instance)"
+		}
+
+		return "(unknown)"
+	}
+
+	private isMemoType(type: PreactVNodeType, node: PreactVNode): boolean {
+		const name = this.getDisplayName(type, node)
+		return typeof name === "string" && name.startsWith("Memo")
+	}
+
+	private extractMemoInnerName(displayName: string): string | null {
+		// Handles:
+		// Memo(Button)
+		// MemoSomething
+		// Memo[Button] (best effort)
+		const parenMatch = /^Memo\((.+)\)$/.exec(displayName)
+		if (parenMatch) return parenMatch[1]
+
+		const bracketMatch = /^Memo\[(.+)\]$/.exec(displayName)
+		if (bracketMatch) return bracketMatch[1]
+
+		if (displayName === "Memo") return null
+		if (displayName.startsWith("Memo")) return displayName.slice(4) || null
+
+		return null
+	}
+
+	private classifyType(type: PreactVNodeType, node: PreactVNode): {
+		kind: InspectorNodeKind
+		typeName: string
+		effectiveTypeName: string
+		isMemo: boolean
+		memoInnerName: string | null
+	} {
+		const typeName = this.getDisplayName(type, node)
+
+		if (typeof type === "string") {
+			return {
+				kind: "host",
+				typeName,
+				effectiveTypeName: typeName,
+				isMemo: false,
+				memoInnerName: null,
+			}
+		}
+
+		const isMemo = this.isMemoType(type, node)
+		const memoInnerName = isMemo ? this.extractMemoInnerName(typeName) : null
+
+		if (isMemo) {
+			return {
+				kind: "memo",
+				typeName,
+				effectiveTypeName: memoInnerName || typeName,
+				isMemo: true,
+				memoInnerName,
+			}
+		}
+
+		if (type) {
+			return {
+				kind: "component",
+				typeName,
+				effectiveTypeName: typeName,
+				isMemo: false,
+				memoInnerName: null,
+			}
+		}
+
+		return {
+			kind: "unknown",
+			typeName,
+			effectiveTypeName: typeName,
+			isMemo: false,
+			memoInnerName: null,
+		}
+	}
+
 	private visit(node: PreactVNode, depth: number, parentId: number | null): number | null {
 		if (!node || typeof node !== "object") return null
 		if (node instanceof Node) return null
@@ -361,15 +461,20 @@ export class PreactTreeInspector {
 		}
 
 		const rawType = this.getRawType(node)
-		const typeName = this.getTypeName(rawType, node)
+		const typeInfo = this.classifyType(rawType, node)
 		const dom = this.getDomNode(node)
 		const component = node.__c ?? null
 		const hooks = component?.__h ?? null
 
 		const entry: InspectorNode = {
 			id,
-			typeName,
+			typeName: typeInfo.typeName,
+			effectiveTypeName: typeInfo.effectiveTypeName,
 			rawType,
+			kind: typeInfo.kind,
+			isMemo: typeInfo.isMemo,
+			memoInnerName: typeInfo.memoInnerName,
+
 			depth,
 			parentId,
 			childIds: [],
@@ -388,7 +493,7 @@ export class PreactTreeInspector {
 		if (!this.reactElementsByDepth[depth]) this.reactElementsByDepth[depth] = []
 		this.reactElementsByDepth[depth].push(id)
 
-		this.indexByType(typeName, rawType, id)
+		this.indexByType(typeInfo.effectiveTypeName, rawType, id)
 
 		if (dom instanceof Node) {
 			this.domToId.set(dom, id)
