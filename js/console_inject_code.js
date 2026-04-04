@@ -28,6 +28,7 @@ cint = setInterval(function () {
 	for (const target_key of buy_order) {
 		const res = inspector.find(node => node.key === target_key)
 		if (res.length > 0) {
+			// spell:ignore _4jenx_90
 			res[0].dom.querySelector("._actionBtn_4jenx_90").click()
 			break
 		}
