@@ -1,4 +1,4 @@
-export type PreactNode = {
+export type PreactVNode = {
 	__: unknown
 	__b: number
 	__c: {
@@ -6,10 +6,10 @@ export type PreactNode = {
 		__d: boolean
 		__e: boolean
 		__h: unknown[]
-		__v: PreactNode
+		__v: PreactVNode
 		__sb: unknown[]
 		base: Node
-		constructor: PreactNode["type"]
+		constructor: PreactVNode["type"]
 		context: Record<string, never>
 		props: PreactProps
 		render: (e: unknown, t: unknown, n: unknown) => unknown
@@ -19,7 +19,7 @@ export type PreactNode = {
 	}
 	__e: Node
 	__i: number
-	__k: PreactNode[]
+	__k: PreactVNode[]
 	__u: number
 	__v: number
 	constructor: undefined
