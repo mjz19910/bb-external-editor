@@ -33,6 +33,7 @@ export async function runFuzzTestWithDiagnostics(ns: NS, rounds = 50) {
 		const rootsToRefresh = [...new Set(["home", ...map.roots])]
 		for (const root of rootsToRefresh) {
 			map.refreshSubtree(ns, root)
+			map.healGraph(ns)
 		}
 
 		// --- Step 4: Diagnose after repair ---
