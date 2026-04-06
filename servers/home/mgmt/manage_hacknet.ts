@@ -40,6 +40,8 @@ export async function main(ns: NS) {
 		ns.tprint(`Allowed kinds: ${allowKinds.join(", ")}`)
 	}
 
+	let cur_delay = 200
+
 	do {
 		let do_short_sleep = false
 
@@ -65,6 +67,7 @@ export async function main(ns: NS) {
 
 			if (!best) {
 				ns.tprint("No acceptable Hacknet upgrade found.")
+				cur_delay *= Math.pow(1.2, 4)
 			} else {
 				const payback = hacknet.getPaybackTimeSeconds(best)
 				const success = hacknet.applyOption(best)
@@ -80,6 +83,8 @@ export async function main(ns: NS) {
 						`payback ${ns.format.time(payback * 1000)})`
 					)
 
+					cur_delay *= 0.8
+
 					// do_short_sleep = true
 				}
 			}
@@ -87,10 +92,14 @@ export async function main(ns: NS) {
 
 		if (!loop) break
 
+		if (cur_delay < 80) cur_delay = 80
+		if (cur_delay > 30_000) cur_delay = 30_000
+		ns.tprint(`Delay: ${ns.format.time(cur_delay, true)}`)
+
 		if (do_short_sleep) {
 			await ns.sleep(500)
 		} else {
-			await ns.sleep(sleepMs)
+			await ns.sleep(cur_delay)
 		}
 	} while (true)
 }
