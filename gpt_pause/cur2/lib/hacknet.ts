@@ -19,6 +19,13 @@ export type HacknetNodeInfo = {
 	stats: NodeStats
 }
 
+type ProjectedNodeStats = {
+	level: number
+	ram: number
+	cores: number
+	cache: number
+}
+
 export class HacknetManager {
 	private readonly ns: NS
 	private nodes: HacknetNodeInfo[] = []
@@ -67,31 +74,88 @@ export class HacknetManager {
 		return this.nodes.reduce((sum, node) => sum + node.stats.cores, 0)
 	}
 
-	private estimateGainFromLevel(i: number, amount = 1): number {
+	/**
+	 * Approximate Hacknet Node production formula.
+	 *
+	 * For Hacknet Nodes, production scales with:
+	 * - level (linear)
+	 * - ram (1.035^(ram-1) style scaling)
+	 * - cores ((cores + 5) / 6)
+	 *
+	 * This is much closer to game behavior than simple proportional guesses.
+	 */
+	private projectedProduction(stats: ProjectedNodeStats): number {
+		const playerMult = this.ns.getPlayer().mults.hacknet_node_money ?? 1
+
+		const levelMult = stats.level
+		const ramMult = Math.pow(1.035, stats.ram - 1)
+		const coreMult = (stats.cores + 5) / 6
+
+		return levelMult * ramMult * coreMult * playerMult
+	}
+
+	private currentProjectedProduction(i: number): number {
 		const s = this.ns.hacknet.getNodeStats(i)
-		const before = s.production
-		const after = before * ((s.level + amount) / Math.max(1, s.level))
+
+		return this.projectedProduction({
+			level: s.level,
+			ram: s.ram,
+			cores: s.cores,
+			cache: s.cache!,
+		})
+	}
+
+	private projectedGain(
+		i: number,
+		changes: Partial<ProjectedNodeStats>,
+	): number {
+		const s = this.ns.hacknet.getNodeStats(i)
+
+		const before = this.projectedProduction({
+			level: s.level,
+			ram: s.ram,
+			cores: s.cores,
+			cache: s.cache!,
+		})
+
+		const after = this.projectedProduction({
+			level: changes.level ?? s.level,
+			ram: changes.ram ?? s.ram,
+			cores: changes.cores ?? s.cores,
+			cache: changes.cache ?? s.cache!,
+		})
+
 		return Math.max(0, after - before)
 	}
 
-	private estimateGainFromRam(i: number, amount = 1): number {
+	private gainFromLevel(i: number, amount = 1): number {
 		const s = this.ns.hacknet.getNodeStats(i)
-		const before = s.production
-		const afterRam = s.ram * Math.pow(2, amount)
-		const ratio = afterRam / Math.max(1, s.ram)
-		const after = before * ratio
-		return Math.max(0, after - before)
+		return this.projectedGain(i, { level: s.level + amount })
 	}
 
-	private estimateGainFromCore(i: number, amount = 1): number {
+	private gainFromRam(i: number, amount = 1): number {
 		const s = this.ns.hacknet.getNodeStats(i)
-		const before = s.production
-		const after = before * ((s.cores + amount + 4) / (s.cores + 4))
-		return Math.max(0, after - before)
+		return this.projectedGain(i, { ram: s.ram * Math.pow(2, amount) })
 	}
 
-	private estimateGainFromCache(_i: number, _amount = 1): number {
+	private gainFromCore(i: number, amount = 1): number {
+		const s = this.ns.hacknet.getNodeStats(i)
+		return this.projectedGain(i, { cores: s.cores + amount })
+	}
+
+	private gainFromCache(_i: number, _amount = 1): number {
+		// Cache does not increase money production for Hacknet Nodes
 		return 0
+	}
+
+	private gainFromNewNode(): number {
+		// Fresh node baseline: level 1, ram 1, cores 1, cache 1
+		return this.projectedProduction({
+			level: 1,
+			ram: 1,
+			cores: 1,
+			cache: 1,
+		})
 	}
 
 	getOptions(): HacknetOption[] {
@@ -100,16 +164,14 @@ export class HacknetManager {
 
 		const newCost = this.ns.hacknet.getPurchaseNodeCost()
 		if (isFinite(newCost) && newCost > 0) {
-			const estimatedGain = count > 0
-				? Math.max(0.001, this.nodes[0]?.stats.production ?? 1)
-				: 1
+			const gain = this.gainFromNewNode()
 
 			options.push({
 				kind: "new",
 				node: -1,
 				cost: newCost,
-				gain: estimatedGain,
-				roi: estimatedGain / newCost,
+				gain,
+				roi: gain / newCost,
 				label: "new node",
 			})
 		}
@@ -119,7 +181,7 @@ export class HacknetManager {
 
 			const levelCost = this.ns.hacknet.getLevelUpgradeCost(i, 1)
 			if (isFinite(levelCost) && levelCost > 0) {
-				const gain = this.estimateGainFromLevel(i, 1)
+				const gain = this.gainFromLevel(i, 1)
 				options.push({
 					kind: "level",
 					node: i,
@@ -132,7 +194,7 @@ export class HacknetManager {
 
 			const ramCost = this.ns.hacknet.getRamUpgradeCost(i, 1)
 			if (isFinite(ramCost) && ramCost > 0) {
-				const gain = this.estimateGainFromRam(i, 1)
+				const gain = this.gainFromRam(i, 1)
 				options.push({
 					kind: "ram",
 					node: i,
@@ -145,7 +207,7 @@ export class HacknetManager {
 
 			const coreCost = this.ns.hacknet.getCoreUpgradeCost(i, 1)
 			if (isFinite(coreCost) && coreCost > 0) {
-				const gain = this.estimateGainFromCore(i, 1)
+				const gain = this.gainFromCore(i, 1)
 				options.push({
 					kind: "core",
 					node: i,
@@ -158,7 +220,7 @@ export class HacknetManager {
 
 			const cacheCost = this.ns.hacknet.getCacheUpgradeCost(i, 1)
 			if (isFinite(cacheCost) && cacheCost > 0) {
-				const gain = this.estimateGainFromCache(i, 1)
+				const gain = this.gainFromCache(i, 1)
 				options.push({
 					kind: "cache",
 					node: i,
@@ -201,5 +263,10 @@ export class HacknetManager {
 			default:
 				return false
 		}
+	}
+
+	getPaybackTimeSeconds(opt: HacknetOption): number {
+		if (opt.gain <= 0) return Infinity
+		return opt.cost / opt.gain
 	}
 }

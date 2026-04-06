@@ -29,6 +29,7 @@ export async function main(ns: NS) {
 			if (!best) {
 				ns.tprint("No affordable Hacknet upgrade found.")
 			} else {
+				const payback = hacknet.getPaybackTimeSeconds(best)
 				const success = hacknet.applyOption(best)
 
 				if (!success) {
@@ -37,7 +38,9 @@ export async function main(ns: NS) {
 					ns.tprint(
 						`[HACKNET] ${best.label} ` +
 						`for ${ns.format.number(best.cost)} ` +
-						`(gain ${best.gain.toFixed(4)}/s, roi ${best.roi.toFixed(8)})`
+						`(gain ${best.gain.toFixed(4)}/s, ` +
+						`roi ${best.roi.toFixed(8)}, ` +
+						`payback ${ns.format.time(payback * 1000)})`
 					)
 				}
 			}
