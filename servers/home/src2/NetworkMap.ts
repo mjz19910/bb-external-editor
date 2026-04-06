@@ -112,7 +112,7 @@ export class NetworkMap {
 	// ----------------------------
 	refreshSubtree(ns: NS, startHost: string) {
 		this.fixupRoots(ns)
-		this.repairOrphans()
+		this.repairOrphans(ns)
 
 		if (!this.nodes[startHost]) {
 			this.roots.push(startHost)
@@ -187,7 +187,7 @@ export class NetworkMap {
 
 		const repairedCycles = this.repairCycles(ns)
 		if (repairedCycles > 0) {
-			console.log(`[refreshSubtree] repaired ${repairedCycles} cycle(s)`)
+			ns.tprint(`[refreshSubtree] repaired ${repairedCycles} cycle(s)`)
 		}
 
 		// Only merge roots if neighbors actually changed
@@ -205,7 +205,7 @@ export class NetworkMap {
 			this.roots.unshift("home")
 			const homeNode = this.nodes["home"] ?? { host: "home", parent: null, depth: 0, neighbors: this.safeScan(ns, "home") }
 			this.nodes["home"] = homeNode
-			console.log("[fixupRoots] Home re-added to roots")
+			ns.tprint("[fixupRoots] Home re-added to roots")
 		}
 	}
 
@@ -383,7 +383,7 @@ export class NetworkMap {
 		return path.map(h => `connect ${h};`).join(" ")
 	}
 
-	repairOrphans() {
+	repairOrphans(ns: NS) {
 		// Step 1: find all reachable nodes
 		const reachable = new Set<string>()
 		const queue = [...this.roots]
@@ -413,14 +413,14 @@ export class NetworkMap {
 					node.parent = attachTo
 					node.depth = (this.nodes[attachTo]?.depth ?? 0) + 1
 					reachable.add(host)
-					console.log(`[repairOrphans] Node ${host} re-attached to neighbor ${attachTo}`)
+					ns.tprint(`[repairOrphans] Node ${host} re-attached to neighbor ${attachTo}`)
 				} else {
 					// No reachable neighbor: make it a new root
 					node.parent = null
 					node.depth = 0
 					if (!this.roots.includes(host)) this.roots.push(host)
 					reachable.add(host)
-					console.log(`[repairOrphans] Node ${host} added as new root (was orphan)`)
+					ns.tprint(`[repairOrphans] Node ${host} added as new root (was orphan)`)
 				}
 			}
 		}
@@ -624,7 +624,7 @@ export class NetworkMap {
 		return best
 	}
 
-	rebuildSubtreeParentsFrom(startHost: string) {
+	rebuildSubtreeParentsFrom(ns: NS, startHost: string) {
 		if (!this.nodes[startHost]) return
 
 		const queue = [startHost]
@@ -647,7 +647,7 @@ export class NetworkMap {
 				if (child.parent == null || !child.neighbors.includes(child.parent)) {
 					child.parent = host
 					child.depth = node.depth + 1
-					console.log(`[rebuildSubtree] ${neighbor} parent -> ${host}`)
+					ns.tprint(`[rebuildSubtree] ${neighbor} parent -> ${host}`)
 				}
 
 				seen.add(neighbor)
@@ -668,17 +668,17 @@ export class NetworkMap {
 		if (anchor) {
 			this.nodes[breakNode].parent = anchor
 			this.nodes[breakNode].depth = (this.nodes[anchor]?.depth ?? 0) + 1
-			console.log(`[repairCycle] Broke cycle at ${breakNode}, reattached under ${anchor}`)
+			ns.tprint(`[repairCycle] Broke cycle at ${breakNode}, reattached under ${anchor}`)
 		} else {
 			// no safe anchor found: make it a root
 			this.nodes[breakNode].parent = null
 			this.nodes[breakNode].depth = 0
 			if (!this.roots.includes(breakNode)) this.roots.push(breakNode)
-			console.log(`[repairCycle] Broke cycle at ${breakNode}, promoted to root`)
+			ns.tprint(`[repairCycle] Broke cycle at ${breakNode}, promoted to root`)
 		}
 
 		// Now rebuild the subtree depths/parents under the repaired node
-		this.rebuildSubtreeParentsFrom(breakNode)
+		this.rebuildSubtreeParentsFrom(ns, breakNode)
 
 		return true
 	}
@@ -689,7 +689,7 @@ export class NetworkMap {
 
 		let repaired = 0
 		for (const cycle of cycles) {
-			console.log(`[repairCycles] Found cycle: ${cycle.join(" -> ")} -> ${cycle[0]}`)
+			ns.tprint(`[repairCycles] Found cycle: ${cycle.join(" -> ")} -> ${cycle[0]}`)
 			if (this.repairCycle(ns, cycle)) repaired++
 		}
 
