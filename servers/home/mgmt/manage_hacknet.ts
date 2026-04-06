@@ -34,6 +34,12 @@ export async function main(ns: NS) {
 	const minRoi = Number(args[4] ?? 0)
 	const allowKinds = parseKinds(String(args[5] ?? ""))
 
+	ns.tprint("Starting Hacknet Manager")
+	ns.tprint(`Max Payback: ${ns.format.time(maxPaybackSeconds * 1000)}`)
+	if (allowKinds?.length) {
+		ns.tprint(`Allowed kinds: ${allowKinds.join(", ")}`)
+	}
+
 	do {
 		let do_short_sleep = false
 
@@ -43,16 +49,10 @@ export async function main(ns: NS) {
 		const available = Math.max(0, money - reserve)
 		const budget = available * spendFraction
 
-		ns.tprint(`Money: ${ns.format.number(money)}`)
-		ns.tprint(`Reserve: ${ns.format.number(reserve)}`)
-		ns.tprint(`Budget: ${ns.format.number(budget)}`)
-		ns.tprint(`Hacknet Nodes: ${hacknet.count()}`)
-		ns.tprint(`Hacknet Production: ${hacknet.totalProduction().toFixed(3)}/s`)
-		ns.tprint(`Max Payback: ${ns.format.time(maxPaybackSeconds * 1000)}`)
-		ns.tprint(`Min ROI: ${minRoi}`)
-		if (allowKinds?.length) {
-			ns.tprint(`Allowed kinds: ${allowKinds.join(", ")}`)
-		}
+		if (reserve > 0) ns.tprint(`Reserve: ${ns.format.number(reserve)}`)
+		if (minRoi > 0) ns.tprint(`Min ROI: ${minRoi}`)
+		ns.tprint(`Budget: ${ns.format.number(budget)} / ${ns.format.number(money)}`)
+		ns.tprint(`Hacknet: ${hacknet.count()} nodes producing ${ns.format.number(hacknet.totalProduction())}`)
 
 		if (budget <= 0) {
 			ns.tprint("No Hacknet budget available.")
@@ -80,7 +80,7 @@ export async function main(ns: NS) {
 						`payback ${ns.format.time(payback * 1000)})`
 					)
 
-					do_short_sleep = true
+					// do_short_sleep = true
 				}
 			}
 		}
