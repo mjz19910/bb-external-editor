@@ -194,11 +194,13 @@ export class NetworkMap {
 			for (const neighbor of node.neighbors) {
 				const neighborNode = this.nodes[neighbor]
 				if (!neighborNode) continue
-				if (neighbor !== root) {
+
+				// Only attach if the neighbor is NOT in root's subtree
+				if (!this.isDescendant(neighbor, root)) {
 					node.parent = neighbor
 					node.depth = neighborNode.depth + 1
 					attached = true
-					ns.tprint(`[mergeRoots] ${root} attached under ${neighbor}, removed from roots`)
+					console.log(`[mergeRoots] ${root} attached under ${neighbor}, removed from roots`)
 					break
 				}
 			}
@@ -212,6 +214,18 @@ export class NetworkMap {
 		}
 
 		this.roots = newRoots
+	}
+
+	// ----------------------------
+	// helper: checks if node is a descendant of a potential ancestor
+	// ----------------------------
+	isDescendant(nodeName: string, ancestor: string): boolean {
+		let cur: string | null = nodeName
+		while (cur) {
+			if (cur === ancestor) return true
+			cur = this.nodes[cur]?.parent ?? null
+		}
+		return false
 	}
 
 	// ----------------------------
