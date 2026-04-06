@@ -19,11 +19,17 @@ export type HacknetNodeInfo = {
 	stats: NodeStats
 }
 
+export type HacknetDecisionRules = {
+	minRoi?: number
+	maxPaybackSeconds?: number
+	allowKinds?: HacknetUpgradeKind[]
+}
+
 type ProjectedNodeStats = {
 	level: number
 	ram: number
 	cores: number
-	cache: number
+	cache?: number
 }
 
 export class HacknetManager {
@@ -74,16 +80,6 @@ export class HacknetManager {
 		return this.nodes.reduce((sum, node) => sum + node.stats.cores, 0)
 	}
 
-	/**
-	 * Approximate Hacknet Node production formula.
-	 *
-	 * For Hacknet Nodes, production scales with:
-	 * - level (linear)
-	 * - ram (1.035^(ram-1) style scaling)
-	 * - cores ((cores + 5) / 6)
-	 *
-	 * This is much closer to game behavior than simple proportional guesses.
-	 */
 	private projectedProduction(stats: ProjectedNodeStats): number {
 		const playerMult = this.ns.getPlayer().mults.hacknet_node_money ?? 1
 
@@ -92,17 +88,6 @@ export class HacknetManager {
 		const coreMult = (stats.cores + 5) / 6
 
 		return levelMult * ramMult * coreMult * playerMult
-	}
-
-	private currentProjectedProduction(i: number): number {
-		const s = this.ns.hacknet.getNodeStats(i)
-
-		return this.projectedProduction({
-			level: s.level,
-			ram: s.ram,
-			cores: s.cores,
-			cache: s.cache!,
-		})
 	}
 
 	private projectedGain(
@@ -115,14 +100,14 @@ export class HacknetManager {
 			level: s.level,
 			ram: s.ram,
 			cores: s.cores,
-			cache: s.cache!,
+			cache: s.cache,
 		})
 
 		const after = this.projectedProduction({
 			level: changes.level ?? s.level,
 			ram: changes.ram ?? s.ram,
 			cores: changes.cores ?? s.cores,
-			cache: changes.cache ?? s.cache!,
+			cache: changes.cache ?? s.cache,
 		})
 
 		return Math.max(0, after - before)
@@ -144,12 +129,10 @@ export class HacknetManager {
 	}
 
 	private gainFromCache(_i: number, _amount = 1): number {
-		// Cache does not increase money production for Hacknet Nodes
 		return 0
 	}
 
 	private gainFromNewNode(): number {
-		// Fresh node baseline: level 1, ram 1, cores 1, cache 1
 		return this.projectedProduction({
 			level: 1,
 			ram: 1,
@@ -160,9 +143,8 @@ export class HacknetManager {
 
 	getOptions(): HacknetOption[] {
 		const options: HacknetOption[] = []
-		const count = this.count()
-
 		const newCost = this.ns.hacknet.getPurchaseNodeCost()
+
 		if (isFinite(newCost) && newCost > 0) {
 			const gain = this.gainFromNewNode()
 
@@ -235,17 +217,48 @@ export class HacknetManager {
 		return options.filter((o) => isFinite(o.cost) && o.cost > 0)
 	}
 
-	getAffordableOptions(budget: number): HacknetOption[] {
-		return this.getOptions()
+	getPaybackTimeSeconds(opt: HacknetOption): number {
+		if (opt.gain <= 0) return Infinity
+		return opt.cost / opt.gain
+	}
+
+	filterOptions(
+		options: HacknetOption[],
+		rules: HacknetDecisionRules = {},
+	): HacknetOption[] {
+		const {
+			minRoi = 0,
+			maxPaybackSeconds = Infinity,
+			allowKinds,
+		} = rules
+
+		const allowed = allowKinds ? new Set(allowKinds) : null
+
+		return options.filter((opt) => {
+			if (opt.gain <= 0) return false
+			if (opt.roi < minRoi) return false
+			if (this.getPaybackTimeSeconds(opt) > maxPaybackSeconds) return false
+			if (allowed && !allowed.has(opt.kind)) return false
+			return true
+		})
+	}
+
+	getAffordableOptions(
+		budget: number,
+		rules: HacknetDecisionRules = {},
+	): HacknetOption[] {
+		const options = this.getOptions()
 			.filter((o) => o.cost <= budget)
+
+		return this.filterOptions(options, rules)
 			.sort((a, b) => b.roi - a.roi || a.cost - b.cost)
 	}
 
-	chooseBestOption(budget = Infinity): HacknetOption | null {
-		const options = this.getAffordableOptions(budget)
-			.filter((o) => o.gain > 0)
-
-		return options[0] ?? null
+	chooseBestOption(
+		budget = Infinity,
+		rules: HacknetDecisionRules = {},
+	): HacknetOption | null {
+		return this.getAffordableOptions(budget, rules)[0] ?? null
 	}
 
 	applyOption(opt: HacknetOption): boolean {
@@ -263,10 +276,5 @@ export class HacknetManager {
 			default:
 				return false
 		}
-	}
-
-	getPaybackTimeSeconds(opt: HacknetOption): number {
-		if (opt.gain <= 0) return Infinity
-		return opt.cost / opt.gain
 	}
 }
