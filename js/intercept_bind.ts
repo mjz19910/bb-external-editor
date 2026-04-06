@@ -41,7 +41,7 @@ export function interceptFunctionBind() {
 		enumerable: false
 	})
 
-	Function.prototype.bind = interceptedBind as typeof Function.prototype.bind
+	Function.prototype.bind = interceptedBind
 }
 
 export function getBindMeta(fn: Function): BindMeta | undefined {
