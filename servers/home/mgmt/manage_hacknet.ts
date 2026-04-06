@@ -21,17 +21,22 @@ function parseKinds(raw: string): HacknetUpgradeKind[] | undefined {
 
 export async function main(ns: NS) {
 	const hacknet = new HacknetManager(ns)
+	const f = ns.flags([["loop", false]]) as { loop?: boolean, _: ScriptArg[] }
+	const args = f._
 
-	const reserve = Number(ns.args[0] ?? 0)
-	const spendFraction = Number(ns.args[1] ?? 0.08)
-	const loop = Boolean(ns.args[2] ?? false)
-	const sleepMs = Number(ns.args[3] ?? 30_000)
+	const loop = Boolean(f.loop ?? false)
 
-	const maxPaybackSeconds = Number(ns.args[4] ?? 3600) // default 1 hour
-	const minRoi = Number(ns.args[5] ?? 0)
-	const allowKinds = parseKinds(String(ns.args[6] ?? ""))
+	const reserve = Number(args[0] ?? 0)
+	const spendFraction = Number(args[1] ?? 0.08)
+	const sleepMs = Number(args[2] ?? 30_000)
+
+	const maxPaybackSeconds = Number(args[3] ?? 3600) // default 1 hour
+	const minRoi = Number(args[4] ?? 0)
+	const allowKinds = parseKinds(String(args[5] ?? ""))
 
 	do {
+		let do_short_sleep = false
+
 		hacknet.refresh()
 
 		const money = ns.getServerMoneyAvailable("home")
@@ -74,11 +79,18 @@ export async function main(ns: NS) {
 						`roi ${best.roi.toFixed(8)}, ` +
 						`payback ${ns.format.time(payback * 1000)})`
 					)
+
+					do_short_sleep = true
 				}
 			}
 		}
 
 		if (!loop) break
-		await ns.sleep(sleepMs)
+
+		if (do_short_sleep) {
+			await ns.sleep(500)
+		} else {
+			await ns.sleep(sleepMs)
+		}
 	} while (true)
 }

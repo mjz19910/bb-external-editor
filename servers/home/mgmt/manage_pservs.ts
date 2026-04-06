@@ -2,14 +2,19 @@ import { PurchasedServers } from "../lib/pservs"
 
 export async function main(ns: NS) {
 	const ps = new PurchasedServers(ns)
+	const f = ns.flags([["loop", false]]) as { loop?: boolean, _: ScriptArg[] }
+	const args = f._
 
-	const reserve = Number(ns.args[0] ?? 0)
-	const minRam = Number(ns.args[1] ?? 8)
-	const spendFraction = Number(ns.args[2] ?? 0.15)
-	const loop = Boolean(ns.args[3] ?? false)
-	const sleepMs = Number(ns.args[4] ?? 30_000)
+	const loop = Boolean(f.loop ?? false)
+
+	const reserve = Number(args[0] ?? 0)
+	const minRam = Number(args[1] ?? 8)
+	const spendFraction = Number(args[2] ?? 0.15)
+	const sleepMs = Number(args[3] ?? 30_000)
 
 	do {
+		let do_short_sleep = false
+
 		ps.refresh()
 
 		const money = ns.getServerMoneyAvailable("home")
@@ -45,6 +50,8 @@ export async function main(ns: NS) {
 						`(gain ${ns.format.ram(action.ramGain)}, ` +
 						`value ${action.value.toFixed(6)})`
 					)
+
+					do_short_sleep = true
 				}
 			} else {
 				const success = ns.cloud.upgradeServer(action.host, action.toRam)
@@ -62,12 +69,18 @@ export async function main(ns: NS) {
 						`(gain ${ns.format.ram(action.ramGain)}, ` +
 						`value ${action.value.toFixed(6)})`
 					)
+
+					do_short_sleep = true
 				}
 			}
 		}
 
 		if (!loop) break
 
-		await ns.sleep(sleepMs)
+		if (do_short_sleep) {
+			await ns.sleep(500)
+		} else {
+			await ns.sleep(sleepMs)
+		}
 	} while (true)
 }
