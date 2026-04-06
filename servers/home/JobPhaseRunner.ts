@@ -2,9 +2,9 @@ import { NetworkMap } from "./NetworkMap"
 import { StateManager } from "./StateManager"
 import { JobPhase } from "./types"
 
-const HACK_SCRIPT = "lib/task_hack.ts"
-const GROW_SCRIPT = "lib/task_grow.ts"
-const WEAK_SCRIPT = "lib/task_weak.ts"
+const HACK_SCRIPT = "scripts/hack.ts"
+const GROW_SCRIPT = "scripts/grow.ts"
+const WEAK_SCRIPT = "scripts/weaken.ts"
 const WORKER_SCRIPTS = [GROW_SCRIPT, WEAK_SCRIPT, HACK_SCRIPT]
 
 export class JobPhaseRunner {
