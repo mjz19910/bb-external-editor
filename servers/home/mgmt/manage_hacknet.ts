@@ -41,9 +41,8 @@ export async function main(ns: NS) {
 	let cur_delay = 200
 
 	do {
-		let do_short_sleep = false
-
 		hacknet.refresh()
+		const hacknet_size = hacknet.count()
 
 		const money = ns.getServerMoneyAvailable("home")
 		const available = Math.max(0, money - reserve)
@@ -59,13 +58,13 @@ export async function main(ns: NS) {
 		} else {
 			const best = hacknet.chooseBestOption(budget, {
 				minRoi,
-				maxPaybackSeconds,
+				maxPaybackSeconds: maxPaybackSeconds * (hacknet_size + 1) * 0.5,
 				allowKinds,
 			})
 
 			if (!best) {
 				ns.tprint("No acceptable Hacknet upgrade found.")
-				cur_delay *= Math.pow(1.2, 4)
+				cur_delay *= 2
 			} else {
 				const payback = hacknet.getPaybackTimeSeconds(best)
 				const success = hacknet.applyOption(best)
@@ -81,7 +80,7 @@ export async function main(ns: NS) {
 						`payback ${ns.format.time(payback * 1000)})`
 					)
 
-					cur_delay *= 0.8
+					cur_delay *= 0.85
 
 					// do_short_sleep = true
 				}
@@ -90,14 +89,14 @@ export async function main(ns: NS) {
 
 		if (!loop) break
 
+		if (cur_delay > 5 * 60_000) {
+			ns.tprint("Next estimated Hacknet upgrade time greater than 5 minutes, probably finished")
+			break
+		}
+
 		if (cur_delay < 80) cur_delay = 80
-		if (cur_delay > 30_000) cur_delay = 30_000
 		ns.tprint(`Delay: ${ns.format.time(cur_delay, true)}`)
 
-		if (do_short_sleep) {
-			await ns.sleep(500)
-		} else {
-			await ns.sleep(cur_delay)
-		}
+		await ns.sleep(cur_delay)
 	} while (true)
 }
