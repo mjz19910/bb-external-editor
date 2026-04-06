@@ -121,6 +121,7 @@ export class NetworkMap {
 			}
 			this.ramSizes[startHost] = ns.getServerMaxRam(startHost)
 			if (!this.allHosts.includes(startHost)) this.allHosts.push(startHost)
+			ns.tprint(`[refreshSubtree] ${startHost} added as new root`)
 		}
 
 		const queue = [startHost]
@@ -137,6 +138,7 @@ export class NetworkMap {
 				node.parent = null
 				node.depth = 0
 				if (!this.roots.includes(host)) this.roots.push(host)
+				ns.tprint(`[refreshSubtree] ${host} lost parent, added to roots`)
 			}
 
 			node.neighbors = neighbors
@@ -156,12 +158,14 @@ export class NetworkMap {
 					this.ramSizes[n] = ns.getServerMaxRam(n)
 					if (!this.allHosts.includes(n)) this.allHosts.push(n)
 					if (!parentValid) this.roots.push(n)
+					ns.tprint(`[refreshSubtree] ${n} discovered as new node, ${parentValid ? `parent=${host}` : 'added to roots'}`)
 				} else {
 					const existingParent = this.nodes[n].parent
 					if (existingParent && !this.nodes[n].neighbors.includes(existingParent)) {
 						this.nodes[n].parent = null
 						this.nodes[n].depth = 0
 						if (!this.roots.includes(n)) this.roots.push(n)
+						ns.tprint(`[refreshSubtree] ${n} lost parent, added to roots`)
 					}
 				}
 
@@ -194,6 +198,7 @@ export class NetworkMap {
 					node.parent = neighbor
 					node.depth = neighborNode.depth + 1
 					attached = true
+					ns.tprint(`[mergeRoots] ${root} attached under ${neighbor}, removed from roots`)
 					break
 				}
 			}
@@ -202,6 +207,7 @@ export class NetworkMap {
 				node.parent = null
 				node.depth = 0
 				newRoots.push(root)
+				ns.tprint(`[mergeRoots] ${root} remains a root`)
 			}
 		}
 
