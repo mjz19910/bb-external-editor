@@ -1,6 +1,7 @@
 import { NetworkMap } from "./NetworkMap"
 
 export function main(ns: NS) {
-	const map = NetworkMap.build(ns)
-	map.refresh(ns)
+	NetworkMap.build(ns) // const map = 
+	// map.refresh(ns)
+	// map.save(ns)
 }

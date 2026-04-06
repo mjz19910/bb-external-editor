@@ -126,11 +126,17 @@ export class NetworkMap {
 
 		const queue = [startHost]
 		const seen = new Set([startHost])
+		let neighborsChanged = false // track if any neighbor list changed
 
 		while (queue.length > 0) {
 			const host = queue.shift()!
 			const node = this.nodes[host]
 			const neighbors = this.safeScan(ns, host)
+
+			// check if neighbors actually changed
+			if (!arraysEqual(node.neighbors, neighbors)) {
+				neighborsChanged = true
+			}
 
 			let parentValid = true
 			if (node.parent && !neighbors.includes(node.parent)) {
@@ -173,7 +179,13 @@ export class NetworkMap {
 			}
 		}
 
-		this.mergeRoots(ns)
+		// Only merge roots if neighbors actually changed
+		if (neighborsChanged) {
+			ns.tprint(`[refreshSubtree] neighbors changed, merging roots`)
+			this.mergeRoots(ns)
+		} else {
+			ns.tprint(`[refreshSubtree] neighbors unchanged, skipping mergeRoots`)
+		}
 	}
 
 	touchHost(ns: NS, host: string) {
@@ -200,7 +212,7 @@ export class NetworkMap {
 					node.parent = neighbor
 					node.depth = neighborNode.depth + 1
 					attached = true
-					console.log(`[mergeRoots] ${root} attached under ${neighbor}, removed from roots`)
+					ns.tprint(`[mergeRoots] ${root} attached under ${neighbor}, removed from roots`)
 					break
 				}
 			}
@@ -346,4 +358,16 @@ export class NetworkMap {
 		if (!path) return null
 		return path.map(h => `connect ${h};`).join(" ")
 	}
+}
+
+// ----------------------------
+// helper: compare two arrays (order doesn't matter)
+// ----------------------------
+function arraysEqual(a: string[], b: string[]): boolean {
+	if (a.length !== b.length) return false
+	const setA = new Set(a)
+	const setB = new Set(b)
+	if (setA.size !== setB.size) return false
+	for (const v of setA) if (!setB.has(v)) return false
+	return true
 }
