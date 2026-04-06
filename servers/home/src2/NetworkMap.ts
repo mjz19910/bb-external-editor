@@ -5,7 +5,7 @@ const DB_PATH = "data/network_map.json"
 let network_map: NetworkMap | null = null
 
 export class NetworkMap {
-	roots: string[] = ["home"] // track disconnected subgraph roots
+	roots: string[] = ["home"]
 
 	constructor(
 		public allHosts: string[] = [],
@@ -120,12 +120,10 @@ export class NetworkMap {
 			}
 			this.ramSizes[startHost] = ns.getServerMaxRam(startHost)
 			if (!this.allHosts.includes(startHost)) this.allHosts.push(startHost)
-			ns.tprint(`[refreshSubtree] ${startHost} added as new root`)
 		}
 
 		const queue = [startHost]
 		const seen = new Set([startHost])
-		let neighborsChanged = false // track if any neighbor list changed
 
 		while (queue.length > 0) {
 			const host = queue.shift()!
@@ -135,18 +133,12 @@ export class NetworkMap {
 			const node = this.nodes[host]
 			const neighbors = this.safeScan(ns, host)
 
-			// check if neighbors actually changed
-			if (!arraysEqual(node.neighbors, neighbors)) {
-				neighborsChanged = true
-			}
-
 			let parentValid = true
 			if (node.parent && !neighbors.includes(node.parent)) {
 				parentValid = false
 				node.parent = null
 				node.depth = 0
 				if (!this.roots.includes(host)) this.roots.push(host)
-				ns.tprint(`[refreshSubtree] ${host} lost parent, added to roots`)
 			}
 
 			node.neighbors = neighbors
@@ -166,29 +158,17 @@ export class NetworkMap {
 					this.ramSizes[n] = ns.getServerMaxRam(n)
 					if (!this.allHosts.includes(n)) this.allHosts.push(n)
 					if (!parentValid) this.roots.push(n)
-					ns.tprint(`[refreshSubtree] ${n} discovered as new node, ${parentValid ? `parent=${host}` : 'added to roots'}`)
 				} else {
 					const existingParent = this.nodes[n].parent
 					if (existingParent && !this.nodes[n].neighbors.includes(existingParent)) {
 						this.nodes[n].parent = null
 						this.nodes[n].depth = 0
 						if (!this.roots.includes(n)) this.roots.push(n)
-						ns.tprint(`[refreshSubtree] ${n} lost parent, added to roots`)
 					}
 				}
 
 				queue.push(n)
 			}
-		}
-
-		const repairedCycles = this.repairCycles(ns)
-		if (repairedCycles > 0) {
-			ns.tprint(`[refreshSubtree] repaired ${repairedCycles} cycle(s)`)
-		}
-
-		// Only merge roots if neighbors actually changed
-		if (neighborsChanged) {
-			this.mergeRoots(ns)
 		}
 	}
 
@@ -199,7 +179,7 @@ export class NetworkMap {
 	// ----------------------------
 	// root merging
 	// ----------------------------
-	mergeRoots(ns: NS) {
+	mergeRoots() {
 		const newRoots: string[] = []
 
 		for (const root of this.roots) {
@@ -212,11 +192,10 @@ export class NetworkMap {
 				if (!neighborNode) continue
 
 				// Only attach if the neighbor is NOT in root's subtree
-				if (!this.isDescendant(neighbor, root)) {
+				if (!this.isDescendant(neighbor, root) && root !== "home") {
 					node.parent = neighbor
 					node.depth = neighborNode.depth + 1
 					attached = true
-					ns.tprint(`[mergeRoots] ${root} attached under ${neighbor}, removed from roots`)
 					break
 				}
 			}
@@ -225,7 +204,6 @@ export class NetworkMap {
 				node.parent = null
 				node.depth = 0
 				newRoots.push(root)
-				ns.tprint(`[mergeRoots] ${root} remains a root`)
 			}
 		}
 
@@ -439,39 +417,22 @@ export class NetworkMap {
 		return issues
 	}
 
-	/**
-	 * Log graph diagnostics to NS
-	 */
-	logDiagnostics(ns: NS, label = "Graph") {
-		const issues = this.diagnoseGraph()
-		if (issues.length === 0) {
-			ns.tprint(`[${label}] No issues detected`)
-		} else {
-			ns.tprint(`[${label}] Detected ${issues.length} issues:`)
-			for (const i of issues) ns.tprint(`  ${i}`)
-		}
-	}
-
-	private fixupHomeInvariant(ns: NS) {
+	private fixupHomeInvariant() {
 		const homeNode = this.nodes["home"] ?? {
 			host: "home",
 			parent: null,
 			depth: 0,
-			neighbors: this.safeScan(ns, "home"),
+			neighbors: [],
 		}
 
 		homeNode.parent = null
 		homeNode.depth = 0
 		this.nodes["home"] = homeNode
 
-		if (!this.allHosts.includes("home")) this.allHosts.unshift("home")
 		if (!this.roots.includes("home")) this.roots.unshift("home")
-		this.ramSizes["home"] = ns.getServerMaxRam("home")
 	}
 
-	private fixupRoots(ns: NS) {
-		this.fixupHomeInvariant(ns)
-
+	private fixupRoots() {
 		const dedup = new Set<string>()
 		const validRoots: string[] = []
 
@@ -487,10 +448,8 @@ export class NetworkMap {
 		this.roots = validRoots
 	}
 
-	private repairBrokenParent(ns: NS, host: string) {
+	private repairBrokenParent(host: string) {
 		const node = this.nodes[host]
-		if (!node) return false
-		if (host === "home") return false
 
 		let bestParent: string | null = null
 		let bestDepth = Number.MAX_SAFE_INTEGER
@@ -512,7 +471,6 @@ export class NetworkMap {
 		if (bestParent) {
 			node.parent = bestParent
 			node.depth = (this.nodes[bestParent]?.depth ?? 0) + 1
-			ns.tprint(`[repairBrokenParent] ${host} reattached under ${bestParent}`)
 			this.recomputeDepthsFrom(host)
 			return true
 		}
@@ -520,11 +478,10 @@ export class NetworkMap {
 		node.parent = null
 		node.depth = 0
 		if (!this.roots.includes(host)) this.roots.push(host)
-		ns.tprint(`[repairBrokenParent] ${host} had no valid neighbor, promoted to root`)
 		return true
 	}
 
-	private repairBrokenLinks(ns: NS) {
+	private repairBrokenLinks() {
 		let repaired = 0
 
 		for (const host of this.allHosts) {
@@ -533,20 +490,17 @@ export class NetworkMap {
 			if (host === "home") continue
 
 			if (node.parent && !this.nodes[node.parent]) {
-				ns.tprint(`[repairBrokenLinks] ${host} parent ${node.parent} missing`)
-				if (this.repairBrokenParent(ns, host)) repaired++
+				this.repairBrokenParent(host)
 				continue
 			}
 
 			if (node.parent && !node.neighbors.includes(node.parent)) {
-				ns.tprint(`[repairBrokenLinks] ${host} parent ${node.parent} not in neighbors`)
-				if (this.repairBrokenParent(ns, host)) repaired++
+				this.repairBrokenParent(host)
 				continue
 			}
 
 			if (!node.parent && !this.roots.includes(host)) {
-				ns.tprint(`[repairBrokenLinks] ${host} has no parent and is not root`)
-				if (this.repairBrokenParent(ns, host)) repaired++
+				this.repairBrokenParent(host)
 			}
 		}
 
@@ -602,7 +556,7 @@ export class NetworkMap {
 		return reachable
 	}
 
-	private repairOrphans(ns: NS) {
+	private repairOrphans() {
 		const reachable = this.getReachableFromRoots()
 
 		for (const host of this.allHosts) {
@@ -620,14 +574,12 @@ export class NetworkMap {
 				node.parent = attachTo
 				node.depth = (this.nodes[attachTo]?.depth ?? 0) + 1
 				reachable.add(host)
-				ns.tprint(`[repairOrphans] Node ${host} re-attached to ${attachTo}`)
 				this.recomputeDepthsFrom(host)
 			} else {
 				node.parent = null
 				node.depth = 0
 				if (!this.roots.includes(host)) this.roots.push(host)
 				reachable.add(host)
-				ns.tprint(`[repairOrphans] Node ${host} added as new root`)
 			}
 		}
 	}
@@ -720,7 +672,7 @@ export class NetworkMap {
 		return null
 	}
 
-	private rebuildSubtreeParentsFrom(ns: NS, startHost: string) {
+	private rebuildSubtreeParentsFrom(startHost: string) {
 		if (!this.nodes[startHost]) return
 
 		const queue = [startHost]
@@ -740,7 +692,6 @@ export class NetworkMap {
 				if (child.parent == null || !child.neighbors.includes(child.parent)) {
 					child.parent = host
 					child.depth = node.depth + 1
-					ns.tprint(`[rebuildSubtree] ${neighbor} parent -> ${host}`)
 				}
 
 				seen.add(neighbor)
@@ -749,7 +700,7 @@ export class NetworkMap {
 		}
 	}
 
-	private repairCycle(ns: NS, cycleNodes: string[]) {
+	private repairCycle(cycleNodes: string[]) {
 		if (cycleNodes.length === 0) return false
 
 		const cycle = new Set(cycleNodes)
@@ -759,8 +710,7 @@ export class NetworkMap {
 			this.nodes["home"].parent = null
 			this.nodes["home"].depth = 0
 			if (!this.roots.includes("home")) this.roots.unshift("home")
-			ns.tprint(`[repairCycle] Broke cycle at home, forced home to remain root`)
-			this.rebuildSubtreeParentsFrom(ns, "home")
+			this.rebuildSubtreeParentsFrom("home")
 			return true
 		}
 
@@ -770,62 +720,28 @@ export class NetworkMap {
 		if (anchor && !this.isDescendant(anchor, breakNode)) {
 			this.nodes[breakNode].parent = anchor
 			this.nodes[breakNode].depth = (this.nodes[anchor]?.depth ?? 0) + 1
-			ns.tprint(`[repairCycle] Broke cycle at ${breakNode}, reattached under ${anchor}`)
 		} else {
 			this.nodes[breakNode].parent = null
 			this.nodes[breakNode].depth = 0
 			if (!this.roots.includes(breakNode)) this.roots.push(breakNode)
-			ns.tprint(`[repairCycle] Broke cycle at ${breakNode}, promoted to root`)
 		}
 
-		this.rebuildSubtreeParentsFrom(ns, breakNode)
+		this.rebuildSubtreeParentsFrom(breakNode)
 		return true
 	}
 
-	private repairCycles(ns: NS) {
-		const cycles = this.getCycles()
-		if (cycles.length === 0) return 0
-
-		let repaired = 0
-		for (const cycle of cycles) {
-			ns.tprint(`[repairCycles] Found cycle: ${cycle.join(" -> ")} -> ${cycle[0]}`)
-			if (this.repairCycle(ns, cycle)) repaired++
+	private repairCycles() {
+		for (const cycle of this.getCycles()) {
+			this.repairCycle(cycle)
 		}
-
-		return repaired
 	}
 
 	healGraph(ns: NS) {
-		this.fixupRoots(ns)
-		this.fixupHomeInvariant(ns)
-
-		const broken = this.repairBrokenLinks(ns)
-		if (broken > 0) {
-			ns.tprint(`[healGraph] repaired ${broken} broken parent link(s)`)
-		}
-
-		const cycles = this.repairCycles(ns)
-		if (cycles > 0) {
-			ns.tprint(`[healGraph] repaired ${cycles} cycle(s)`)
-		}
-
-		this.repairOrphans(ns)
-
-		this.mergeRoots(ns)
-
-		this.fixupRoots(ns)
-		this.fixupHomeInvariant(ns)
+		this.fixupRoots()
+		this.fixupHomeInvariant()
+		this.repairBrokenLinks()
+		this.repairCycles()
+		this.repairOrphans()
+		this.mergeRoots()
 	}
-}
-
-// ----------------------------
-// helper: compare two arrays (order doesn't matter)
-// ----------------------------
-function arraysEqual(a: string[], b: string[]): boolean {
-	if (a.length !== b.length) return false
-	const setA = new Set(a)
-	const setB = new Set(b)
-	if (setA.size !== setB.size) return false
-	for (const v of setA) if (!setB.has(v)) return false
-	return true
 }

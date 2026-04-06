@@ -11,23 +11,20 @@ export async function runFuzzTestWithDiagnostics(ns: NS, rounds = 50) {
 	ns.tprint(`Initial roots: ${originalMap.roots.join(", ")}`)
 
 	for (let i = 1; i <= rounds; i++) {
+		ns.tprint(`[Round ${i}]`)
+
 		// Clone map for independent corruption
 		const mapData = JSON.parse(JSON.stringify(originalMap))
 		const map = Object.assign(new NetworkMap(), mapData) as NetworkMap
-
 		// --- Step 1: Corrupt the map ---
 		advancedCorruptNetworkMap(ns, map, {
-			removeParentChance: 0.3 / map.allHosts.length * 4,
-			addFakeNeighborChance: 0.2 / map.allHosts.length * 4,
-			swapParentChance: 0.2 / map.allHosts.length * 4,
-			removeFromRootsChance: 0.3 / map.allHosts.length * 4,
-			removeNodeChance: 0.05 / map.allHosts.length * 4,
-			edgeSwapChance: 0.05 / map.allHosts.length * 4,
+			removeParentChance: 0.3,
+			addFakeNeighborChance: 0.2,
+			swapParentChance: 0.2,
+			removeFromRootsChance: 0.3,
+			removeNodeChance: 0.05,
+			edgeSwapChance: 0.05,
 		})
-
-		// --- Step 2: Diagnose corruption before repair ---
-		ns.tprint(`\n[Round ${i}] Diagnosing corrupted graph...`)
-		map.logDiagnostics(ns, "BeforeRepair")
 
 		// --- Step 3: Repair map ---
 		const rootsToRefresh = [...new Set(["home", ...map.roots])]
@@ -35,10 +32,6 @@ export async function runFuzzTestWithDiagnostics(ns: NS, rounds = 50) {
 			map.refreshSubtree(ns, root)
 			map.healGraph(ns)
 		}
-
-		// --- Step 4: Diagnose after repair ---
-		ns.tprint(`[Round ${i}] Diagnosing repaired graph...`)
-		map.logDiagnostics(ns, "AfterRepair")
 
 		// --- Step 5: Validation ---
 		const issues = map.diagnoseGraph()
