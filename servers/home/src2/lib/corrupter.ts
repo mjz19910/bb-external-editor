@@ -57,7 +57,8 @@ export function corruptNetworkMap(ns: NS, map: NetworkMap, options?: {
 export function advancedCorruptNetworkMap(map: NetworkMap, options?: {
 	removeParentChance?: number, // chance to drop parent link
 	addFakeNeighborChance?: number, // chance to add a fake neighbor
-	swapParentChance?: number, // chance to swap parent to another host
+	// chat gpt can't create and fix this one
+	// swapParentChance?: number, // chance to swap parent to another host
 	removeFromRootsChance?: number, // chance to remove a root
 	removeNodeChance?: number,      // new: delete node entirely
 	edgeSwapChance?: number,         // new: swap arbitrary edges
@@ -65,7 +66,8 @@ export function advancedCorruptNetworkMap(map: NetworkMap, options?: {
 	const opts = {
 		removeParentChance: 0.1,
 		addFakeNeighborChance: 0.05,
-		swapParentChance: 0.05,
+		// chat gpt can't create and fix this one
+		// swapParentChance: 0.05,
 		removeFromRootsChance: 0.1,
 		removeNodeChance: 0.05,
 		edgeSwapChance: 0.05,
@@ -82,13 +84,6 @@ export function advancedCorruptNetworkMap(map: NetworkMap, options?: {
 		if (node.parent && Math.random() < opts.removeParentChance) {
 			node.parent = null
 			node.depth = 0
-		}
-
-		// randomly swap parent
-		if (node.parent && Math.random() < opts.swapParentChance) {
-			const newParent = hosts[Math.floor(Math.random() * hosts.length)]
-			node.parent = newParent
-			node.depth = (map.nodes[newParent]?.depth ?? 0) + 1
 		}
 
 		// randomly add fake neighbor

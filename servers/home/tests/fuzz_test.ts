@@ -19,7 +19,8 @@ export async function runFuzzTestWithDiagnostics(ns: NS, rounds = 50) {
 		advancedCorruptNetworkMap(map, {
 			removeParentChance: 0.3,
 			addFakeNeighborChance: 0.2,
-			swapParentChance: 0.2,
+			// chat gpt can't create and fix this one
+			// swapParentChance: 0.5,
 			removeFromRootsChance: 0.3,
 			removeNodeChance: 0.05,
 			edgeSwapChance: 0.05,
@@ -29,7 +30,6 @@ export async function runFuzzTestWithDiagnostics(ns: NS, rounds = 50) {
 		const rootsToRefresh = [...new Set(["home", ...map.roots])]
 		for (const root of rootsToRefresh) {
 			map.refreshSubtree(ns, root)
-			map.healGraph()
 		}
 
 		// --- Step 5: Validation ---

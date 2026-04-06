@@ -164,6 +164,7 @@ export class NetworkMap {
 
 	touchHost(ns: NS, host: string) {
 		this.refreshSubtree(ns, host)
+		this.healGraph()
 	}
 
 	// ----------------------------
@@ -176,28 +177,40 @@ export class NetworkMap {
 			const node = this.nodes[root]
 			if (!node) continue
 
-			let attached = false
+			if (root === "home") {
+				node.parent = null
+				node.depth = 0
+				newRoots.push(root)
+				continue
+			}
+
+			let bestParent: string | null = null
+			let bestDepth = Number.MAX_SAFE_INTEGER
+
 			for (const neighbor of node.neighbors) {
 				const neighborNode = this.nodes[neighbor]
 				if (!neighborNode) continue
+				if (this.isDescendant(neighbor, root)) continue
 
-				// Only attach if the neighbor is NOT in root's subtree
-				if (!this.isDescendant(neighbor, root) && root !== "home") {
-					node.parent = neighbor
-					node.depth = neighborNode.depth + 1
-					attached = true
-					break
+				const d = neighborNode.depth ?? Number.MAX_SAFE_INTEGER
+				if (d < bestDepth) {
+					bestDepth = d
+					bestParent = neighbor
 				}
 			}
 
-			if (!attached) {
+			if (bestParent) {
+				node.parent = bestParent
+				node.depth = (this.nodes[bestParent]?.depth ?? 0) + 1
+				this.recomputeDepthsFrom(root)
+			} else {
 				node.parent = null
 				node.depth = 0
 				newRoots.push(root)
 			}
 		}
 
-		this.roots = newRoots
+		this.roots = [...new Set(newRoots)]
 	}
 
 	// ----------------------------
@@ -724,7 +737,7 @@ export class NetworkMap {
 		}
 	}
 
-	healGraph() {
+	private healGraph() {
 		this.fixupRoots()
 		this.fixupHomeInvariant()
 		this.repairBrokenLinks()
