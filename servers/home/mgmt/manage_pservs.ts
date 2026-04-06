@@ -5,7 +5,7 @@ export async function main(ns: NS) {
 
 	const reserve = Number(ns.args[0] ?? 0)
 	const minRam = Number(ns.args[1] ?? 8)
-	const spendFraction = Number(ns.args[2] ?? 1)
+	const spendFraction = Number(ns.args[2] ?? 0.15)
 	const loop = Boolean(ns.args[3] ?? false)
 	const sleepMs = Number(ns.args[4] ?? 30_000)
 

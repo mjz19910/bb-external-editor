@@ -23,7 +23,7 @@ export async function main(ns: NS) {
 	const hacknet = new HacknetManager(ns)
 
 	const reserve = Number(ns.args[0] ?? 0)
-	const spendFraction = Number(ns.args[1] ?? 1)
+	const spendFraction = Number(ns.args[1] ?? 0.08)
 	const loop = Boolean(ns.args[2] ?? false)
 	const sleepMs = Number(ns.args[3] ?? 30_000)
 
