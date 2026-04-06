@@ -3,6 +3,7 @@ data/
 	- state.json
 	- targetRegistry.json
 lib/
+	- dom_helpers.ts // use doc imported from here instead of document
 	- hacknet.ts
 	- pservs.ts
 mgmt/
