@@ -28,10 +28,8 @@ export async function main(ns: NS) {
 
 	const reserve = Number(args[0] ?? 0)
 	const spendFraction = Number(args[1] ?? 0.08)
-	const sleepMs = Number(args[2] ?? 30_000)
-
-	const maxPaybackSeconds = Number(args[3] ?? 3600) // default 1 hour
-	const minRoi = Number(args[4] ?? 0)
+	const maxPaybackSeconds = Number(args[2] ?? 3600)
+	const minRoi = Number(args[3] ?? 0)
 	const allowKinds = parseKinds(String(args[5] ?? ""))
 
 	ns.tprint("Starting Hacknet Manager")
