@@ -181,10 +181,7 @@ export class NetworkMap {
 
 		// Only merge roots if neighbors actually changed
 		if (neighborsChanged) {
-			ns.tprint(`[refreshSubtree] neighbors changed, merging roots`)
 			this.mergeRoots(ns)
-		} else {
-			ns.tprint(`[refreshSubtree] neighbors unchanged, skipping mergeRoots`)
 		}
 	}
 
