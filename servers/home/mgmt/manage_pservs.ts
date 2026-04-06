@@ -1,4 +1,4 @@
-import { PurchasedServers } from "./lib/pservs"
+import { PurchasedServers } from "../lib/pservs"
 
 export async function main(ns: NS) {
 	const ps = new PurchasedServers(ns)

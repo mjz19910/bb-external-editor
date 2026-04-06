@@ -1,4 +1,4 @@
-import { HacknetManager } from "./lib/hacknet"
+import { HacknetManager } from "../lib/hacknet"
 
 export async function main(ns: NS) {
 	const hacknet = new HacknetManager(ns)
