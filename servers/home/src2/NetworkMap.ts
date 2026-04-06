@@ -111,6 +111,8 @@ export class NetworkMap {
 	// subtree / host updates
 	// ----------------------------
 	refreshSubtree(ns: NS, startHost: string) {
+		this.fixupRoots(ns)
+
 		if (!this.nodes[startHost]) {
 			this.roots.push(startHost)
 			this.nodes[startHost] = {
@@ -192,10 +194,21 @@ export class NetworkMap {
 		this.refreshSubtree(ns, host)
 	}
 
+	fixupRoots(ns: NS) {
+		if (!this.roots.includes("home")) {
+			this.roots.unshift("home")
+			const homeNode = this.nodes["home"] ?? { host: "home", parent: null, depth: 0, neighbors: this.safeScan(ns, "home") }
+			this.nodes["home"] = homeNode
+			console.log("[fixupRoots] Home re-added to roots")
+		}
+	}
+
 	// ----------------------------
 	// root merging
 	// ----------------------------
 	mergeRoots(ns: NS) {
+		this.fixupRoots(ns)
+
 		const newRoots: string[] = []
 
 		for (const root of this.roots) {

@@ -1,6 +1,6 @@
 import { NetworkMap } from "../NetworkMap"
 
-export function corruptNetworkMap(map: NetworkMap, options?: {
+export function corruptNetworkMap(ns: NS, map: NetworkMap, options?: {
 	removeParentChance?: number, // chance to drop parent link
 	addFakeNeighborChance?: number, // chance to add a fake neighbor
 	swapParentChance?: number, // chance to swap parent to another host
@@ -22,7 +22,7 @@ export function corruptNetworkMap(map: NetworkMap, options?: {
 
 		// randomly drop parent
 		if (node.parent && Math.random() < opts.removeParentChance) {
-			console.log(`[corrupt] Dropping parent of ${host} (was ${node.parent})`)
+			ns.tprint(`[corrupt] Dropping parent of ${host} (was ${node.parent})`)
 			node.parent = null
 			node.depth = 0
 			if (!map.roots.includes(host)) map.roots.push(host)
@@ -31,7 +31,7 @@ export function corruptNetworkMap(map: NetworkMap, options?: {
 		// randomly swap parent
 		if (node.parent && Math.random() < opts.swapParentChance) {
 			const newParent = hosts[Math.floor(Math.random() * hosts.length)]
-			console.log(`[corrupt] Swapping parent of ${host} from ${node.parent} → ${newParent}`)
+			ns.tprint(`[corrupt] Swapping parent of ${host} from ${node.parent} → ${newParent}`)
 			node.parent = newParent
 			node.depth = map.nodes[newParent]?.depth + 1
 		}
@@ -39,7 +39,7 @@ export function corruptNetworkMap(map: NetworkMap, options?: {
 		// randomly add fake neighbor
 		if (Math.random() < opts.addFakeNeighborChance) {
 			const fakeNeighbor = `FAKE-${Math.floor(Math.random() * 1000)}`
-			console.log(`[corrupt] Adding fake neighbor ${fakeNeighbor} to ${host}`)
+			ns.tprint(`[corrupt] Adding fake neighbor ${fakeNeighbor} to ${host}`)
 			node.neighbors.push(fakeNeighbor)
 		}
 	}
@@ -47,7 +47,87 @@ export function corruptNetworkMap(map: NetworkMap, options?: {
 	// randomly remove some roots
 	map.roots = map.roots.filter(r => {
 		if (Math.random() < opts.removeFromRootsChance) {
-			console.log(`[corrupt] Removing ${r} from roots`)
+			ns.tprint(`[corrupt] Removing ${r} from roots`)
+			return false
+		}
+		return true
+	})
+}
+
+export function advancedCorruptNetworkMap(ns: NS, map: NetworkMap, options?: {
+	removeParentChance?: number, // chance to drop parent link
+	addFakeNeighborChance?: number, // chance to add a fake neighbor
+	swapParentChance?: number, // chance to swap parent to another host
+	removeFromRootsChance?: number, // chance to remove a root
+	removeNodeChance?: number,      // new: delete node entirely
+	edgeSwapChance?: number,         // new: swap arbitrary edges
+}) {
+	const opts = {
+		removeParentChance: 0.1,
+		addFakeNeighborChance: 0.05,
+		swapParentChance: 0.05,
+		removeFromRootsChance: 0.1,
+		removeNodeChance: 0.05,
+		edgeSwapChance: 0.05,
+		...options,
+	}
+
+	const hosts = [...map.allHosts]
+
+	for (const host of hosts) {
+		const node = map.nodes[host]
+		if (!node) continue
+
+		// randomly drop parent
+		if (node.parent && Math.random() < opts.removeParentChance) {
+			ns.tprint(`[corrupt] Dropping parent of ${host} (was ${node.parent})`)
+			node.parent = null
+			node.depth = 0
+			if (!map.roots.includes(host)) map.roots.push(host)
+		}
+
+		// randomly swap parent
+		if (node.parent && Math.random() < opts.swapParentChance) {
+			let newParent: string
+			do {
+				newParent = hosts[Math.floor(Math.random() * hosts.length)]
+			} while (map.isDescendant(newParent, host)) // prevent cycles
+			ns.tprint(`[corrupt] Swapping parent of ${host} from ${node.parent} → ${newParent}`)
+			node.parent = newParent
+			node.depth = (map.nodes[newParent]?.depth ?? 0) + 1
+		}
+
+		// randomly add fake neighbor
+		if (Math.random() < opts.addFakeNeighborChance) {
+			const fakeNeighbor = `FAKE-${Math.floor(Math.random() * 1000)}`
+			ns.tprint(`[corrupt] Adding fake neighbor ${fakeNeighbor} to ${host}`)
+			node.neighbors.push(fakeNeighbor)
+		}
+
+		// randomly remove node entirely
+		if (Math.random() < opts.removeNodeChance && host !== "home") {
+			ns.tprint(`[corrupt] Removing node ${host} entirely`)
+			delete map.nodes[host]
+			map.allHosts = map.allHosts.filter(h => h !== host)
+			map.roots = map.roots.filter(r => r !== host)
+		}
+
+		// randomly swap edges (parent-child)
+		if (Math.random() < opts.edgeSwapChance) {
+			const swapWith = hosts[Math.floor(Math.random() * hosts.length)]
+			if (swapWith !== host && map.nodes[swapWith]) {
+				const tmpParent = node.parent
+				node.parent = map.nodes[swapWith].parent
+				map.nodes[swapWith].parent = tmpParent
+				ns.tprint(`[corrupt] Swapped parents: ${host} ↔ ${swapWith}`)
+			}
+		}
+	}
+
+	// randomly remove some roots
+	map.roots = map.roots.filter(r => {
+		if (Math.random() < opts.removeFromRootsChance && r !== "home") {
+			ns.tprint(`[corrupt] Removing ${r} from roots`)
 			return false
 		}
 		return true
