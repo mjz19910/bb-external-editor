@@ -29,7 +29,7 @@ export async function runFuzzTestWithDiagnostics(ns: NS, rounds = 50) {
 		// --- Step 3: Repair map ---
 		const rootsToRefresh = [...new Set(["home", ...map.roots])]
 		for (const root of rootsToRefresh) {
-			map.refreshSubtree(ns, root)
+			map.touchHost(ns, root)
 		}
 
 		// --- Step 5: Validation ---
