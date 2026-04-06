@@ -16,6 +16,9 @@ export const CONFIG = {
 	planner: {
 		maxTargetsToEvaluate: 5,
 		maxDesiredWorkloads: 6,
+		maxActiveFarmTargets: 3,
+		activeFarmScoreBias: 1.15,
+		readyPromotionStreak: 3,
 	},
 
 	workloadTolerance: {

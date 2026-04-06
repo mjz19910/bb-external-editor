@@ -1,6 +1,7 @@
-import { nextAffordableRamUpgrade, worstPurchasedServer } from "./lib/pservs"
+import { PurchasedServers } from "./lib/pservs"
 
 export async function main(ns: NS) {
+	const ps = new PurchasedServers(ns)
 	const reserve = Number(ns.args[0] ?? 0)
 	const minRam = Number(ns.args[1] ?? 8)
 	const budgetMul = Number(ns.args[2] ?? 1)
@@ -10,13 +11,13 @@ export async function main(ns: NS) {
 	ns.tprint(`Upgrade servers with budget $${ns.format.number(budget)}.`)
 
 	for (; ;) {
-		const worst = worstPurchasedServer(ns)
+		const worst = ps.worst()
 		if (!worst) {
 			ns.tprint("No purchased servers found.")
 			break
 		}
 
-		const { best: ram, nextCost } = nextAffordableRamUpgrade(ns, worst.host, budget, minRam)
+		const { best: ram, nextCost } = ps.nextAffordableUpgrade(worst.host, budget, minRam)
 		if (ram <= 0) {
 			ns.tprint("Cannot afford any upgrade.")
 			break

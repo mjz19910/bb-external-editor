@@ -1,4 +1,4 @@
-import { NetworkMap } from "./network_map"
+import { NetworkMap } from "./NetworkMap"
 
 export type FleetHost = {
 	host: string
@@ -207,20 +207,20 @@ export function runAllocationsTracked(
 // lib/fleet.ts
 
 export function allocateThreadsSimple(ns: NS, script: string, target: string, maxThreads?: number): number {
-    // Calculate maximum threads you can run for this script on home/purchased servers
-    const servers = ns.cloud.getServerNames().concat(["home"]);
-    const scriptRam = ns.getScriptRam(script);
+	// Calculate maximum threads you can run for this script on home/purchased servers
+	const servers = ns.cloud.getServerNames().concat(["home"])
+	const scriptRam = ns.getScriptRam(script)
 
-    let totalThreads = 0;
-    for (const s of servers) {
-        const freeRam = ns.getServerMaxRam(s) - ns.getServerUsedRam(s);
-        const threads = Math.floor(freeRam / scriptRam);
-        totalThreads += threads;
-    }
+	let totalThreads = 0
+	for (const s of servers) {
+		const freeRam = ns.getServerMaxRam(s) - ns.getServerUsedRam(s)
+		const threads = Math.floor(freeRam / scriptRam)
+		totalThreads += threads
+	}
 
-    if (maxThreads !== undefined) {
-        totalThreads = Math.min(totalThreads, maxThreads);
-    }
+	if (maxThreads !== undefined) {
+		totalThreads = Math.min(totalThreads, maxThreads)
+	}
 
-    return Math.max(totalThreads, 0);
+	return Math.max(totalThreads, 0)
 }

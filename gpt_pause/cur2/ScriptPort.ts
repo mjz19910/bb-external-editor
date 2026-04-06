@@ -318,8 +318,8 @@ export class ScriptPort<BaseType> {
 		return rawReadAll<T>(this.#port)
 	}
 
-	writeOpt<T extends BaseType = BaseType>(data: T): Optional<T> {
-		return rawWriteOpt<T>(this.#port, data)
+	writeOpt<T extends BaseType, U>(data: T): Optional<U> {
+		return rawWriteOpt<T, U>(this.#port, data)
 	}
 
 	tryWrite<T extends BaseType = BaseType>(data: T): boolean {

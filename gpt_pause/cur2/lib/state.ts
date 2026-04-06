@@ -15,13 +15,13 @@ type ServerState = {
 	activeJobs: string[]
 }
 
-export type PersistentState = {
+type PersistentState = {
 	targets: Record<string, TargetState>
 	servers: Record<string, ServerState>
 	lastUpdated: number
 }
 
-const STATE_FILE = "/lib/db/state.json"
+const STATE_FILE = "data/state.json"
 
 export class StateManager {
 	ns: NS

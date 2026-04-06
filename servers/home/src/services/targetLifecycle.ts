@@ -98,22 +98,25 @@ export function reconcileTargetRegistry(
 		}
 	}
 
-	const activeFarmTarget = chooseActiveFarmTarget(
+	const activeFarmTargets = chooseActiveFarmTargets(
 		nextByHostname,
-		previous.activeFarmTarget
+		previous.activeFarmTargets
 	)
 
-	if (activeFarmTarget && nextByHostname[activeFarmTarget]) {
-		nextByHostname[activeFarmTarget].isActiveFarm = true
+	for (const hostname of activeFarmTargets) {
+		const target = nextByHostname[hostname]
+		if (!target) continue
 
-		if (nextByHostname[activeFarmTarget].lifecycle === "READY") {
-			nextByHostname[activeFarmTarget].lifecycle = "FARMING"
+		target.isActiveFarm = true
+
+		if (target.lifecycle === "READY") {
+			target.lifecycle = "FARMING"
 		}
 	}
 
 	return {
 		byHostname: nextByHostname,
-		activeFarmTarget,
+		activeFarmTargets,
 		lastUpdatedAt: now,
 	}
 }
@@ -186,4 +189,34 @@ export function determineTrackedLifecycle(
 	}
 
 	return observed.lifecycle
+}
+
+function chooseActiveFarmTargets(
+	targets: Record<string, TrackedTargetState>,
+	previousActiveFarmTargets: string[]
+): string[] {
+	const candidates = Object.values(targets).filter(
+		(target) =>
+			target.isHackable &&
+			(target.lifecycle === "READY" ||
+				target.lifecycle === "FARMING" ||
+				target.lifecycle === "GROWING")
+	)
+
+	const scored = candidates.map((target) => {
+		const isPreviouslyActive = previousActiveFarmTargets.includes(target.hostname)
+		const continuityBias = isPreviouslyActive
+			? CONFIG.planner.activeFarmScoreBias
+			: 1
+
+		return {
+			hostname: target.hostname,
+			effectiveScore: target.score * continuityBias,
+		}
+	})
+
+	return scored
+		.sort((a, b) => b.effectiveScore - a.effectiveScore)
+		.slice(0, CONFIG.planner.maxActiveFarmTargets)
+		.map((entry) => entry.hostname)
 }

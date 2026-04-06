@@ -1,7 +1,6 @@
 // lib/events.ts
 /** A lightweight event bus for Bitburner scripts */
 // TODO: extend this into a cross-script version that works with Bitburner ports
-
 export type EventType =
 	| "TARGET_PREPPED"
 	| "BATCH_STARTED"

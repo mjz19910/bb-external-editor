@@ -96,13 +96,13 @@ If you’re not batching yet, this is **the** next feature.
 
 You already have:
 
-* `./lib/db/network_map.json`
+* `./data/network_map.json`
 
 Good start. But you likely want more than a network map.
 
 ### Add:
 
-* `./lib/db/state.json`
+* `./data/state.json`
 * `./lib/state.ts`
 
 ### Track things like:

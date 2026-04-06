@@ -1,5 +1,4 @@
 // corp_manager.ts
-// import { StateManager } from "./lib/state"
 import { Events } from "./lib/events"
 import { StockManager } from "./stock_manager"
 

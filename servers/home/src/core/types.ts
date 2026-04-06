@@ -59,7 +59,7 @@ export interface TrackedTargetState {
 
 export interface TargetRegistry {
 	byHostname: Record<string, TrackedTargetState>
-	activeFarmTarget: string | null
+	activeFarmTargets: string[]
 	lastUpdatedAt: number
 }
 

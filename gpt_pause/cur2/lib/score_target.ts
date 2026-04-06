@@ -1,5 +1,4 @@
 // lib/score_target.ts
-
 export type TargetScore = {
 	target: string
 

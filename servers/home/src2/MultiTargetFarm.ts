@@ -6,7 +6,7 @@ import {
 } from "./fleet"
 import { log } from "./log"
 import { calcHackThreadsForPercent, calcPrepPlanV1 } from "./prep"
-import { NetworkMap } from "./network_map"
+import { NetworkMap } from "./NetworkMap"
 import { GROW, HACK, WEAKEN } from "./paths"
 
 type LaunchOrder = { hack: number; grow: number; weaken: number }
