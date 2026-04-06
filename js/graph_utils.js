@@ -54,7 +54,7 @@ function makeGraphSerializer(root) {
 	}
 }
 
-function _t1() {
+function _t1(app) {
 	const target = app.__k
 	const result = makeGraphSerializer(target)
 	result.objects
@@ -140,8 +140,14 @@ function inspectReactTree(root) {
 	}
 }
 
-function _t2() {
-	const result = inspectReactTree(app.__k)
+function _t2(app) {
+	const target = app.__k
+	const result = inspectReactTree(target)
 	console.log(result)
 	result
+}
+
+export default function () {
+	_t1()
+	_t2()
 }
