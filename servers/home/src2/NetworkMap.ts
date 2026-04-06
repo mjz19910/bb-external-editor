@@ -736,7 +736,7 @@ export class NetworkMap {
 		}
 	}
 
-	healGraph(ns: NS) {
+	healGraph() {
 		this.fixupRoots()
 		this.fixupHomeInvariant()
 		this.repairBrokenLinks()
