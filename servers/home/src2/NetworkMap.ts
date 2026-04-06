@@ -112,6 +112,7 @@ export class NetworkMap {
 	// ----------------------------
 	refreshSubtree(ns: NS, startHost: string) {
 		this.fixupRoots(ns)
+		this.repairOrphans()
 
 		if (!this.nodes[startHost]) {
 			this.roots.push(startHost)
@@ -182,6 +183,11 @@ export class NetworkMap {
 
 				queue.push(n)
 			}
+		}
+
+		const repairedCycles = this.repairCycles(ns)
+		if (repairedCycles > 0) {
+			console.log(`[refreshSubtree] repaired ${repairedCycles} cycle(s)`)
 		}
 
 		// Only merge roots if neighbors actually changed
@@ -375,6 +381,319 @@ export class NetworkMap {
 		const path = this.pathTo(host)
 		if (!path) return null
 		return path.map(h => `connect ${h};`).join(" ")
+	}
+
+	repairOrphans() {
+		// Step 1: find all reachable nodes
+		const reachable = new Set<string>()
+		const queue = [...this.roots]
+		for (const root of this.roots) reachable.add(root)
+
+		while (queue.length > 0) {
+			const host = queue.shift()!
+			const node = this.nodes[host]
+			if (!node) continue
+			for (const neighbor of node.neighbors) {
+				if (this.nodes[neighbor] && !reachable.has(neighbor)) {
+					reachable.add(neighbor)
+					queue.push(neighbor)
+				}
+			}
+		}
+
+		// Step 2: orphaned nodes = nodes not in reachable
+		for (const host of this.allHosts) {
+			if (!reachable.has(host)) {
+				const node = this.nodes[host]
+				if (!node) continue
+
+				// Try to attach to a neighbor that is reachable
+				const attachTo = node.neighbors.find(n => reachable.has(n))
+				if (attachTo && !this.isDescendant(attachTo, host)) {
+					node.parent = attachTo
+					node.depth = (this.nodes[attachTo]?.depth ?? 0) + 1
+					reachable.add(host)
+					console.log(`[repairOrphans] Node ${host} re-attached to neighbor ${attachTo}`)
+				} else {
+					// No reachable neighbor: make it a new root
+					node.parent = null
+					node.depth = 0
+					if (!this.roots.includes(host)) this.roots.push(host)
+					reachable.add(host)
+					console.log(`[repairOrphans] Node ${host} added as new root (was orphan)`)
+				}
+			}
+		}
+	}
+
+	/**
+	 * Diagnose the current network map for corruption or inconsistencies
+	 */
+	diagnoseGraph() {
+		const issues: string[] = []
+
+		// --- cycle detection ---
+		const reportedCycleNodes = new Set<string>()
+
+		for (const host of this.allHosts) {
+			if (reportedCycleNodes.has(host)) continue
+
+			const visited = new Set<string>()
+			let cur: string | null = host
+			while (cur) {
+				if (visited.has(cur)) {
+					// report this cycle once, using the first node we found
+					const representative = host
+					issues.push(`[cycle] Detected cycle at node ${representative}`)
+					// mark all nodes in this cycle as reported
+					for (const n of visited) reportedCycleNodes.add(n)
+					break
+				}
+				visited.add(cur)
+				cur = this.nodes[cur]?.parent ?? null
+			}
+		}
+
+		// --- 2. Detect unreachable nodes from any root ---
+		const reachable = new Set<string>()
+		const queue = [...this.roots]
+		for (const root of this.roots) reachable.add(root)
+
+		while (queue.length > 0) {
+			const host = queue.shift()!
+			const node = this.nodes[host]
+			if (!node) continue
+			for (const neighbor of node.neighbors) {
+				if (this.nodes[neighbor] && !reachable.has(neighbor)) {
+					reachable.add(neighbor)
+					queue.push(neighbor)
+				}
+			}
+		}
+
+		for (const host of this.allHosts) {
+			if (!reachable.has(host)) issues.push(`[orphan] Node ${host} is unreachable from any root`)
+		}
+
+		// --- 3. Detect nodes with missing or invalid parents ---
+		for (const host of this.allHosts) {
+			const node = this.nodes[host]
+			if (!node) continue
+			if (node.parent && !this.nodes[node.parent]) {
+				issues.push(`[invalid parent] Node ${host} has missing parent ${node.parent}`)
+			}
+			if (node.parent && !node.neighbors.includes(node.parent)) {
+				issues.push(`[broken link] Node ${host} has parent ${node.parent} not in neighbors`)
+			}
+		}
+
+		// --- 4. Detect root inconsistencies ---
+		for (const root of this.roots) {
+			if (!this.nodes[root]) issues.push(`[invalid root] Root ${root} does not exist in nodes`)
+		}
+
+		if (!this.roots.includes("home")) issues.push(`[missing root] Home is missing from roots`)
+
+		return issues
+	}
+
+	/**
+	 * Log graph diagnostics to NS
+	 */
+	logDiagnostics(ns: NS, label = "Graph") {
+		const issues = this.diagnoseGraph()
+		if (issues.length === 0) {
+			ns.tprint(`[${label}] No issues detected`)
+		} else {
+			ns.tprint(`[${label}] Detected ${issues.length} issues:`)
+			for (const i of issues) ns.tprint(`  ${i}`)
+		}
+	}
+
+	getCycles(): string[][] {
+		const cycles: string[][] = []
+		const globallySeen = new Set<string>()
+
+		for (const host of this.allHosts) {
+			if (globallySeen.has(host)) continue
+			if (!this.nodes[host]) continue
+
+			const path: string[] = []
+			const pathIndex = new Map<string, number>()
+			let cur: string | null = host
+
+			while (cur && this.nodes[cur]) {
+				if (pathIndex.has(cur)) {
+					const start = pathIndex.get(cur)!
+					const cycle = path.slice(start)
+
+					for (const n of cycle) globallySeen.add(n)
+					cycles.push(cycle)
+					break
+				}
+
+				if (globallySeen.has(cur)) break
+
+				pathIndex.set(cur, path.length)
+				path.push(cur)
+				cur = this.nodes[cur]?.parent ?? null
+			}
+
+			for (const n of path) globallySeen.add(n)
+		}
+
+		return cycles
+	}
+
+	findAnchorOutsideCycle(start: string, cycle: Set<string>, reachable?: Set<string>) {
+		const queue: Array<{ host: string; dist: number }> = [{ host: start, dist: 0 }]
+		const seen = new Set<string>([start])
+
+		// best known distance to avoid revisiting deeper paths
+		const bestDist = new Map<string, number>()
+		bestDist.set(start, 0)
+
+		while (queue.length > 0) {
+			const { host, dist } = queue.shift()!
+			const node = this.nodes[host]
+			if (!node) continue
+
+			for (const neighbor of node.neighbors) {
+				if (!this.nodes[neighbor]) continue
+
+				const nextDist = dist + 1
+				const prevBest = bestDist.get(neighbor)
+				if (prevBest !== undefined && prevBest <= nextDist) continue
+				bestDist.set(neighbor, nextDist)
+
+				if (seen.has(neighbor)) continue
+				seen.add(neighbor)
+
+				// Candidate anchor:
+				// - not part of the cycle
+				// - ideally already reachable from a known root
+				if (!cycle.has(neighbor)) {
+					if (!reachable || reachable.has(neighbor)) {
+						return neighbor
+					}
+				}
+
+				queue.push({ host: neighbor, dist: nextDist })
+			}
+		}
+
+		return null
+	}
+
+	getReachableFromRoots(): Set<string> {
+		const reachable = new Set<string>()
+		const queue = [...this.roots]
+
+		for (const root of this.roots) {
+			if (this.nodes[root]) reachable.add(root)
+		}
+
+		while (queue.length > 0) {
+			const host = queue.shift()!
+			const node = this.nodes[host]
+			if (!node) continue
+
+			for (const neighbor of node.neighbors) {
+				if (!this.nodes[neighbor]) continue
+				if (reachable.has(neighbor)) continue
+				reachable.add(neighbor)
+				queue.push(neighbor)
+			}
+		}
+
+		return reachable
+	}
+
+	getBestCycleBreakNode(cycle: string[]) {
+		let best = cycle[0]
+		let bestDepth = this.nodes[best]?.depth ?? Number.MAX_SAFE_INTEGER
+
+		for (const host of cycle) {
+			const d = this.nodes[host]?.depth ?? Number.MAX_SAFE_INTEGER
+			if (d < bestDepth) {
+				best = host
+				bestDepth = d
+			}
+		}
+
+		return best
+	}
+
+	rebuildSubtreeParentsFrom(startHost: string) {
+		if (!this.nodes[startHost]) return
+
+		const queue = [startHost]
+		const seen = new Set<string>([startHost])
+
+		while (queue.length > 0) {
+			const host = queue.shift()!
+			const node = this.nodes[host]
+			if (!node) continue
+
+			for (const neighbor of node.neighbors) {
+				if (!this.nodes[neighbor]) continue
+				if (seen.has(neighbor)) continue
+
+				// Don't assign parent if it would create a cycle
+				if (this.isDescendant(host, neighbor)) continue
+
+				// Only reparent if missing or obviously wrong
+				const child = this.nodes[neighbor]
+				if (child.parent == null || !child.neighbors.includes(child.parent)) {
+					child.parent = host
+					child.depth = node.depth + 1
+					console.log(`[rebuildSubtree] ${neighbor} parent -> ${host}`)
+				}
+
+				seen.add(neighbor)
+				queue.push(neighbor)
+			}
+		}
+	}
+
+	repairCycle(ns: NS, cycleNodes: string[]) {
+		if (cycleNodes.length === 0) return false
+
+		const cycle = new Set(cycleNodes)
+		const breakNode = this.getBestCycleBreakNode(cycleNodes)
+		const reachable = this.getReachableFromRoots()
+
+		const anchor = this.findAnchorOutsideCycle(breakNode, cycle, reachable)
+
+		if (anchor) {
+			this.nodes[breakNode].parent = anchor
+			this.nodes[breakNode].depth = (this.nodes[anchor]?.depth ?? 0) + 1
+			console.log(`[repairCycle] Broke cycle at ${breakNode}, reattached under ${anchor}`)
+		} else {
+			// no safe anchor found: make it a root
+			this.nodes[breakNode].parent = null
+			this.nodes[breakNode].depth = 0
+			if (!this.roots.includes(breakNode)) this.roots.push(breakNode)
+			console.log(`[repairCycle] Broke cycle at ${breakNode}, promoted to root`)
+		}
+
+		// Now rebuild the subtree depths/parents under the repaired node
+		this.rebuildSubtreeParentsFrom(breakNode)
+
+		return true
+	}
+
+	repairCycles(ns: NS) {
+		const cycles = this.getCycles()
+		if (cycles.length === 0) return 0
+
+		let repaired = 0
+		for (const cycle of cycles) {
+			console.log(`[repairCycles] Found cycle: ${cycle.join(" -> ")} -> ${cycle[0]}`)
+			if (this.repairCycle(ns, cycle)) repaired++
+		}
+
+		return repaired
 	}
 }
 

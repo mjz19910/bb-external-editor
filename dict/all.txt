@@ -102,6 +102,7 @@ pserv
 pservs
 Regen
 relaysmtp
+reparent
 rootable
 run4theh111z
 savegame
