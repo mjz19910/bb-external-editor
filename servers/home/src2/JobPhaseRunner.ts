@@ -26,7 +26,7 @@ export class JobPhaseRunner {
 		this.jobTargets = this.workerHosts.filter(h => h !== "home")
 
 		for (const host of this.workerHosts) {
-			this.maxRamByHost.set(host, this.map.ramSizes[host])
+			this.maxRamByHost.set(host, ns.getServerMaxRam(host))
 		}
 
 		for (const target of this.jobTargets) {

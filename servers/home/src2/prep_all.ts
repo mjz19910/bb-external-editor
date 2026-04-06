@@ -24,7 +24,7 @@ class PrepAll {
 		this.map = NetworkMap.build(ns)
 		this.hosts = this.map.allHosts.filter(h => ns.hasRootAccess(h))
 		this.targets = this.hosts.filter(h => h !== "home")
-		for (const host of this.hosts) this.maxRamByHost.set(host, this.map.ramSizes[host])
+		for (const host of this.hosts) this.maxRamByHost.set(host, ns.getServerMaxRam(host))
 		for (const target of this.targets) {
 			this.srvMaxMoney.set(target, ns.getServerMaxMoney(target))
 			this.srvMinSec.set(target, ns.getServerMinSecurityLevel(target))
