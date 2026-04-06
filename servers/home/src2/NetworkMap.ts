@@ -130,6 +130,9 @@ export class NetworkMap {
 
 		while (queue.length > 0) {
 			const host = queue.shift()!
+			if (seen.has(host)) continue // extra guard
+			seen.add(host)
+
 			const node = this.nodes[host]
 			const neighbors = this.safeScan(ns, host)
 
@@ -230,10 +233,15 @@ export class NetworkMap {
 	// ----------------------------
 	isDescendant(nodeName: string, ancestor: string): boolean {
 		let cur: string | null = nodeName
+		const visited = new Set<string>()
+
 		while (cur) {
 			if (cur === ancestor) return true
+			if (visited.has(cur)) return false // cycle detected, stop traversal
+			visited.add(cur)
 			cur = this.nodes[cur]?.parent ?? null
 		}
+
 		return false
 	}
 
