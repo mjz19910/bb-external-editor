@@ -276,7 +276,7 @@ export class NetworkMap {
 			if (network_map.isLikelyStale(ns)) network_map.refresh(ns, start)
 			else {
 				const hosts = network_map.allHosts
-				const checks = Math.min(3, hosts.length)
+				const checks = Math.min(1, hosts.length)
 				for (let i = 0; i < checks; i++) {
 					network_map.touchHost(ns, hosts[Math.floor(Math.random() * hosts.length)])
 				}
