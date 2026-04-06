@@ -5,19 +5,18 @@ export async function runFuzzTestWithDiagnostics(ns: NS, rounds = 50) {
 	let homeFails = 0
 	let cyclesDetected = 0
 	let orphansDetected = 0
+	let brokenLinks = 0
 
 	const originalMap = NetworkMap.build(ns, "home")
 	ns.tprint(`Starting diagnostic fuzz test: ${rounds} rounds`)
 	ns.tprint(`Initial roots: ${originalMap.roots.join(", ")}`)
 
 	for (let i = 1; i <= rounds; i++) {
-		ns.tprint(`[Round ${i}]`)
-
 		// Clone map for independent corruption
 		const mapData = JSON.parse(JSON.stringify(originalMap))
 		const map = Object.assign(new NetworkMap(), mapData) as NetworkMap
 		// --- Step 1: Corrupt the map ---
-		advancedCorruptNetworkMap(ns, map, {
+		advancedCorruptNetworkMap(map, {
 			removeParentChance: 0.3,
 			addFakeNeighborChance: 0.2,
 			swapParentChance: 0.2,
@@ -38,9 +37,14 @@ export async function runFuzzTestWithDiagnostics(ns: NS, rounds = 50) {
 		if (!map.roots.includes("home")) homeFails++
 		cyclesDetected += issues.filter(i => i.includes("[cycle]")).length
 		orphansDetected += issues.filter(i => i.includes("[orphan]")).length
+		brokenLinks += issues.filter(i => i.includes("[broken link]")).length
 
-		const validGraph = issues.length === 0
-		ns.tprint(`[Round ${i}] Graph valid: ${validGraph ? "✅" : "❌"}\n`)
+		if (issues.length > 0) {
+			ns.tprint(`[Round ${i}] Graph valid: ❌`)
+			for (const issue of issues) {
+				ns.tprint("\t" + issue)
+			}
+		}
 	}
 
 	// --- Step 6: Summary ---
@@ -49,6 +53,7 @@ export async function runFuzzTestWithDiagnostics(ns: NS, rounds = 50) {
 	ns.tprint(`Home missing from roots: ${homeFails} rounds`)
 	ns.tprint(`Cycles detected across all rounds: ${cyclesDetected}`)
 	ns.tprint(`Orphans detected across all rounds: ${orphansDetected}`)
+	ns.tprint(`Broken links across all rounds: ${brokenLinks}`)
 }
 
 export async function main(ns: NS) {

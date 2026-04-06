@@ -54,7 +54,7 @@ export function corruptNetworkMap(ns: NS, map: NetworkMap, options?: {
 	})
 }
 
-export function advancedCorruptNetworkMap(ns: NS, map: NetworkMap, options?: {
+export function advancedCorruptNetworkMap(map: NetworkMap, options?: {
 	removeParentChance?: number, // chance to drop parent link
 	addFakeNeighborChance?: number, // chance to add a fake neighbor
 	swapParentChance?: number, // chance to swap parent to another host
@@ -80,19 +80,13 @@ export function advancedCorruptNetworkMap(ns: NS, map: NetworkMap, options?: {
 
 		// randomly drop parent
 		if (node.parent && Math.random() < opts.removeParentChance) {
-			ns.tprint(`[corrupt] Dropping parent of ${host} (was ${node.parent})`)
 			node.parent = null
 			node.depth = 0
-			if (!map.roots.includes(host)) map.roots.push(host)
 		}
 
 		// randomly swap parent
 		if (node.parent && Math.random() < opts.swapParentChance) {
-			let newParent: string
-			do {
-				newParent = hosts[Math.floor(Math.random() * hosts.length)]
-			} while (map.isDescendant(newParent, host)) // prevent cycles
-			ns.tprint(`[corrupt] Swapping parent of ${host} from ${node.parent} → ${newParent}`)
+			const newParent = hosts[Math.floor(Math.random() * hosts.length)]
 			node.parent = newParent
 			node.depth = (map.nodes[newParent]?.depth ?? 0) + 1
 		}
@@ -100,13 +94,11 @@ export function advancedCorruptNetworkMap(ns: NS, map: NetworkMap, options?: {
 		// randomly add fake neighbor
 		if (Math.random() < opts.addFakeNeighborChance) {
 			const fakeNeighbor = `FAKE-${Math.floor(Math.random() * 1000)}`
-			ns.tprint(`[corrupt] Adding fake neighbor ${fakeNeighbor} to ${host}`)
 			node.neighbors.push(fakeNeighbor)
 		}
 
 		// randomly remove node entirely
 		if (Math.random() < opts.removeNodeChance && host !== "home") {
-			ns.tprint(`[corrupt] Removing node ${host} entirely`)
 			delete map.nodes[host]
 			map.allHosts = map.allHosts.filter(h => h !== host)
 			map.roots = map.roots.filter(r => r !== host)
@@ -119,7 +111,6 @@ export function advancedCorruptNetworkMap(ns: NS, map: NetworkMap, options?: {
 				const tmpParent = node.parent
 				node.parent = map.nodes[swapWith].parent
 				map.nodes[swapWith].parent = tmpParent
-				ns.tprint(`[corrupt] Swapped parents: ${host} ↔ ${swapWith}`)
 			}
 		}
 	}
@@ -127,7 +118,6 @@ export function advancedCorruptNetworkMap(ns: NS, map: NetworkMap, options?: {
 	// randomly remove some roots
 	map.roots = map.roots.filter(r => {
 		if (Math.random() < opts.removeFromRootsChance && r !== "home") {
-			ns.tprint(`[corrupt] Removing ${r} from roots`)
 			return false
 		}
 		return true

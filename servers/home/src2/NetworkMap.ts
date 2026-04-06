@@ -133,11 +133,11 @@ export class NetworkMap {
 		}
 
 		const queue = [startHost]
-		const seen = new Set([startHost])
+		const seen = new Set<string>()
 
 		while (queue.length > 0) {
 			const host = queue.shift()!
-			if (seen.has(host)) continue // extra guard
+			if (seen.has(host)) continue
 			seen.add(host)
 
 			const node = this.nodes[host]
@@ -146,9 +146,6 @@ export class NetworkMap {
 			this.ramSizes[host] = ns.getServerMaxRam(host)
 
 			for (const n of neighbors) {
-				if (seen.has(n)) continue
-				seen.add(n)
-
 				if (!this.nodes[n]) {
 					this.nodes[n] = {
 						host: n,
@@ -160,7 +157,7 @@ export class NetworkMap {
 					if (!this.allHosts.includes(n)) this.allHosts.push(n)
 				}
 
-				queue.push(n)
+				if (!seen.has(n)) queue.push(n)
 			}
 		}
 	}
@@ -443,6 +440,7 @@ export class NetworkMap {
 
 	private repairBrokenParent(host: string) {
 		const node = this.nodes[host]
+		if (!node) return false
 
 		let bestParent: string | null = null
 		let bestDepth = Number.MAX_SAFE_INTEGER
@@ -464,6 +462,7 @@ export class NetworkMap {
 		if (bestParent) {
 			node.parent = bestParent
 			node.depth = (this.nodes[bestParent]?.depth ?? 0) + 1
+			this.roots = this.roots.filter(r => r !== host)
 			this.recomputeDepthsFrom(host)
 			return true
 		}
@@ -475,8 +474,6 @@ export class NetworkMap {
 	}
 
 	private repairBrokenLinks() {
-		let repaired = 0
-
 		for (const host of this.allHosts) {
 			const node = this.nodes[host]
 			if (!node) continue
@@ -496,8 +493,6 @@ export class NetworkMap {
 				this.repairBrokenParent(host)
 			}
 		}
-
-		return repaired
 	}
 
 	private recomputeDepthsFrom(startHost: string) {
