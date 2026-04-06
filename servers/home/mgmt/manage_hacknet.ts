@@ -81,8 +81,6 @@ export async function main(ns: NS) {
 					)
 
 					cur_delay *= 0.85
-
-					// do_short_sleep = true
 				}
 			}
 		}
