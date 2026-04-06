@@ -354,3 +354,14 @@ export type DnetOpenCache = {
 	file: string
 	result: CacheResult
 }
+
+export type DnetNotifyNextMutation = {
+	type: "next_mutation"
+}
+
+export type DnetNotifyMemoryReallocation = {
+	type: "memory_reallocation"
+	runner: string
+	threads: number
+	result: DarknetResult
+}

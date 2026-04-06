@@ -1,5 +1,3 @@
-/** user/rename_workers.ts */
-
 export async function main(ns: NS) {
 	const servers = ns.cloud.getServerNames()
 

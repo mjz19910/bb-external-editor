@@ -1,4 +1,4 @@
-import { DarknetServerInfo, HostnameReplyMsg, OnlineCheckMsg, PortMessage, PortReleaseMsg, QuerySecurityMsg, ScriptPort, WaitMessage } from "../src/ScriptPort"
+import { DarknetServerInfo, HostnameReplyMsg, OnlineCheckMsg, PortMessage, PortReleaseMsg, QuerySecurityMsg, ScriptPort, TimeoutCheckMsg, WaitMessage } from "../src/ScriptPort"
 
 export function hasTypeField<T extends { type: string }>(x: unknown): x is T {
 	return (
@@ -122,7 +122,7 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 				}
 				if (!s.is_api_port_busy) {
 					s.is_api_port_busy = true
-					s.port3.write<QuerySecurityMsg>({
+					s.port3.mustWrite<QuerySecurityMsg>({
 						type: "query_security",
 						infos: msg.infos,
 					})
@@ -143,14 +143,14 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 					for (const info of infos_timeout) {
 						db.server_map_decay_list.push(info)
 					}
-					s.port.write({ type: "timeout_check" })
+					s.port.mustWrite<TimeoutCheckMsg>({ type: "timeout_check" })
 				}, 30_000)
 				const all_infos = []
 				for (const item of db.server_map.values()) {
 					all_infos.push(item)
 				}
 				if (ips.length > 0) {
-					s.port2.write<OnlineCheckMsg>({
+					s.port2.mustWrite<OnlineCheckMsg>({
 						cmd: "online_check",
 						args: ips,
 					})
@@ -165,7 +165,7 @@ function handle_object_message(ns: NS, s: StateType, msg: PortMessage) {
 				ips.push(info.server.ip)
 			}
 			if (ips.length > 0) {
-				s.port2.write<OnlineCheckMsg>({
+				s.port2.mustWrite<OnlineCheckMsg>({
 					cmd: "online_check",
 					args: ips,
 				})
@@ -227,10 +227,10 @@ export async function main(ns: NS) {
 	const port = ScriptPort.open_request_port(ns)
 	const port2 = ScriptPort.open_reply_port(ns)
 	const port3 = ScriptPort.open_api_port(ns)
-	port3.clear("empty before use")
+	port3.clear()
 	ns.run("gpt_pause/src/getHostname.ts", 1)
-	await port3.nextWrite("wait for hostname")
-	const v = port3.read<HostnameReplyMsg>("read hostname")
+	await port3.nextWrite()
+	const v = port3.read<HostnameReplyMsg>()
 	const s: StateType = {
 		running: true,
 		runner: v.hostname,
@@ -239,13 +239,12 @@ export async function main(ns: NS) {
 		port3,
 		is_api_port_busy: false,
 	}
-	port.config({ logging: false })
 	ns.print("enter read loop")
 	for (; s.running;) {
-		for (; !port.empty("run until empty");) {
-			const res = port.read<PortMessage>("read message")
+		for (; !port.empty();) {
+			const res = port.read<PortMessage>()
 			handle_object_message(ns, s, res)
 		}
-		await port.nextWrite("wait for wakeup")
+		await port.nextWrite()
 	}
 }

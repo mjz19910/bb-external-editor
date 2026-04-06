@@ -1,5 +1,3 @@
-import { buildNetworkMap } from "../../../servers/home/src2/network_map"
-
 /** /cloud/upgrade.ts */
 export async function main(ns: NS) {
 	ns.disableLog("ALL")
@@ -8,7 +6,6 @@ export async function main(ns: NS) {
 	const BOOTSTRAP_SCRIPT = "gpt_pause/src/cloud/bootstrap_cloud.ts"
 	const CATCHUP_BUDGET_RATIO = 0.01 // 1%
 
-	const map = buildNetworkMap(ns)
 	let hosts = ns.cloud.getServerNames()
 	if (hosts.length === 0) {
 		ns.print("no servers found, spawning bootstrap")
@@ -16,11 +13,10 @@ export async function main(ns: NS) {
 		return
 	}
 
-	if (!map.nodes[hosts[0]]) {
-		map.addNodes(ns, "home", hosts)
+	const ramSizes: Record<string, number> = {}
+	for (const host in hosts) {
+		ramSizes[host] = ns.getServerMaxRam(host)
 	}
-
-	const ramSizes = map.ramSizes
 
 	const sortHosts = () =>
 		hosts.sort((a, b) => ramSizes[a] - ramSizes[b] || a.localeCompare(b))
