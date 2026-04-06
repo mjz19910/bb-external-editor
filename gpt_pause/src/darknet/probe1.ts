@@ -1,4 +1,4 @@
-import { DarknetProbeMessage, DarknetServerInfo, ScriptPort } from "../../cur2/ScriptPort"
+import { DarknetProbeMessage, DarknetServerInfo, ScriptPort } from "../ScriptPort"
 
 function post_dnet_probe(ns: NS, runner: string, port: number) {
 	const infos: DarknetServerInfo[] = []
@@ -17,7 +17,7 @@ function post_dnet_probe(ns: NS, runner: string, port: number) {
 		idxs.set(ip, idx)
 	}
 	const port_com = new ScriptPort<DarknetProbeMessage>(ns, port)
-	port_com.write({
+	port_com.mustWrite({
 		type: "darknet.probe",
 		alt: "ip",
 		by: runner,

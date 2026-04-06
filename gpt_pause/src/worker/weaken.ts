@@ -1,10 +1,10 @@
-// weaken.ts
-import { HgwRequest, parseHgwRequest } from "../gpt_pause/lib/hgw-message";
-import { handleRequest } from "../gpt_pause/lib/handleRequest";
+import { handleRequest } from "../lib/handleRequest"
+import { parseHgwRequest, HgwRequest } from "../lib/hgw-message"
 
+// weaken.ts
 export async function main(ns: NS) {
-	const req = parseHgwRequest(ns);
+	const req = parseHgwRequest(ns)
 	await handleRequest(ns, req, async (data: HgwRequest) => {
-		return ns.weaken(data.target, { additionalMsec: data.offset });
-	});
+		return ns.weaken(data.target, { additionalMsec: data.offset })
+	})
 }

@@ -1,5 +1,5 @@
 import { Darknet, isDarknetServer2, WithPort } from "./misc"
-import { AccMgrBleedData, AuthFlowState, DarknetAuthenticateMessage, DarknetFoundPassProbeMessage, DarknetProbeMessage, DarknetServerInfo, DeepGreenBleedData, FactorsBleedResult, HeartbleedPasswordAttempt, ScriptPort, SubmitAuthArgs } from "../../cur2/ScriptPort"
+import { AccMgrBleedData, AuthFlowState, DarknetAuthenticateMessage, DarknetFoundPassProbeMessage, DarknetProbeMessage, DarknetServerInfo, DeepGreenBleedData, FactorsBleedResult, HeartbleedPasswordAttempt, ScriptPort, SubmitAuthArgs } from "../ScriptPort"
 
 const ROMAN_NUMERAL_VALUES: Record<string, number> = {
 	M: 1000,
@@ -98,7 +98,7 @@ class AuthManager {
 			)
 		}
 		info.password = password
-		port.write<DarknetAuthenticateMessage>({
+		port.mustWrite<DarknetAuthenticateMessage>({
 			type: "darknet.authenticate",
 			by: runner,
 			for: host,
@@ -586,7 +586,7 @@ export async function main(ns: NS) {
 	const am = new AuthManager(ns)
 	for (; ;) {
 		post_dnet_probe(ns, infos, infos_idx_map, runner)
-		port.write<DarknetProbeMessage>({
+		port.mustWrite<DarknetProbeMessage>({
 			type: "darknet.probe",
 			alt: "names",
 			by: runner,
@@ -646,7 +646,7 @@ export async function main(ns: NS) {
 				}
 			}
 			if (info.password === void 0) continue
-			port.write<DarknetFoundPassProbeMessage>({
+			port.mustWrite<DarknetFoundPassProbeMessage>({
 				type: "found_password",
 				by: runner,
 				for: host,

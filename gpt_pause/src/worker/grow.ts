@@ -1,10 +1,10 @@
 // grow.ts
-import { HgwRequest, parseHgwRequest } from "../gpt_pause/lib/hgw-message";
-import { handleRequest } from "../gpt_pause/lib/handleRequest";
+import { handleRequest } from "../lib/handleRequest"
+import { HgwRequest, parseHgwRequest } from "../lib/hgw-message"
 
 export async function main(ns: NS) {
-	const req = parseHgwRequest(ns);
+	const req = parseHgwRequest(ns)
 	await handleRequest(ns, req, async (data: HgwRequest) => {
-		return ns.grow(data.target, { additionalMsec: data.offset });
-	});
+		return ns.grow(data.target, { additionalMsec: data.offset })
+	})
 }

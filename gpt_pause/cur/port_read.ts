@@ -1,4 +1,4 @@
-import { DarknetServerInfo, HostnameReplyMsg, OnlineCheckMsg, PortMessage, PortReleaseMsg, QuerySecurityMsg, ScriptPort, WaitMessage } from "../cur2/ScriptPort"
+import { DarknetServerInfo, HostnameReplyMsg, OnlineCheckMsg, PortMessage, PortReleaseMsg, QuerySecurityMsg, ScriptPort, WaitMessage } from "../src/ScriptPort"
 
 export function hasTypeField<T extends { type: string }>(x: unknown): x is T {
 	return (

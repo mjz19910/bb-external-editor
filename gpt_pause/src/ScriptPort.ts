@@ -318,6 +318,11 @@ export class ScriptPort<BaseType> {
 		return rawReadAll<T>(this.#port)
 	}
 
+	mustWrite<T extends BaseType>(data: T) {
+		const success = this.#port.tryWrite(data)
+		if (!success) throw new Error("Unable to write")
+	}
+
 	writeOpt<T extends BaseType, U>(data: T): Optional<U> {
 		return rawWriteOpt<T, U>(this.#port, data)
 	}
@@ -341,4 +346,11 @@ export class ScriptPort<BaseType> {
 	clear() {
 		this.#port.clear()
 	}
+}
+
+export type DnetOpenCache = {
+	type: "open_cache"
+	target: string
+	file: string
+	result: CacheResult
 }

@@ -1,4 +1,4 @@
-import { PortReleaseMsg, ScriptPort } from "../../cur2/ScriptPort"
+import { PortReleaseMsg, ScriptPort } from "../ScriptPort"
 
 export async function main(ns: NS) {
 	const reply_port = ScriptPort.open_request_port(ns)
@@ -15,7 +15,7 @@ export async function main(ns: NS) {
 		const ad = ns.dnet.getServerAuthDetails(info.ip)
 		info.authDetails = ad
 	}
-	reply_port.write<PortReleaseMsg>({
+	reply_port.mustWrite<PortReleaseMsg>({
 		type: "port_release",
 		port: com_port.port_id,
 		infos,

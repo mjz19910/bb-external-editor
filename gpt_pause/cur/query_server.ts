@@ -1,4 +1,4 @@
-import { DarknetServerInfo, OnlineServersMessage, ScriptPort } from "../cur2/ScriptPort"
+import { DarknetServerInfo, OnlineServersMessage, ScriptPort } from "../src/ScriptPort"
 import { write_info_to_fs_db } from "./write_ip_db"
 
 export async function main(ns: NS) {
