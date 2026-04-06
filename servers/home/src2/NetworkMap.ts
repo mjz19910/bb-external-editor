@@ -4,6 +4,19 @@ const DB_PATH = "data/network_map.json"
 
 let network_map: NetworkMap | null = null
 
+
+// ----------------------------
+// safe scan
+// ----------------------------
+function safeScan(ns: NS, host: string): string[] {
+	try {
+		if (!host || !ns.serverExists(host)) return []
+		return ns.scan(host)
+	} catch {
+		return []
+	}
+}
+
 export class NetworkMap {
 	roots: string[] = ["home"]
 
@@ -12,18 +25,6 @@ export class NetworkMap {
 		public nodes: Record<string, NetworkNode> = {},
 		public ramSizes: Record<string, number> = {},
 	) { }
-
-	// ----------------------------
-	// safe scan
-	// ----------------------------
-	safeScan(ns: NS, host: string): string[] {
-		try {
-			if (!host || !ns.serverExists(host)) return []
-			return ns.scan(host)
-		} catch {
-			return []
-		}
-	}
 
 	// ----------------------------
 	// persistence
@@ -68,18 +69,27 @@ export class NetworkMap {
 		const queue: string[] = [start]
 		const seen = new Set<string>([start])
 
-		const tempMap = new NetworkMap() // to use safeScan
-		nodes[start] = { host: start, parent: null, depth: 0, neighbors: tempMap.safeScan(ns, start) }
+		nodes[start] = {
+			host: start,
+			parent: null,
+			depth: 0,
+			neighbors: safeScan(ns, start)
+		}
 
 		while (queue.length > 0) {
 			const host = queue.shift()!
 			const depth = nodes[host].depth
-			const neighbors = tempMap.safeScan(ns, host)
+			const neighbors = safeScan(ns, host)
 
 			for (const next of neighbors) {
 				if (seen.has(next)) continue
 				seen.add(next)
-				nodes[next] = { host: next, parent: host, depth: depth + 1, neighbors: tempMap.safeScan(ns, next) }
+				nodes[next] = {
+					host: next,
+					parent: host,
+					depth: depth + 1,
+					neighbors: safeScan(ns, next)
+				}
 				queue.push(next)
 			}
 		}
@@ -116,7 +126,7 @@ export class NetworkMap {
 				host: startHost,
 				parent: null,
 				depth: 0,
-				neighbors: this.safeScan(ns, startHost),
+				neighbors: safeScan(ns, startHost),
 			}
 			this.ramSizes[startHost] = ns.getServerMaxRam(startHost)
 			if (!this.allHosts.includes(startHost)) this.allHosts.push(startHost)
@@ -131,16 +141,7 @@ export class NetworkMap {
 			seen.add(host)
 
 			const node = this.nodes[host]
-			const neighbors = this.safeScan(ns, host)
-
-			let parentValid = true
-			if (node.parent && !neighbors.includes(node.parent)) {
-				parentValid = false
-				node.parent = null
-				node.depth = 0
-				if (!this.roots.includes(host)) this.roots.push(host)
-			}
-
+			const neighbors = safeScan(ns, host)
 			node.neighbors = neighbors
 			this.ramSizes[host] = ns.getServerMaxRam(host)
 
@@ -151,20 +152,12 @@ export class NetworkMap {
 				if (!this.nodes[n]) {
 					this.nodes[n] = {
 						host: n,
-						parent: parentValid ? host : null,
-						depth: parentValid ? node.depth + 1 : 0,
-						neighbors: this.safeScan(ns, n),
+						parent: host,
+						depth: node.depth + 1,
+						neighbors: safeScan(ns, n),
 					}
 					this.ramSizes[n] = ns.getServerMaxRam(n)
 					if (!this.allHosts.includes(n)) this.allHosts.push(n)
-					if (!parentValid) this.roots.push(n)
-				} else {
-					const existingParent = this.nodes[n].parent
-					if (existingParent && !this.nodes[n].neighbors.includes(existingParent)) {
-						this.nodes[n].parent = null
-						this.nodes[n].depth = 0
-						if (!this.roots.includes(n)) this.roots.push(n)
-					}
 				}
 
 				queue.push(n)
@@ -241,7 +234,7 @@ export class NetworkMap {
 				host,
 				parent,
 				depth: pn.depth + 1,
-				neighbors: this.safeScan(ns, host),
+				neighbors: safeScan(ns, host),
 			}
 
 			if (!this.allHosts.includes(host)) this.allHosts.push(host)
@@ -261,7 +254,7 @@ export class NetworkMap {
 		const check_host = hosts[Math.floor(Math.random() * hosts.length)]
 		const known = nodes[check_host]
 		if (!known) return true
-		const scan_results = this.safeScan(ns, check_host)
+		const scan_results = safeScan(ns, check_host)
 		return scan_results.length !== known.neighbors.length
 	}
 
